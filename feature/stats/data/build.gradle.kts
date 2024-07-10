@@ -1,11 +1,11 @@
-import com.appcoins.diceroll.convention.extensions.projectImplementation
+import com.appcoins.diceroll.sdk.convention.extensions.projectImplementation
 
 plugins {
   id("diceroll.android.feature.data")
 }
 
 android {
-  namespace = "com.appcoins.diceroll.feature.stats.data"
+  namespace = "com.appcoins.diceroll.sdk.feature.stats.data"
 }
 
 dependencies {

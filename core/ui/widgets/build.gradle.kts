@@ -1,11 +1,11 @@
-import com.appcoins.diceroll.convention.extensions.projectImplementation
+import com.appcoins.diceroll.sdk.convention.extensions.projectImplementation
 
 plugins {
   id("diceroll.android.library.compose")
 }
 
 android {
-  namespace = "com.appcoins.diceroll.core.ui.widgets"
+  namespace = "com.appcoins.diceroll.sdk.core.ui.widgets"
 
   buildFeatures {
     buildConfig = true

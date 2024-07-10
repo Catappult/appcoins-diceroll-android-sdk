@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-  namespace = "com.appcoins.diceroll.core.datastore"
+  namespace = "com.appcoins.diceroll.sdk.core.datastore"
 }
 
 dependencies {

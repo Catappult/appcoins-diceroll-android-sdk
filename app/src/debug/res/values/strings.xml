@@ -1,4 +1,4 @@
 <resources>
-  <string name="app_name">APPC DiceRoll Dev</string>
-  <string name="title_activity">APPC Dice roll</string>
+  <string name="app_name">APPC DiceRoll Dev SDK</string>
+  <string name="title_activity">APPC Dice roll SDK</string>
 </resources>

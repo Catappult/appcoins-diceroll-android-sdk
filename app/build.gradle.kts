@@ -1,13 +1,13 @@
-import com.appcoins.diceroll.convention.extensions.projectImplementation
+import com.appcoins.diceroll.sdk.convention.extensions.projectImplementation
 
 plugins {
   id("diceroll.android.app")
 }
 
 android {
-  namespace = "com.appcoins.diceroll"
+  namespace = "com.appcoins.diceroll.sdk"
   defaultConfig {
-    applicationId = "com.appcoins.diceroll"
+    applicationId = "com.appcoins.diceroll.sdk"
     versionCode = 16
     versionName = "0.4.9"
     multiDexEnabled = true

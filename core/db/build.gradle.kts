@@ -1,4 +1,4 @@
-import com.appcoins.diceroll.convention.extensions.projectImplementation
+import com.appcoins.diceroll.sdk.convention.extensions.projectImplementation
 
 plugins {
   id("diceroll.android.library")
@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-  namespace = "com.appcoins.diceroll.core.db"
+  namespace = "com.appcoins.diceroll.sdk.core.db"
 }
 
 dependencies {
