@@ -8,8 +8,7 @@
 
 ## 💻 About
 
-This sample app is used to show the possible integrations with the AppCoins Billing System. 
-It directly compares different integrations and simplifies the integration in a modern application.
+This sample app is used to show the integration via [AppCoins Billing SDK](https://docs.catappult.io/docs/native-android-billing-sdk) of the AppCoins Billing System.
 
 > This sample app is still under development and some features might be imcomplete for now.
 
@@ -21,8 +20,8 @@ It directly compares different integrations and simplifies the integration in a 
 
 ## 🚀 How to run it
 
-Even though a possible future dev variant is available, the app can only be ran in a release variant opening in Android Studio.
-All the configuration is for the catappult connection is already setup.
+Dev and Prod variants are available which can be chosen via BuildVariants and run on Android Studio.
+To correctly test the Application, update the [CATAPPULT_PUBLIC_KEY](https://github.com/Catappult/appcoins-diceroll-android-sdk/blob/master/gradle.properties#L28-L29) with the Sample key on [SDK Documentation](https://docs.catappult.io/docs/native-android-billing-sdk#faq).
 
 ## 🛠 Tech Notes
 
