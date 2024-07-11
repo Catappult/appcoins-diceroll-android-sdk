@@ -11,7 +11,7 @@ android {
       buildConfigField(
         "String",
         "CATAPPULT_PUBLIC_KEY",
-        project.property("CATAPPULT_PUBLIC_KEY_DEV").toString()
+        project.property("DICEROLL_SDK_CATAPPULT_PUBLIC_KEY_DEV").toString()
       )
 
     }
@@ -19,7 +19,7 @@ android {
       buildConfigField(
         "String",
         "CATAPPULT_PUBLIC_KEY",
-        project.property("CATAPPULT_PUBLIC_KEY").toString()
+        project.property("DICEROLL_SDK_CATAPPULT_PUBLIC_KEY").toString()
       )
     }
   }
