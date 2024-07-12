@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="com.appcoins.BILLING" />
+
+  <queries>
+    <!-- Required to work with Android 11 and above -->
+    <package android:name="com.appcoins.wallet" />
+    <package android:name="com.appcoins.wallet.dev" />
+  </queries>
+</manifest>
