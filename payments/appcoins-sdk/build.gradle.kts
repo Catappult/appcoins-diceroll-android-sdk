@@ -29,6 +29,8 @@ android {
 }
 
 dependencies {
+  projectImplementation(":core:network")
   projectImplementation(":core:utils")
   implementation(libs.catappult.android.appcoins.billing)
+  implementation(libs.bundles.network)
 }
