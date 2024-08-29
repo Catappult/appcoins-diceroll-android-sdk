@@ -1,6 +1,6 @@
 package com.appcoins.diceroll.sdk.payments.appcoins_sdk.data.respository
 
-import com.appcoins.diceroll.sdk.core.network.HttpCodes.isSuccess
+import android.util.Log
 import com.appcoins.diceroll.sdk.core.network.modules.api.PurchaseValidatorApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,11 +17,13 @@ class PurchaseValidatorRepository @Inject constructor(
     ): Result<Boolean> =
         runCatching {
             withContext(Dispatchers.IO) {
-                purchaseValidatorApi.getPurchaseValidationState(
+                val result = purchaseValidatorApi.getPurchaseValidationState(
                     packageName = packageName,
                     sku = sku,
                     purchaseToken = purchaseToken
-                ).code().isSuccess()
+                )
+
+                result.body().equals("true")
             }
         }
 }
