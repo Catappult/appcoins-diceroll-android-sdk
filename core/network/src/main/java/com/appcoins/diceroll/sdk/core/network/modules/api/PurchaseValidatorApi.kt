@@ -6,7 +6,7 @@ import retrofit2.http.Path
 
 interface PurchaseValidatorApi {
 
-    @GET("google/inapp/v3/applications/{packageName}/purchases/products/{productId}/tokens/{token}")
+    @GET("validate/{packageName}/{productId}/{token}")
     suspend fun getPurchaseValidationState(
         @Path("packageName") packageName: String,
         @Path("productId") sku: String,
