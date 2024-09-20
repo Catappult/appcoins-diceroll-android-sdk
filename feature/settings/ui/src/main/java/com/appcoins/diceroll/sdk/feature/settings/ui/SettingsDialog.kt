@@ -1,6 +1,5 @@
 package com.appcoins.diceroll.sdk.feature.settings.ui
 
-import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,7 +36,6 @@ import com.appcoins.diceroll.sdk.feature.settings.data.model.ThemeConfig
 import com.appcoins.diceroll.sdk.feature.settings.data.model.UserPrefs
 import com.appcoins.diceroll.sdk.feature.settings.ui.SettingsUiState.Loading
 import com.appcoins.diceroll.sdk.feature.settings.ui.SettingsUiState.Success
-import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManagerImpl
 
 @Composable
 fun SettingsRoute(
@@ -72,7 +70,7 @@ fun SettingsDialog(
       HorizontalDivider()
       Column(Modifier.verticalScroll(rememberScrollState())) {
         ShowSDKInformation()
-        ShowUpdateInformation()
+        ShowUpdateInformation(viewModel)
         when (settingsUiState) {
           Loading -> {
             Text(
@@ -112,21 +110,17 @@ fun ShowSDKInformation() {
 }
 
 @Composable
-fun ShowUpdateInformation() {
+fun ShowUpdateInformation(settingsViewModel: SettingsViewModel) {
   val context = LocalContext.current
   Text(
     text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.check_for_updates_title),
     modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
   )
   Button(onClick = {
-    launchAppUpdateDialog(context)
+    settingsViewModel.launchAppUpdateDialog(context)
   }) {
     Text(text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.check_for_updates_button))
   }
-}
-
-private fun launchAppUpdateDialog(context: Context) {
-  SdkManagerImpl.launchAppUpdateDialog(context)
 }
 
 @Composable

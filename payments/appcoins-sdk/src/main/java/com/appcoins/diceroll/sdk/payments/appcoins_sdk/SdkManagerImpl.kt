@@ -3,13 +3,15 @@ package com.appcoins.diceroll.sdk.payments.appcoins_sdk
 import android.content.Context
 import com.appcoins.diceroll.sdk.core.utils.ActivityResultStream
 import com.appcoins.diceroll.sdk.core.utils.listen
+import com.appcoins.diceroll.sdk.payments.appcoins_sdk.data.respository.PurchaseValidatorRepository
 import com.appcoins.sdk.billing.AppcoinsBillingClient
+import com.appcoins.sdk.billing.Purchase
 import com.appcoins.sdk.billing.helpers.CatapultBillingAppCoinsFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Manages the AppCoins SDK integration for in-app billing.
@@ -23,7 +25,9 @@ import kotlinx.coroutines.launch
  * in order to simplify the call for it.
  *
  */
-object SdkManagerImpl : SdkManager {
+class SdkManagerImpl @Inject constructor(
+    purchaseValidatorRepository: PurchaseValidatorRepository
+) : SdkManager {
 
     override lateinit var cab: AppcoinsBillingClient
 
@@ -31,13 +35,14 @@ object SdkManagerImpl : SdkManager {
 
     override val _attemptsPrice: MutableStateFlow<String?> = MutableStateFlow(null)
 
-    val connectionState: StateFlow<Boolean> = _connectionState
+    override val _purchases: ArrayList<Purchase> = ArrayList()
 
-    val attemptsPrice: StateFlow<String?> = _attemptsPrice
+    override val _purchaseValidatorRepository: PurchaseValidatorRepository =
+        purchaseValidatorRepository
 
-    private const val BASE_64_ENCODED_PUBLIC_KEY = BuildConfig.CATAPPULT_PUBLIC_KEY
+    private val BASE_64_ENCODED_PUBLIC_KEY = BuildConfig.CATAPPULT_PUBLIC_KEY
 
-    fun setupSdkConnection(context: Context) {
+    override fun setupSdkConnection(context: Context) {
         cab =
             CatapultBillingAppCoinsFactory.BuildAppcoinsBilling(
                 context,

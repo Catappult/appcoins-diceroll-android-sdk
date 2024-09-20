@@ -10,7 +10,7 @@ import com.appcoins.diceroll.sdk.core.utils.listen
 import com.appcoins.diceroll.sdk.feature.payments.ui.result.PaymentsResultUiState
 import com.appcoins.diceroll.sdk.feature.roll_game.data.DEFAULT_ATTEMPTS_NUMBER
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.ResetAttemptsUseCase
-import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManagerImpl
+import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager
 import com.appcoins.sdk.billing.ResponseCode
 import com.appcoins.sdk.billing.listeners.PurchaseResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,6 +23,7 @@ import javax.inject.Inject
 class PaymentsViewModel @Inject constructor(
   private val resetAttemptsUseCase: ResetAttemptsUseCase,
   val savedStateHandle: SavedStateHandle,
+  private val sdkManager: SdkManager,
 ) : ViewModel() {
 
   private val itemId = savedStateHandle.get<String>(DestinationArgs.ITEM_ID)
@@ -60,7 +61,7 @@ class PaymentsViewModel @Inject constructor(
     _paymentProcessState.value = PaymentProcessUiState.PaymentInProgress
     _paymentResultState.value = PaymentsResultUiState.Loading
     observeSdkResult()
-    SdkManagerImpl.startPayment(context, itemId.toString(), "")
+    sdkManager.startPayment(context, itemId.toString(), "")
   }
 
   private fun observeSdkResult() {

@@ -1,5 +1,6 @@
 package com.appcoins.diceroll.sdk.feature.settings.ui
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.appcoins.diceroll.sdk.feature.settings.data.model.ThemeConfig
@@ -7,6 +8,7 @@ import com.appcoins.diceroll.sdk.feature.settings.data.model.UserPrefs
 import com.appcoins.diceroll.sdk.feature.settings.data.repository.UserPrefsDataSource
 import com.appcoins.diceroll.sdk.feature.settings.ui.SettingsUiState.Loading
 import com.appcoins.diceroll.sdk.feature.settings.ui.SettingsUiState.Success
+import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
   private val userPrefsDataSource: UserPrefsDataSource,
+  private val sdkManager: SdkManager,
 ) : ViewModel() {
   val uiState: StateFlow<SettingsUiState> =
     userPrefsDataSource.getUserPrefs()
@@ -34,6 +37,10 @@ class SettingsViewModel @Inject constructor(
     viewModelScope.launch {
       userPrefsDataSource.saveThemeConfig(themeConfig)
     }
+  }
+
+  fun launchAppUpdateDialog(context: Context) {
+    sdkManager.launchAppUpdateDialog(context)
   }
 }
 
