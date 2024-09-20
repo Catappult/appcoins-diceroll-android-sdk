@@ -209,13 +209,9 @@ interface SdkManager {
     private fun validateAndConsumePurchase(purchase: Purchase) {
         CoroutineScope(Job()).launch {
             val isPurchaseValid =
-                _purchaseValidatorRepository.isPurchaseValid(
-                    purchase.packageName,
-                    purchase.sku,
-                    purchase.token ?: ""
-                )
+                BuildConfig.DEBUG || isPurchaseValid(purchase.sku, purchase.token ?: "")
 
-            if (isPurchaseValid.getOrDefault(false)) {
+            if (isPurchaseValid) {
                 Log.i(LOG_TAG, "Purchase verified successfully from Server side.")
                 cab.consumeAsync(purchase.token, consumeResponseListener)
             } else {
@@ -227,7 +223,7 @@ interface SdkManager {
                         )
                     )
                 }
-                Log.i(LOG_TAG, "There was an error verifying the Purchase on Server side.")
+                Log.e(LOG_TAG, "There was an error verifying the Purchase on Server side.")
             }
         }
     }
@@ -261,6 +257,11 @@ interface SdkManager {
             skuDetailsResponseListener
         )
     }
+
+    private suspend fun isPurchaseValid(sku: String, token: String): Boolean =
+        _purchaseValidatorRepository
+            .isPurchaseValid(sku, token)
+            .getOrDefault(false)
 
     private companion object {
         const val LOG_TAG = "SdkManager"
