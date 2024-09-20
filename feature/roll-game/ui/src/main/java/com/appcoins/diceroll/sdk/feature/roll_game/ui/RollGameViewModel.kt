@@ -6,7 +6,7 @@ import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetAttemptsUseC
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.SaveAttemptsUseCase
 import com.appcoins.diceroll.sdk.feature.stats.data.model.DiceRoll
 import com.appcoins.diceroll.sdk.feature.stats.data.usecases.SaveDiceRollUseCase
-import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManagerImpl
+import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +18,7 @@ import javax.inject.Inject
 class RollGameViewModel @Inject constructor(
   private val saveDiceRollUseCase: SaveDiceRollUseCase,
   private val saveAttemptsUseCase: SaveAttemptsUseCase,
+  private val sdkManager: SdkManager,
   getAttemptsUseCase: GetAttemptsUseCase,
 ) : ViewModel() {
 
@@ -32,8 +33,8 @@ class RollGameViewModel @Inject constructor(
         initialValue = RollGameState.Loading,
       )
 
-  internal val sdkConnectionState: StateFlow<Boolean> get() = SdkManagerImpl.connectionState
-  internal val attemptsPrice: StateFlow<String?> get() = SdkManagerImpl.attemptsPrice
+  internal val sdkConnectionState: StateFlow<Boolean> get() = sdkManager._connectionState
+  internal val attemptsPrice: StateFlow<String?> get() = sdkManager._attemptsPrice
 
   suspend fun saveDiceRoll(diceRoll: DiceRoll) {
     saveDiceRollUseCase(diceRoll).also { saveAttemptsUseCase(diceRoll.attemptsLeft) }
