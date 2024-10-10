@@ -8,7 +8,7 @@
   <application
       android:name=".App"
       android:allowBackup="true"
-      android:icon="@mipmap/ic_diceroll"
+      android:icon="@drawable/ic_diceroll"
       android:label="@string/app_name"
       android:supportsRtl="true"
       android:theme="@style/DiceRoll.Splash"
