@@ -109,6 +109,20 @@ interface SdkManager {
                 ResponseCode.OK.value -> {
                     for (purchase in purchases) {
                         _purchases.add(purchase)
+                        Log.i(
+                            LOG_TAG, "PurchasesUpdatedListener: purchase data:" +
+                                "\nsku: ${purchase.sku}" +
+                                "\nitemType: ${purchase.itemType}" +
+                                "\npackageName: ${purchase.packageName}" +
+                                "\ndeveloperPayload: ${purchase.developerPayload}" +
+                                "\npurchaseState: ${purchase.purchaseState}" +
+                                "\npurchaseTime: ${purchase.purchaseTime}" +
+                                "\ntoken: ${purchase.token}" +
+                                "\norderId: ${purchase.orderId}" +
+                                "\nsignature: ${purchase.signature}" +
+                                "\noriginalJson: ${purchase.originalJson}" +
+                                "\nisAutoRenewing: ${purchase.isAutoRenewing}"
+                        )
                         validateAndConsumePurchase(purchase)
                     }
                 }
@@ -206,10 +220,12 @@ interface SdkManager {
         cab.launchAppUpdateDialog(context)
     }
 
-    private fun validateAndConsumePurchase(purchase: Purchase) {
+    private fun validateAndConsumePurchase(purchase: Purchase, skipValidation: Boolean = false) {
         CoroutineScope(Job()).launch {
             val isPurchaseValid =
-                BuildConfig.DEBUG || isPurchaseValid(purchase.sku, purchase.token ?: "")
+                skipValidation ||
+                    BuildConfig.DEBUG ||
+                    isPurchaseValid(purchase.sku, purchase.token ?: "")
 
             if (isPurchaseValid) {
                 Log.i(LOG_TAG, "Purchase verified successfully from Server side.")

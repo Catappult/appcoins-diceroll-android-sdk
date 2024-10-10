@@ -61,7 +61,7 @@ class PaymentsViewModel @Inject constructor(
     _paymentProcessState.value = PaymentProcessUiState.PaymentInProgress
     _paymentResultState.value = PaymentsResultUiState.Loading
     observeSdkResult()
-    sdkManager.startPayment(context, itemId.toString(), "")
+    sdkManager.startPayment(context, itemId.toString(), "user12345")
   }
 
   private fun observeSdkResult() {
