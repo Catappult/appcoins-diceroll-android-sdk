@@ -1,21 +1,22 @@
 package com.appcoins.diceroll.sdk
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.appcoins.diceroll.sdk.MainActivityUiState.*
-import com.appcoins.diceroll.sdk.core.ui.design.theme.*
-import com.appcoins.diceroll.sdk.core.utils.ActivityResultStream
+import com.appcoins.diceroll.sdk.MainActivityUiState.Loading
+import com.appcoins.diceroll.sdk.MainActivityUiState.Success
+import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
 import com.appcoins.diceroll.sdk.feature.settings.data.model.ThemeConfig
-import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkResult
 import com.appcoins.diceroll.sdk.ui.DiceRollApp
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -56,14 +57,6 @@ class MainActivity : ComponentActivity() {
       DiceRollTheme(darkTheme = darkTheme) {
         DiceRollApp()
       }
-    }
-  }
-
-  @Deprecated(message = "ActivityResultContracts should be used instead")
-  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-    @Suppress("DEPRECATION") super.onActivityResult(requestCode, resultCode, data)
-    lifecycleScope.launch {
-      ActivityResultStream.publish(SdkResult(requestCode, resultCode, data))
     }
   }
 }

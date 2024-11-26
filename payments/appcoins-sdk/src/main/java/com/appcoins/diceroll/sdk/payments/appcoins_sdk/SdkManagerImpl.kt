@@ -1,16 +1,11 @@
 package com.appcoins.diceroll.sdk.payments.appcoins_sdk
 
 import android.content.Context
-import com.appcoins.diceroll.sdk.core.utils.ActivityResultStream
-import com.appcoins.diceroll.sdk.core.utils.listen
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.data.respository.PurchaseValidatorRepository
 import com.appcoins.sdk.billing.AppcoinsBillingClient
 import com.appcoins.sdk.billing.Purchase
 import com.appcoins.sdk.billing.helpers.CatapultBillingAppCoinsFactory
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -50,14 +45,5 @@ class SdkManagerImpl @Inject constructor(
                 purchasesUpdatedListener
             )
         cab.startConnection(appCoinsBillingStateListener)
-        sdkResultHandle()
-    }
-
-    private fun sdkResultHandle() {
-        CoroutineScope(Job()).launch {
-            ActivityResultStream.listen<SdkResult>().collect {
-                cab.onActivityResult(it.requestCode, it.resultCode, it.data)
-            }
-        }
     }
 }
