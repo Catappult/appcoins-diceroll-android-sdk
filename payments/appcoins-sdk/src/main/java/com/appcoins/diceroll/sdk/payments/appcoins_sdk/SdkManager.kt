@@ -42,7 +42,11 @@ interface SdkManager {
 
     val _connectionState: MutableStateFlow<Boolean>
 
+    val _goldDiceSubscriptionActive: MutableStateFlow<Boolean?>
+
     val _attemptsPrice: MutableStateFlow<String?>
+
+    val _goldDicePrice: MutableStateFlow<String?>
 
     val _purchases: ArrayList<Purchase>
 
@@ -69,7 +73,9 @@ interface SdkManager {
                             )
                             _connectionState.value = true
                             queryPurchases()
-                            queryInapps(ArrayList(listOf("attempts")))
+                            queryActiveSubscriptions()
+                            queryInappsSkus(ArrayList(listOf("attempts")))
+                            querySubsSkus(ArrayList(listOf("golden_dice")))
                         }
 
                         else -> {
@@ -79,6 +85,7 @@ interface SdkManager {
                             )
                             _connectionState.value = false
                             _attemptsPrice.value = null
+                            _goldDicePrice.value = null
                         }
                     }
                 }
@@ -87,6 +94,7 @@ interface SdkManager {
                     Log.d(LOG_TAG, "AppCoinsBillingStateListener: AppCoins SDK Disconnected")
                     _connectionState.value = false
                     _attemptsPrice.value = null
+                    _goldDicePrice.value = null
                 }
             }
 
@@ -123,7 +131,10 @@ interface SdkManager {
                                 "\noriginalJson: ${purchase.originalJson}" +
                                 "\nisAutoRenewing: ${purchase.isAutoRenewing}"
                         )
-                        validateAndConsumePurchase(purchase)
+                        validateAndConsumePurchase(
+                            purchase,
+                            purchase.itemType == SkuType.subs.toString()
+                        )
                     }
                 }
 
@@ -183,6 +194,9 @@ interface SdkManager {
                     if (sku.sku == "attempts") {
                         _attemptsPrice.value = sku.price
                     }
+                    if (sku.sku == "golden_dice") {
+                        _goldDicePrice.value = sku.price
+                    }
                     // You can add these details to a list in order to update
                     // UI or use it in any other way
                 }
@@ -202,11 +216,11 @@ interface SdkManager {
      * This will launch the Google Play billing flow. The result will be delivered
      * via the PurchasesUpdatedListener callback.
      */
-    fun startPayment(context: Context, sku: String, developerPayload: String) {
+    fun startPayment(context: Context, sku: String, skuType: SkuType, developerPayload: String?) {
         val billingFlowParams = BillingFlowParams(
             sku,
-            SkuType.inapp.toString(),
-            "orderId=" + System.currentTimeMillis(),
+            skuType.toString(),
+            null,
             developerPayload,
             "BDS"
         )
@@ -215,6 +229,11 @@ interface SdkManager {
             cab.launchBillingFlow(context as Activity, billingFlowParams)
         }
     }
+
+    /**
+     * Process the result of a Purchase of type golden_dice
+     */
+    fun processGoldenDiceSubscription(active: Boolean)
 
     fun launchAppUpdateDialog(context: Context) {
         cab.launchAppUpdateDialog(context)
@@ -248,8 +267,15 @@ interface SdkManager {
         CoroutineScope(Job()).launch {
             val purchase = _purchases.firstOrNull { it.token == purchaseToken }
             if (purchase != null) {
+                processPurchase(purchase)
                 PurchaseResultStream.publish(PurchaseResponse(responseCode, listOf(purchase)))
             }
+        }
+    }
+
+    private fun processPurchase(purchase: Purchase) {
+        when (purchase.sku) {
+            "golden_dice" -> processGoldenDiceSubscription(true)
         }
     }
 
@@ -264,10 +290,48 @@ interface SdkManager {
         }
     }
 
-    private fun queryInapps(skuList: List<String>) {
+    private fun queryActiveSubscriptions() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val purchasesResult = cab.queryPurchases(SkuType.subs.toString())
+            val purchases = purchasesResult.purchases
+            for (purchase in purchases) {
+                _purchases.add(purchase)
+                validateAndConsumePurchase(purchase)
+                Log.i(
+                    LOG_TAG, "querySubs: purchase data:" +
+                        "\nsku: ${purchase.sku}" +
+                        "\nitemType: ${purchase.itemType}" +
+                        "\npackageName: ${purchase.packageName}" +
+                        "\ndeveloperPayload: ${purchase.developerPayload}" +
+                        "\npurchaseState: ${purchase.purchaseState}" +
+                        "\npurchaseTime: ${purchase.purchaseTime}" +
+                        "\ntoken: ${purchase.token}" +
+                        "\norderId: ${purchase.orderId}" +
+                        "\nsignature: ${purchase.signature}" +
+                        "\noriginalJson: ${purchase.originalJson}" +
+                        "\nisAutoRenewing: ${purchase.isAutoRenewing}"
+                )
+            }
+            if (purchases.find { it.sku == "golden_dice" } == null) {
+                processGoldenDiceSubscription(false)
+            }
+        }
+    }
+
+    private fun queryInappsSkus(skuList: List<String>) {
         cab.querySkuDetailsAsync(
             SkuDetailsParams().apply {
                 itemType = SkuType.inapp.toString()
+                moreItemSkus = skuList
+            },
+            skuDetailsResponseListener
+        )
+    }
+
+    private fun querySubsSkus(skuList: List<String>) {
+        cab.querySkuDetailsAsync(
+            SkuDetailsParams().apply {
+                itemType = SkuType.subs.toString()
                 moreItemSkus = skuList
             },
             skuDetailsResponseListener

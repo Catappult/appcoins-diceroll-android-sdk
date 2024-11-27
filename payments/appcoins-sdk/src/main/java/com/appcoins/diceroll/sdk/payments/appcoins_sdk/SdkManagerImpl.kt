@@ -1,11 +1,17 @@
 package com.appcoins.diceroll.sdk.payments.appcoins_sdk
 
 import android.content.Context
+import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceStatusUseCase
+import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.UpdateGoldenDiceStatusUseCase
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.data.respository.PurchaseValidatorRepository
 import com.appcoins.sdk.billing.AppcoinsBillingClient
 import com.appcoins.sdk.billing.Purchase
 import com.appcoins.sdk.billing.helpers.CatapultBillingAppCoinsFactory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -21,14 +27,20 @@ import javax.inject.Inject
  *
  */
 class SdkManagerImpl @Inject constructor(
-    purchaseValidatorRepository: PurchaseValidatorRepository
+    purchaseValidatorRepository: PurchaseValidatorRepository,
+    val getGoldenDiceStatusUseCase: GetGoldenDiceStatusUseCase,
+    val updateGoldenDiceStatusUseCase: UpdateGoldenDiceStatusUseCase,
 ) : SdkManager {
 
     override lateinit var cab: AppcoinsBillingClient
 
     override val _connectionState: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
+    override val _goldDiceSubscriptionActive: MutableStateFlow<Boolean?> = MutableStateFlow(null)
+
     override val _attemptsPrice: MutableStateFlow<String?> = MutableStateFlow(null)
+
+    override val _goldDicePrice: MutableStateFlow<String?> = MutableStateFlow(null)
 
     override val _purchases: ArrayList<Purchase> = ArrayList()
 
@@ -45,5 +57,16 @@ class SdkManagerImpl @Inject constructor(
                 purchasesUpdatedListener
             )
         cab.startConnection(appCoinsBillingStateListener)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            _goldDiceSubscriptionActive.value = getGoldenDiceStatusUseCase().firstOrNull()
+        }
+    }
+
+    override fun processGoldenDiceSubscription(active: Boolean) {
+        _goldDiceSubscriptionActive.value = active
+        CoroutineScope(Dispatchers.IO).launch {
+            updateGoldenDiceStatusUseCase(active)
+        }
     }
 }

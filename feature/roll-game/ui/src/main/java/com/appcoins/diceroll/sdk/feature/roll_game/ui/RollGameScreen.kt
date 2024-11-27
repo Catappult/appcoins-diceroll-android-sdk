@@ -95,7 +95,7 @@ fun RollGameContent(
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.SpaceEvenly
   ) {
-    GameDice(diceValue, resultText)
+    GameDice(diceValue, resultText, viewModel)
     Column(
       Modifier
         .fillMaxWidth()
@@ -172,18 +172,38 @@ fun RollGameContent(
     }
 
     val sdkSetupState by viewModel.sdkConnectionState.collectAsStateWithLifecycle()
+
     val attemptsPrice by viewModel.attemptsPrice.collectAsStateWithLifecycle()
-    val sdkIsReady = sdkSetupState && attemptsPrice != null
+    val isBuyAttemptsButtonReady = sdkSetupState && attemptsPrice != null
+
+    val goldDicePrice by viewModel.goldDicePrice.collectAsStateWithLifecycle()
+    val isBuyGoldDiceButtonReady = sdkSetupState && goldDicePrice != null
 
     Button(
       onClick = { onBuyClick(Item.Attempts(attemptsLeft)) },
-      enabled = sdkIsReady
+      enabled = isBuyAttemptsButtonReady
     ) {
       Text(
         text =
-        if (sdkIsReady) {
+        if (isBuyAttemptsButtonReady) {
           stringResource(id = R.string.roll_game_buy_button) +
-                  (attemptsPrice?.let { " $it" } ?: "")
+              (attemptsPrice?.let { " $it" } ?: "")
+        } else {
+          stringResource(id = R.string.payments_sdk_initializing)
+        },
+        textAlign = TextAlign.Center
+      )
+    }
+
+    Button(
+      onClick = { onBuyClick(Item.GoldDice) },
+      enabled = isBuyGoldDiceButtonReady
+    ) {
+      Text(
+        text =
+        if (isBuyAttemptsButtonReady) {
+          "Subscribe Golden Dice for" +
+              (goldDicePrice?.let { " $it" } ?: "")
         } else {
           stringResource(id = R.string.payments_sdk_initializing)
         },
@@ -202,15 +222,27 @@ private fun convertedBetNumber(betNumber: String): String {
 }
 
 @Composable
-private fun GameDice(diceValue: Int, resultText: String) {
-  val diceImages = listOf(
-    GameR.drawable.dice_six_faces_one,
-    GameR.drawable.dice_six_faces_two,
-    GameR.drawable.dice_six_faces_three,
-    GameR.drawable.dice_six_faces_four,
-    GameR.drawable.dice_six_faces_five,
-    GameR.drawable.dice_six_faces_six,
-  )
+private fun GameDice(diceValue: Int, resultText: String, viewModel: RollGameViewModel) {
+    val goldDiceSubscriptionActive by viewModel.goldDiceSubscriptionActive.collectAsStateWithLifecycle()
+  val diceImages = if(goldDiceSubscriptionActive == true) {
+      listOf(
+          GameR.drawable.golden_dice_six_faces_one,
+          GameR.drawable.golden_dice_six_faces_two,
+          GameR.drawable.golden_dice_six_faces_three,
+          GameR.drawable.golden_dice_six_faces_four,
+          GameR.drawable.golden_dice_six_faces_five,
+          GameR.drawable.golden_dice_six_faces_six,
+      )
+  } else {
+      listOf(
+          GameR.drawable.dice_six_faces_one,
+          GameR.drawable.dice_six_faces_two,
+          GameR.drawable.dice_six_faces_three,
+          GameR.drawable.dice_six_faces_four,
+          GameR.drawable.dice_six_faces_five,
+          GameR.drawable.dice_six_faces_six,
+      )
+  }
   Box(
     modifier = Modifier.size(200.dp),
     contentAlignment = Alignment.Center

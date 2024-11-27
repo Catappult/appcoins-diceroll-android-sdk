@@ -8,20 +8,24 @@ import com.appcoins.diceroll.sdk.core.navigation.destinations.DestinationArgs
 import com.appcoins.diceroll.sdk.core.navigation.destinations.Destinations
 import com.appcoins.diceroll.sdk.core.navigation.navigateToDestination
 import com.appcoins.diceroll.sdk.core.utils.extensions.ifLet
-import com.appcoins.diceroll.sdk.feature.payments.ui.PaymentProcessBottomSheetRoute
+import com.appcoins.diceroll.sdk.feature.payments.ui.AttemptsPaymentProcessBottomSheetRoute
+import com.appcoins.diceroll.sdk.feature.payments.ui.GoldDicePaymentProcessBottomSheetRoute
+import com.appcoins.diceroll.sdk.feature.payments.ui.Item
 
+fun NavController.navigateToPaymentResultBottomSheet(item: Item) {
+    val listOfArguments = arrayListOf(item.sku)
 
-fun NavController.navigateToPaymentResultBottomSheet(
-  itemId: String,
-  attempts : String,
-) {
-  this.navigateToDestination(
-    destination = Destinations.BottomSheet.PaymentProcess,
-    destinationArgs = listOf(itemId, attempts),
-    navOptions = navOptions {
-      launchSingleTop = true
+    if (item is Item.Attempts) {
+        listOfArguments.add(item.currentAttempts.toString())
     }
-  )
+
+    this.navigateToDestination(
+        destination = Destinations.BottomSheet.PaymentProcess,
+        destinationArgs = listOfArguments,
+        navOptions = navOptions {
+            launchSingleTop = true
+        }
+    )
 }
 
 /**
@@ -36,12 +40,24 @@ fun NavController.navigateToPaymentResultBottomSheet(
  *
  */
 fun NavGraphBuilder.paymentProcessRoute(onDismiss: () -> Unit) {
-  this.buildDestinationRoute(
-    destination = Destinations.BottomSheet.PaymentProcess,
-    destinationArgs = listOf(DestinationArgs.ITEM_ID, DestinationArgs.ATTEMPTS_LEFT),
-  ) { args ->
-    ifLet(args[DestinationArgs.ITEM_ID], args[DestinationArgs.ATTEMPTS_LEFT]) { (itemId, attempts) ->
-      PaymentProcessBottomSheetRoute(onDismiss, itemId, attempts)
+    this.buildDestinationRoute(
+        destination = Destinations.BottomSheet.PaymentProcess,
+        destinationArgs = listOf(DestinationArgs.ITEM_ID, DestinationArgs.ATTEMPTS_LEFT),
+    ) { args ->
+        ifLet(
+            args[DestinationArgs.ITEM_ID],
+            args[DestinationArgs.ATTEMPTS_LEFT]
+        ) { (itemId, attempts) ->
+            AttemptsPaymentProcessBottomSheetRoute(onDismiss, itemId, attempts)
+        }
     }
-  }
+
+    this.buildDestinationRoute(
+        destination = Destinations.BottomSheet.PaymentProcess,
+        destinationArgs = listOf(DestinationArgs.ITEM_ID),
+    ) { args ->
+        ifLet(args[DestinationArgs.ITEM_ID]) { (itemId) ->
+            GoldDicePaymentProcessBottomSheetRoute(onDismiss, itemId)
+        }
+    }
 }

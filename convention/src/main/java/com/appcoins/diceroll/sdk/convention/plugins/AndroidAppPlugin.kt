@@ -36,6 +36,7 @@ class AndroidAppPlugin : Plugin<Project> {
           }
 
           release {
+            isDebuggable = true
             isMinifyEnabled = false
             // To publish to the Play Store, we need to set the signing config with a private
             // signing key, but in order to allow anyone who clones the code to run the release

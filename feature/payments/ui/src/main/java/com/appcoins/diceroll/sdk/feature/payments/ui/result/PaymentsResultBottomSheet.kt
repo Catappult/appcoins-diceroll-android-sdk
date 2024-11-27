@@ -4,61 +4,56 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import com.appcoins.diceroll.sdk.core.ui.design.R
-import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
 import com.appcoins.diceroll.sdk.core.ui.widgets.ErrorAnimation
 import com.appcoins.diceroll.sdk.core.ui.widgets.LoadingAnimation
 import com.appcoins.diceroll.sdk.core.ui.widgets.SuccessAnimation
+import com.appcoins.diceroll.sdk.feature.payments.ui.Item
 
 @Composable
 fun PaymentsResult(
-  uiState: PaymentsResultUiState,
-  onPaymentSuccess: suspend () -> Unit,
+    itemId: String,
+    uiState: PaymentsResultUiState,
+    onPaymentSuccess: suspend () -> Unit,
 ) {
-  when (uiState) {
-    is PaymentsResultUiState.Initialized -> {}
-    is PaymentsResultUiState.Loading -> LoadingAnimation(bodyMessage = stringResource(id = R.string.payments_loading))
-    is PaymentsResultUiState.UserCanceled -> ErrorAnimation(
-      titleMessage = stringResource(R.string.payments_user_canceled_title),
-      bodyMessage = stringResource(R.string.payments_user_canceled_body)
-    )
+    when (uiState) {
+        is PaymentsResultUiState.Initialized -> {}
+        is PaymentsResultUiState.Loading -> LoadingAnimation(bodyMessage = stringResource(id = R.string.payments_loading))
+        is PaymentsResultUiState.UserCanceled -> ErrorAnimation(
+            titleMessage = stringResource(R.string.payments_user_canceled_title),
+            bodyMessage = stringResource(R.string.payments_user_canceled_body)
+        )
 
-    is PaymentsResultUiState.Failed -> ErrorAnimation(
-      titleMessage = stringResource(R.string.payments_failed_title),
-      bodyMessage = stringResource(R.string.payments_failed_body)
-    )
+        is PaymentsResultUiState.Failed -> {
+            ErrorAnimation(
+                titleMessage = stringResource(R.string.payments_failed_title),
+                bodyMessage = stringResource(getFailedBodyMessage(itemId))
+            )
+        }
 
-    is PaymentsResultUiState.Success -> SuccessContent(onPaymentSuccess)
-  }
+        is PaymentsResultUiState.Success -> SuccessContent(itemId, onPaymentSuccess)
+    }
 }
 
 @Composable
-fun SuccessContent(onPaymentSuccess: suspend () -> Unit) {
-  LaunchedEffect(rememberCoroutineScope()) {
-    onPaymentSuccess()
-  }
-  SuccessAnimation(
-    titleMessage = stringResource(R.string.payments_success_title),
-    bodyMessage = stringResource(R.string.payments_success_body)
-  )
-}
-
-@Preview
-@Composable
-fun PreviewPaymentsLoadingContent() {
-  DiceRollTheme(darkTheme = true) {
-    LoadingAnimation(bodyMessage = stringResource(R.string.payments_loading))
-  }
-}
-
-@Preview
-@Composable
-fun PreviewPaymentsSuccessContent() {
-  DiceRollTheme(darkTheme = true) {
+fun SuccessContent(itemId: String, onPaymentSuccess: suspend () -> Unit) {
+    LaunchedEffect(rememberCoroutineScope()) {
+        onPaymentSuccess()
+    }
     SuccessAnimation(
-      titleMessage = stringResource(id = R.string.payments_success_title),
-      bodyMessage = stringResource(id = R.string.payments_success_body)
+        titleMessage = stringResource(R.string.payments_success_title),
+        bodyMessage = stringResource(getSuccessBodyMessage(itemId))
     )
-  }
 }
+
+fun getFailedBodyMessage(itemId: String): Int =
+    when (itemId) {
+        Item.GOLD_DICE_SKU -> R.string.payments_golden_dice_failed_body
+        else -> R.string.payments_attempts_failed_body
+    }
+
+fun getSuccessBodyMessage(itemId: String): Int =
+    when (itemId) {
+        Item.GOLD_DICE_SKU -> R.string.payments_golden_dice_success_body
+        else -> R.string.payments_attempts_success_body
+    }
