@@ -17,7 +17,8 @@
   <string name="roll_game_result_incorrect">Incorrect!</string>
   <string name="roll_game_info">Try to guess the dice number on the next roll</string>
   <string name="roll_game_button">Roll Dice</string>
-  <string name="roll_game_buy_button">Buy more attempts</string>
+  <string name="roll_game_attempts_buy_button">Buy more attempts</string>
+  <string name="roll_game_golden_dice_buy_button">Subscribe to Golden Dice for</string>
 
   <!-- Payments Screen -->
   <string name="payments_sdk_initializing">SDK connecting to Billing Service</string>

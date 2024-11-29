@@ -48,207 +48,233 @@ import com.appcoins.diceroll.sdk.feature.roll_game.ui.R as GameR
 
 @Composable
 internal fun RollGameRoute(
-  onBuyClick: (Item) -> Unit,
-  viewModel: RollGameViewModel = hiltViewModel()
+    onBuyClick: (Item) -> Unit,
+    viewModel: RollGameViewModel = hiltViewModel()
 ) {
-  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-  RollGameScreen(
-    uiState,
-    onBuyClick,
-    viewModel::saveDiceRoll,
-  )
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    RollGameScreen(
+        uiState,
+        onBuyClick,
+        viewModel::saveDiceRoll,
+    )
 }
 
 @Composable
 fun RollGameScreen(
-  uiState: RollGameState,
-  onBuyClick: (Item) -> Unit,
-  onSaveDiceRoll: suspend (diceRoll: DiceRoll) -> Unit,
+    uiState: RollGameState,
+    onBuyClick: (Item) -> Unit,
+    onSaveDiceRoll: suspend (diceRoll: DiceRoll) -> Unit,
 ) {
-  when (uiState) {
-    is RollGameState.Loading -> {}
-    is RollGameState.Error -> {}
-    is RollGameState.Success -> {
-      RollGameContent(
-        attemptsLeft = uiState.attemptsLeft ?: DEFAULT_ATTEMPTS_NUMBER,
-        onSaveDiceRoll = onSaveDiceRoll,
-        onBuyClick = onBuyClick,
-      )
+    when (uiState) {
+        is RollGameState.Loading -> {}
+        is RollGameState.Error -> {}
+        is RollGameState.Success -> {
+            RollGameContent(
+                attemptsLeft = uiState.attemptsLeft ?: DEFAULT_ATTEMPTS_NUMBER,
+                onSaveDiceRoll = onSaveDiceRoll,
+                onBuyClick = onBuyClick,
+            )
+        }
     }
-  }
 }
 
 @Composable
 fun RollGameContent(
-  attemptsLeft: Int,
-  onSaveDiceRoll: suspend (diceRoll: DiceRoll) -> Unit,
-  onBuyClick: (Item) -> Unit,
-  viewModel: RollGameViewModel = hiltViewModel()
+    attemptsLeft: Int,
+    onSaveDiceRoll: suspend (diceRoll: DiceRoll) -> Unit,
+    onBuyClick: (Item) -> Unit,
+    viewModel: RollGameViewModel = hiltViewModel()
 ) {
-  var diceValue by rememberSaveable { mutableIntStateOf(1) }
-  var resultText by rememberSaveable { mutableStateOf("") }
-  var betNumber by rememberSaveable { mutableStateOf("") }
-  Column(
-    modifier = Modifier
-      .fillMaxSize()
-      .verticalScroll(rememberScrollState()),
-    horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.SpaceEvenly
-  ) {
-    GameDice(diceValue, resultText)
+    var diceValue by rememberSaveable { mutableIntStateOf(1) }
+    var resultText by rememberSaveable { mutableStateOf("") }
+    var betNumber by rememberSaveable { mutableStateOf("") }
     Column(
-      Modifier
-        .fillMaxWidth()
-        .padding(16.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceEvenly
     ) {
-      Text(
-        text = stringResource(id = R.string.roll_game_info),
-        fontSize = 12.sp,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-      )
-      Row {
-        Card(
-          modifier = Modifier
-            .padding(8.dp)
-            .weight(2f),
+        GameDice(diceValue, resultText, viewModel)
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
-          TextField(
-            value = betNumber,
-            onValueChange = { newValue -> betNumber = convertedBetNumber(newValue) },
-            label = { Text(stringResource(id = R.string.roll_game_guess_prompt)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-          )
-        }
-        Button(
-          onClick = {
-            if (attemptsLeft > 0 && betNumber.isNotEmpty()) {
-              val bet = betNumber
-              diceValue = Random.nextInt(1, 7)
-              if (bet.toInt() == diceValue) {
-                resultText = "Correct!"
-                runBlocking {
-                  onSaveDiceRoll(
-                    DiceRoll(
-                      id = null,
-                      rollWin = diceValue == betNumber.toInt(),
-                      guessNumber = betNumber.toInt(),
-                      resultNumber = diceValue,
-                      attemptsLeft = DEFAULT_ATTEMPTS_NUMBER
+            Text(
+                text = stringResource(id = R.string.roll_game_info),
+                fontSize = 12.sp,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+            Row {
+                Card(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .weight(2f),
+                ) {
+                    TextField(
+                        value = betNumber,
+                        onValueChange = { newValue -> betNumber = convertedBetNumber(newValue) },
+                        label = { Text(stringResource(id = R.string.roll_game_guess_prompt)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     )
-                  )
                 }
-              } else {
-                resultText = "Incorrect!"
-                runBlocking {
-                  onSaveDiceRoll(
-                    DiceRoll(
-                      id = null,
-                      rollWin = diceValue == betNumber.toInt(),
-                      guessNumber = betNumber.toInt(),
-                      resultNumber = diceValue,
-                      attemptsLeft = attemptsLeft - 1
+                Button(
+                    onClick = {
+                        if (attemptsLeft > 0 && betNumber.isNotEmpty()) {
+                            val bet = betNumber
+                            diceValue = Random.nextInt(1, 7)
+                            if (bet.toInt() == diceValue) {
+                                resultText = "Correct!"
+                                runBlocking {
+                                    onSaveDiceRoll(
+                                        DiceRoll(
+                                            id = null,
+                                            rollWin = diceValue == betNumber.toInt(),
+                                            guessNumber = betNumber.toInt(),
+                                            resultNumber = diceValue,
+                                            attemptsLeft = DEFAULT_ATTEMPTS_NUMBER
+                                        )
+                                    )
+                                }
+                            } else {
+                                resultText = "Incorrect!"
+                                runBlocking {
+                                    onSaveDiceRoll(
+                                        DiceRoll(
+                                            id = null,
+                                            rollWin = diceValue == betNumber.toInt(),
+                                            guessNumber = betNumber.toInt(),
+                                            resultNumber = diceValue,
+                                            attemptsLeft = attemptsLeft - 1
 
-                    )
-                  )
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                        betNumber = ""
+                    },
+                    Modifier
+                        .weight(1f)
+                        .align(Alignment.CenterVertically),
+                    enabled = attemptsLeft > 0 && betNumber.isNotEmpty()
+                ) {
+                    Text(text = stringResource(id = R.string.roll_game_button))
                 }
-              }
             }
-            betNumber = ""
-          },
-          Modifier
-            .weight(1f)
-            .align(Alignment.CenterVertically),
-          enabled = attemptsLeft > 0 && betNumber.isNotEmpty()
-        ) {
-          Text(text = stringResource(id = R.string.roll_game_button))
+            Text(
+                text = stringResource(id = R.string.roll_game_attempts_left) + " $attemptsLeft",
+                fontSize = 12.sp,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                textAlign = TextAlign.Center
+            )
         }
-      }
-      Text(
-        text = stringResource(id = R.string.roll_game_attempts_left) + " $attemptsLeft",
-        fontSize = 12.sp,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        textAlign = TextAlign.Center
-      )
-    }
 
-    val sdkSetupState by viewModel.sdkConnectionState.collectAsStateWithLifecycle()
-    val attemptsPrice by viewModel.attemptsPrice.collectAsStateWithLifecycle()
-    val sdkIsReady = sdkSetupState && attemptsPrice != null
+        val sdkSetupState by viewModel.sdkConnectionState.collectAsStateWithLifecycle()
 
-    Button(
-      onClick = { onBuyClick(Item.Attempts(attemptsLeft)) },
-      enabled = sdkIsReady
-    ) {
-      Text(
-        text =
-        if (sdkIsReady) {
-          stringResource(id = R.string.roll_game_buy_button) +
-                  (attemptsPrice?.let { " $it" } ?: "")
-        } else {
-          stringResource(id = R.string.payments_sdk_initializing)
-        },
-        textAlign = TextAlign.Center
-      )
+        val attemptsPrice by viewModel.attemptsPrice.collectAsStateWithLifecycle()
+        val isBuyAttemptsButtonReady = sdkSetupState && attemptsPrice != null
+
+        val goldDicePrice by viewModel.goldDicePrice.collectAsStateWithLifecycle()
+        val isBuyGoldDiceButtonReady = sdkSetupState && goldDicePrice != null
+
+        Button(
+            onClick = { onBuyClick(Item.Attempts) },
+            enabled = isBuyAttemptsButtonReady
+        ) {
+            Text(
+                text =
+                if (isBuyAttemptsButtonReady) {
+                    stringResource(id = R.string.roll_game_attempts_buy_button) +
+                        (attemptsPrice?.let { " $it" } ?: "")
+                } else {
+                    stringResource(id = R.string.payments_sdk_initializing)
+                },
+                textAlign = TextAlign.Center
+            )
+        }
+
+        if (isBuyGoldDiceButtonReady) {
+            Button(onClick = { onBuyClick(Item.GoldDice) }) {
+                Text(
+                    text = stringResource(id = R.string.roll_game_golden_dice_buy_button) +
+                        (goldDicePrice?.let { " $it" } ?: ""),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     }
-  }
 }
 
 private fun convertedBetNumber(betNumber: String): String {
-  return if (betNumber.toIntOrNull() != null && betNumber.toInt() in 1..6) {
-    betNumber
-  } else {
-    ""
-  }
+    return if (betNumber.toIntOrNull() != null && betNumber.toInt() in 1..6) {
+        betNumber
+    } else {
+        ""
+    }
 }
 
 @Composable
-private fun GameDice(diceValue: Int, resultText: String) {
-  val diceImages = listOf(
-    GameR.drawable.dice_six_faces_one,
-    GameR.drawable.dice_six_faces_two,
-    GameR.drawable.dice_six_faces_three,
-    GameR.drawable.dice_six_faces_four,
-    GameR.drawable.dice_six_faces_five,
-    GameR.drawable.dice_six_faces_six,
-  )
-  Box(
-    modifier = Modifier.size(200.dp),
-    contentAlignment = Alignment.Center
-  ) {
-    Crossfade(
-      targetState = diceValue,
-      animationSpec = tween(1000),
-      label = "Dice roll crossfade"
-    ) { targetDiceValue ->
-      DiceImage(imageRes = diceImages[targetDiceValue - 1])
+private fun GameDice(diceValue: Int, resultText: String, viewModel: RollGameViewModel) {
+    val goldDiceSubscriptionActive by viewModel.goldDiceSubscriptionActive.collectAsStateWithLifecycle()
+    val diceImages = if (goldDiceSubscriptionActive == true) {
+        listOf(
+            GameR.drawable.golden_dice_six_faces_one,
+            GameR.drawable.golden_dice_six_faces_two,
+            GameR.drawable.golden_dice_six_faces_three,
+            GameR.drawable.golden_dice_six_faces_four,
+            GameR.drawable.golden_dice_six_faces_five,
+            GameR.drawable.golden_dice_six_faces_six,
+        )
+    } else {
+        listOf(
+            GameR.drawable.dice_six_faces_one,
+            GameR.drawable.dice_six_faces_two,
+            GameR.drawable.dice_six_faces_three,
+            GameR.drawable.dice_six_faces_four,
+            GameR.drawable.dice_six_faces_five,
+            GameR.drawable.dice_six_faces_six,
+        )
     }
-    if (resultText.isNotEmpty()) {
-      Text(
-        text = resultText,
-        fontSize = 18.sp,
-        color = MaterialTheme.colorScheme.onPrimary
-      )
+    Box(
+        modifier = Modifier.size(200.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Crossfade(
+            targetState = diceValue,
+            animationSpec = tween(1000),
+            label = "Dice roll crossfade"
+        ) { targetDiceValue ->
+            DiceImage(imageRes = diceImages[targetDiceValue - 1])
+        }
+        if (resultText.isNotEmpty()) {
+            Text(
+                text = resultText,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        }
     }
-  }
 }
 
 @Composable
 fun DiceImage(@DrawableRes imageRes: Int) {
-  val image = painterResource(imageRes)
-  Image(
-    painter = image,
-    contentDescription = "Dice Image",
-  )
+    val image = painterResource(imageRes)
+    Image(
+        painter = image,
+        contentDescription = "Dice Image",
+    )
 }
 
 @Preview
 @Composable
 fun PreviewDiceRollScreen() {
-  DiceRollTheme(darkTheme = true) {
-    RollGameContent(
-      attemptsLeft = 3,
-      onSaveDiceRoll = {},
-      onBuyClick = {},
-    )
-  }
+    DiceRollTheme(darkTheme = true) {
+        RollGameContent(
+            attemptsLeft = 3,
+            onSaveDiceRoll = {},
+            onBuyClick = {},
+        )
+    }
 }
