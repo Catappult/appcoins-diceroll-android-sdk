@@ -22,13 +22,16 @@
   <!-- Payments Screen -->
   <string name="payments_sku_error_body">The payment item is not available to buy</string>
   <string name="payments_attempts_error_body">You already have the maximum number of attempts available</string>
+  <string name="payments_golden_dice_error_body">You are already subscribed to the Golden Dice</string>
   <string name="payments_loading">Waiting for the payment to be completed…</string>
   <string name="payments_user_canceled_title">Payment Canceled</string>
   <string name="payments_user_canceled_body">During the process, the user canceled</string>
   <string name="payments_failed_title">Payment Failed</string>
-  <string name="payments_failed_body">The attempts was not given because there was a problem with the payment</string>
+  <string name="payments_attempts_failed_body">The attempts was not given because there was a problem with the payment</string>
+  <string name="payments_golden_dice_failed_body">The subscription for the Golden Dice failed because there was a problem with the payment</string>
   <string name="payments_success_title">Payment successful</string>
-  <string name="payments_success_body">You have now the maximum number of attempts, use it carefully</string>
+  <string name="payments_attempts_success_body">You have now the maximum number of attempts, use it carefully</string>
+  <string name="payments_golden_dice_success_body">You are now subscribed to the Golden Dice!</string>
 
   <!-- Stats Screen -->
   <string name="stats_win_percentage">Win %</string>
