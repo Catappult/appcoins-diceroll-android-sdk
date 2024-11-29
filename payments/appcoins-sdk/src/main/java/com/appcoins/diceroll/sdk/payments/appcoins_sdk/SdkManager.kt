@@ -297,20 +297,6 @@ interface SdkManager {
             for (purchase in purchases) {
                 _purchases.add(purchase)
                 validateAndConsumePurchase(purchase)
-                Log.i(
-                    LOG_TAG, "querySubs: purchase data:" +
-                        "\nsku: ${purchase.sku}" +
-                        "\nitemType: ${purchase.itemType}" +
-                        "\npackageName: ${purchase.packageName}" +
-                        "\ndeveloperPayload: ${purchase.developerPayload}" +
-                        "\npurchaseState: ${purchase.purchaseState}" +
-                        "\npurchaseTime: ${purchase.purchaseTime}" +
-                        "\ntoken: ${purchase.token}" +
-                        "\norderId: ${purchase.orderId}" +
-                        "\nsignature: ${purchase.signature}" +
-                        "\noriginalJson: ${purchase.originalJson}" +
-                        "\nisAutoRenewing: ${purchase.isAutoRenewing}"
-                )
             }
             if (purchases.find { it.sku == "golden_dice" } == null) {
                 processGoldenDiceSubscription(false)
