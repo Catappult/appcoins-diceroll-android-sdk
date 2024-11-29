@@ -46,7 +46,7 @@ fun PaymentProcessBottomSheetRoute(
             }
 
             is PaymentProcessUiState.StartPayment -> {
-                viewModel.launchInAppBillingSdkFlow(context)
+                viewModel.launchBillingSdkFlow(context)
             }
 
             is PaymentProcessUiState.PaymentInProgress -> {

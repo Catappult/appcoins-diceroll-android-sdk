@@ -15,6 +15,7 @@ import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.ResetAttemptsUs
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager
 import com.appcoins.sdk.billing.ResponseCode
 import com.appcoins.sdk.billing.listeners.PurchaseResponse
+import com.appcoins.sdk.billing.types.SkuType
 import com.appcoins.sdk.billing.types.SkuType.inapp
 import com.appcoins.sdk.billing.types.SkuType.subs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,11 +33,10 @@ class PaymentsViewModel @Inject constructor(
     private val resetAttemptsUseCase: ResetAttemptsUseCase,
     val savedStateHandle: SavedStateHandle,
     private val sdkManager: SdkManager,
-    getAttemptsUseCase: GetAttemptsUseCase,
+    private val getAttemptsUseCase: GetAttemptsUseCase,
 ) : ViewModel() {
 
     private val itemId = savedStateHandle.get<String>(DestinationArgs.ITEM_ID)
-    private val attempts by lazy { getAttemptsUseCase() }
 
     private val _paymentProcessState =
         MutableStateFlow<PaymentProcessUiState>(PaymentProcessUiState.Loading)
@@ -68,55 +69,40 @@ class PaymentsViewModel @Inject constructor(
         }
     }
 
-    fun launchInAppBillingSdkFlow(context: Context) {
+    fun launchBillingSdkFlow(context: Context) {
         _paymentProcessState.value = PaymentProcessUiState.PaymentInProgress
         _paymentResultState.value = PaymentsResultUiState.Loading
         observeSdkResult()
         sdkManager.startPayment(
             context,
             itemId.toString(),
-            inapp,
-            getDeveloperPayload(itemId)
-        )
-    }
-
-    fun launchSubBillingSdkFlow(context: Context) {
-        _paymentProcessState.value = PaymentProcessUiState.PaymentInProgress
-        _paymentResultState.value = PaymentsResultUiState.Loading
-        observeSdkResult()
-        sdkManager.startPayment(
-            context,
-            itemId.toString(),
-            subs,
+            getItemType(itemId),
             getDeveloperPayload(itemId)
         )
     }
 
     private fun setupAttemptsPaymentProcessState() {
-        CoroutineScope(Dispatchers.IO).launch {
-            when (attempts.firstOrNull()) {
-                null -> {
-                    _paymentProcessState.value = PaymentProcessUiState.Error
-                }
+        val attempts = runBlocking(Dispatchers.IO) { getAttemptsUseCase().firstOrNull() }
+        when (attempts) {
+            null -> {
+                _paymentProcessState.value = PaymentProcessUiState.Error
+            }
 
-                DEFAULT_ATTEMPTS_NUMBER -> {
-                    _paymentProcessState.value = PaymentProcessUiState.NotAvailable
-                }
+            DEFAULT_ATTEMPTS_NUMBER -> {
+                _paymentProcessState.value = PaymentProcessUiState.NotAvailable
+            }
 
-                else -> {
-                    _paymentProcessState.value = PaymentProcessUiState.StartPayment
-                }
+            else -> {
+                _paymentProcessState.value = PaymentProcessUiState.StartPayment
             }
         }
     }
 
     private fun setupGoldDicePaymentProcessState() {
-        CoroutineScope(Dispatchers.IO).launch {
-            if (sdkManager._goldDiceSubscriptionActive.value == true) {
-                _paymentProcessState.value = PaymentProcessUiState.NotAvailable
-            } else {
-                _paymentProcessState.value = PaymentProcessUiState.StartPayment
-            }
+        if (sdkManager._goldDiceSubscriptionActive.value == true) {
+            _paymentProcessState.value = PaymentProcessUiState.NotAvailable
+        } else {
+            _paymentProcessState.value = PaymentProcessUiState.StartPayment
         }
     }
 
@@ -138,6 +124,12 @@ class PaymentsViewModel @Inject constructor(
             Item.ATTEMPTS_SKU -> """{"user":"user12345","type":"inapp"}"""
             Item.GOLD_DICE_SKU -> """{"user":"user12345","type":"subs"}"""
             else -> null
+        }
+
+    private fun getItemType(itemId: String?): SkuType =
+        when (itemId) {
+            Item.GOLD_DICE_SKU -> subs
+            else -> inapp
         }
 
     private fun resetAttemptsLeft() {
