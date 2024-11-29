@@ -15,16 +15,14 @@ import com.appcoins.diceroll.sdk.core.ui.widgets.components.DiceRollBottomSheet
 import com.appcoins.diceroll.sdk.feature.payments.ui.result.PaymentsResult
 
 @Composable
-fun AttemptsPaymentProcessBottomSheetRoute(
+fun PaymentProcessBottomSheetRoute(
     onDismiss: () -> Unit,
     itemId: String,
-    attempts: String,
     viewModel: PaymentsViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current as Activity
 
     viewModel.savedStateHandle[DestinationArgs.ITEM_ID] = itemId
-    viewModel.savedStateHandle[DestinationArgs.ATTEMPTS_LEFT] = attempts
 
     val paymentProcessState by viewModel.paymentProcessState.collectAsStateWithLifecycle()
     val paymentResultState by viewModel.paymentResultState.collectAsStateWithLifecycle()
@@ -43,7 +41,7 @@ fun AttemptsPaymentProcessBottomSheetRoute(
 
             is PaymentProcessUiState.NotAvailable -> {
                 ErrorAnimation(
-                    bodyMessage = stringResource(R.string.payments_attempts_error_body)
+                    bodyMessage = stringResource(viewModel.getNotAvailableMessageForItem(itemId))
                 )
             }
 
@@ -55,53 +53,8 @@ fun AttemptsPaymentProcessBottomSheetRoute(
                 PaymentsResult(
                     itemId,
                     paymentResultState,
-                    viewModel::resetAttemptsLeft,
+                    viewModel::handlePaymentFinished,
                 )
-            }
-        }
-    }
-}
-
-@Composable
-fun GoldDicePaymentProcessBottomSheetRoute(
-    onDismiss: () -> Unit,
-    itemId: String,
-    viewModel: PaymentsViewModel = hiltViewModel()
-) {
-    val context = LocalContext.current as Activity
-
-    viewModel.savedStateHandle[DestinationArgs.ITEM_ID] = itemId
-
-    val paymentProcessState by viewModel.paymentProcessState.collectAsStateWithLifecycle()
-    val paymentResultState by viewModel.paymentResultState.collectAsStateWithLifecycle()
-
-    DiceRollBottomSheet(onDismiss) {
-        when (paymentProcessState) {
-            is PaymentProcessUiState.Loading -> {
-                LoadingAnimation()
-            }
-
-            is PaymentProcessUiState.Error -> {
-                ErrorAnimation(
-                    bodyMessage = stringResource(R.string.payments_sku_error_body)
-                )
-            }
-
-            is PaymentProcessUiState.NotAvailable -> {
-                ErrorAnimation(
-                    bodyMessage = stringResource(R.string.payments_golden_dice_error_body)
-                )
-            }
-
-            is PaymentProcessUiState.StartPayment -> {
-                viewModel.launchSubBillingSdkFlow(context)
-            }
-
-            is PaymentProcessUiState.PaymentInProgress -> {
-                PaymentsResult(
-                    itemId,
-                    paymentResultState,
-                ) {}
             }
         }
     }

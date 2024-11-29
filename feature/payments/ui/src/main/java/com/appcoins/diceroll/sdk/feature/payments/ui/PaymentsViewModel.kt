@@ -5,10 +5,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.appcoins.diceroll.sdk.core.navigation.destinations.DestinationArgs
+import com.appcoins.diceroll.sdk.core.ui.design.R
 import com.appcoins.diceroll.sdk.core.utils.PurchaseResultStream
 import com.appcoins.diceroll.sdk.core.utils.listen
 import com.appcoins.diceroll.sdk.feature.payments.ui.result.PaymentsResultUiState
 import com.appcoins.diceroll.sdk.feature.roll_game.data.DEFAULT_ATTEMPTS_NUMBER
+import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetAttemptsUseCase
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.ResetAttemptsUseCase
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager
 import com.appcoins.sdk.billing.ResponseCode
@@ -20,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,10 +31,11 @@ class PaymentsViewModel @Inject constructor(
     private val resetAttemptsUseCase: ResetAttemptsUseCase,
     val savedStateHandle: SavedStateHandle,
     private val sdkManager: SdkManager,
+    getAttemptsUseCase: GetAttemptsUseCase,
 ) : ViewModel() {
 
     private val itemId = savedStateHandle.get<String>(DestinationArgs.ITEM_ID)
-    private val attempts = savedStateHandle.get<String>(DestinationArgs.ATTEMPTS_LEFT)
+    private val attempts by lazy { getAttemptsUseCase() }
 
     private val _paymentProcessState =
         MutableStateFlow<PaymentProcessUiState>(PaymentProcessUiState.Loading)
@@ -52,8 +56,16 @@ class PaymentsViewModel @Inject constructor(
         }
     }
 
-    suspend fun resetAttemptsLeft() {
-        resetAttemptsUseCase()
+    fun getNotAvailableMessageForItem(itemId: String): Int =
+        when (itemId) {
+            Item.GOLD_DICE_SKU -> R.string.payments_golden_dice_error_body
+            else -> R.string.payments_attempts_error_body
+        }
+
+    fun handlePaymentFinished(itemId: String) {
+        when (itemId) {
+            Item.ATTEMPTS_SKU -> resetAttemptsLeft()
+        }
     }
 
     fun launchInAppBillingSdkFlow(context: Context) {
@@ -81,17 +93,19 @@ class PaymentsViewModel @Inject constructor(
     }
 
     private fun setupAttemptsPaymentProcessState() {
-        when (attempts) {
-            null -> {
-                _paymentProcessState.value = PaymentProcessUiState.Error
-            }
+        CoroutineScope(Dispatchers.IO).launch {
+            when (attempts.firstOrNull()) {
+                null -> {
+                    _paymentProcessState.value = PaymentProcessUiState.Error
+                }
 
-            DEFAULT_ATTEMPTS_NUMBER.toString() -> {
-                _paymentProcessState.value = PaymentProcessUiState.NotAvailable
-            }
+                DEFAULT_ATTEMPTS_NUMBER -> {
+                    _paymentProcessState.value = PaymentProcessUiState.NotAvailable
+                }
 
-            else -> {
-                _paymentProcessState.value = PaymentProcessUiState.StartPayment
+                else -> {
+                    _paymentProcessState.value = PaymentProcessUiState.StartPayment
+                }
             }
         }
     }
@@ -125,4 +139,10 @@ class PaymentsViewModel @Inject constructor(
             Item.GOLD_DICE_SKU -> """{"user":"user12345","type":"subs"}"""
             else -> null
         }
+
+    private fun resetAttemptsLeft() {
+        CoroutineScope(Dispatchers.IO).launch {
+            resetAttemptsUseCase()
+        }
+    }
 }

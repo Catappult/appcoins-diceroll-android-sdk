@@ -180,7 +180,7 @@ fun RollGameContent(
         val isBuyGoldDiceButtonReady = sdkSetupState && goldDicePrice != null
 
         Button(
-            onClick = { onBuyClick(Item.Attempts(attemptsLeft)) },
+            onClick = { onBuyClick(Item.Attempts) },
             enabled = isBuyAttemptsButtonReady
         ) {
             Text(

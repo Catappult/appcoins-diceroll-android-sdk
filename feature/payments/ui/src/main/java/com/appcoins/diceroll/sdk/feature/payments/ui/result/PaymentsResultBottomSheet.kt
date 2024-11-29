@@ -14,7 +14,7 @@ import com.appcoins.diceroll.sdk.feature.payments.ui.Item
 fun PaymentsResult(
     itemId: String,
     uiState: PaymentsResultUiState,
-    onPaymentSuccess: suspend () -> Unit,
+    onPaymentSuccess: suspend (String) -> Unit,
 ) {
     when (uiState) {
         is PaymentsResultUiState.Initialized -> {}
@@ -36,9 +36,9 @@ fun PaymentsResult(
 }
 
 @Composable
-fun SuccessContent(itemId: String, onPaymentSuccess: suspend () -> Unit) {
+fun SuccessContent(itemId: String, onPaymentSuccess: suspend (String) -> Unit) {
     LaunchedEffect(rememberCoroutineScope()) {
-        onPaymentSuccess()
+        onPaymentSuccess(itemId)
     }
     SuccessAnimation(
         titleMessage = stringResource(R.string.payments_success_title),
