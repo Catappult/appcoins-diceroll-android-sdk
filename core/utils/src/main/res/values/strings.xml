@@ -19,7 +19,6 @@
   <string name="roll_game_button">Roll Dice</string>
   <string name="roll_game_attempts_buy_button">Buy more attempts</string>
   <string name="roll_game_golden_dice_buy_button">Subscribe to Golden Dice for</string>
-  <string name="roll_game_golden_dice_buy_button_unavailable">You can\'t subscribe for the Golden Dice</string>
 
   <!-- Payments Screen -->
   <string name="payments_sdk_initializing">SDK connecting to Billing Service</string>

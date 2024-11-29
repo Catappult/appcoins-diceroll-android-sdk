@@ -195,22 +195,14 @@ fun RollGameContent(
             )
         }
 
-        Button(
-            onClick = { onBuyClick(Item.GoldDice) },
-            enabled = isBuyGoldDiceButtonReady
-        ) {
-            Text(
-                text =
-                if (isBuyGoldDiceButtonReady) {
-                    stringResource(id = R.string.roll_game_golden_dice_buy_button) +
-                        (goldDicePrice?.let { " $it" } ?: "")
-                } else if (sdkSetupState) {
-                    stringResource(id = R.string.roll_game_golden_dice_buy_button_unavailable)
-                } else {
-                    stringResource(id = R.string.payments_sdk_initializing)
-                },
-                textAlign = TextAlign.Center
-            )
+        if (isBuyGoldDiceButtonReady) {
+            Button(onClick = { onBuyClick(Item.GoldDice) }) {
+                Text(
+                    text = stringResource(id = R.string.roll_game_golden_dice_buy_button) +
+                        (goldDicePrice?.let { " $it" } ?: ""),
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }
