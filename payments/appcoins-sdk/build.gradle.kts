@@ -32,6 +32,7 @@ dependencies {
   projectImplementation(":core:network")
   projectImplementation(":core:utils")
   projectImplementation(":feature:roll-game:data")
+  projectImplementation(":feature:settings:data")
   implementation(libs.catappult.android.appcoins.billing)
   implementation(libs.bundles.network)
 }

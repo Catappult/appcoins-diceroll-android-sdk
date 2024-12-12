@@ -9,6 +9,7 @@ android {
 }
 
 dependencies {
+  projectImplementation(":feature:settings:data")
   projectImplementation(":core:utils")
   implementation(libs.bundles.network)
 }
