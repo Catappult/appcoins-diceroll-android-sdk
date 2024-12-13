@@ -21,19 +21,29 @@ class RTDNWebSocketClient @Inject constructor(
     }
 
     override fun onMessage(webSocket: WebSocket, text: String) {
-        super.onMessage(webSocket, text)
         Log.i(TAG, "onMessage: received message from RTDN Api -> $text")
         onMessageCallback(text)
+        super.onMessage(webSocket, text)
     }
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
+        Log.i(TAG, "onOpen: connection is completed, message:${response.message}")
         super.onOpen(webSocket, response)
-        Log.i(TAG, "onOpen: connection is completed")
+    }
+
+    override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+        Log.i(TAG, "onClosing: connection is being closed: reason:$reason")
+        super.onClosing(webSocket, code, reason)
+    }
+
+    override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+        Log.i(TAG, "onFailure: there was a failure, message:${response?.message}")
+        super.onFailure(webSocket, t, response)
     }
 
     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+        Log.i(TAG, "onClosed: connection is closed: reason:$reason")
         super.onClosed(webSocket, code, reason)
-        Log.i(TAG, "onClosed: connection is closed")
     }
 
     private companion object {

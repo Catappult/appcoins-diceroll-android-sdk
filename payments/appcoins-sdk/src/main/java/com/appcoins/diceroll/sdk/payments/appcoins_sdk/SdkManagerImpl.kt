@@ -1,6 +1,5 @@
 package com.appcoins.diceroll.sdk.payments.appcoins_sdk
 
-import android.app.AlertDialog
 import android.content.Context
 import android.util.Log
 import com.appcoins.diceroll.sdk.core.network.clients.RTDNWebSocketClient
@@ -8,6 +7,7 @@ import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceSt
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.UpdateGoldenDiceStatusUseCase
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager.Companion.LOG_TAG
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.data.respository.PurchaseValidatorRepository
+import com.appcoins.diceroll.sdk.payments.appcoins_sdk.usecases.ProcessMessageReceivedFromRTDNUseCase
 import com.appcoins.sdk.billing.AppcoinsBillingClient
 import com.appcoins.sdk.billing.Purchase
 import com.appcoins.sdk.billing.helpers.CatapultBillingAppCoinsFactory
@@ -38,6 +38,7 @@ class SdkManagerImpl @Inject constructor(
     val getGoldenDiceStatusUseCase: GetGoldenDiceStatusUseCase,
     val updateGoldenDiceStatusUseCase: UpdateGoldenDiceStatusUseCase,
     private val webSocketClient: RTDNWebSocketClient,
+    val processMessageReceivedFromRTDNUseCase: ProcessMessageReceivedFromRTDNUseCase
 ) : SdkManager {
 
     override lateinit var cab: AppcoinsBillingClient
@@ -92,10 +93,7 @@ class SdkManagerImpl @Inject constructor(
      */
     private val rtdnListener: (String) -> Unit
         get() = { message ->
-            AlertDialog.Builder(context).setMessage("Received new message from RTDN: $message")
-                .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
-                .create()
-                .show()
             Log.i(LOG_TAG, "Received RTDN message: $message")
+            processMessageReceivedFromRTDNUseCase(message)
         }
 }
