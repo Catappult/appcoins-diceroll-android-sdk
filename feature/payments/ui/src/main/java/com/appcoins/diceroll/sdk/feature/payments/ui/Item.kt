@@ -9,6 +9,6 @@ sealed class Item(open val sku: String) {
 
     companion object {
         const val ATTEMPTS_SKU = "attempts"
-        const val GOLD_DICE_SKU = "golden_dice"
+        const val GOLD_DICE_SKU = "daily_dice"
     }
 }
