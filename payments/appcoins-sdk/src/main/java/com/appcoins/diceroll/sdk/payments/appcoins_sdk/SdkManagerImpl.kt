@@ -117,7 +117,7 @@ class SdkManagerImpl @Inject constructor(
     }
 
     private fun processAttemptsPurchaseUpdate(jsonObject: JSONObject): String? =
-        if (jsonObject.optString("status") == "VOIDED") {
+        if (jsonObject.optString("status") == "EXPIRED") {
             "Your purchase for more Attempts was voided."
         } else {
             Log.i(LOG_TAG, "Status is not important for the Attempts purchase.")
@@ -125,7 +125,7 @@ class SdkManagerImpl @Inject constructor(
         }
 
     private fun processGoldenDiceSubscriptionUpdate(jsonObject: JSONObject): String? =
-        if (jsonObject.optString("status") == "VOIDED") {
+        if (jsonObject.optString("status") == "EXPIRED") {
             CoroutineScope(Dispatchers.IO).launch {
                 processGoldenDiceSubscription(false)
             }
