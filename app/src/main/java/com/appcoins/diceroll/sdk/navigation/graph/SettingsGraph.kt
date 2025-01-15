@@ -5,5 +5,5 @@ import androidx.navigation.NavHostController
 import com.appcoins.diceroll.sdk.feature.settings.ui.navigation.settingsRoute
 
 internal fun NavGraphBuilder.settingsGraph(navController: NavHostController) {
-  settingsRoute { navController.navigateUp() }
+    settingsRoute()
 }

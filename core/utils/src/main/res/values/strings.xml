@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="top_bar_title">Appcoins Dice Roll SDK</string>
   <string name="roll_game_title">Roll Game</string>
-  <string name="stats_title">Statistics</string>
+  <string name="store_title">Store</string>
   <string name="settings_title">Settings</string>
 
   <!-- Generic -->

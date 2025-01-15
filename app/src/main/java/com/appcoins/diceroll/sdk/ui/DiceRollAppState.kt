@@ -9,7 +9,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.appcoins.diceroll.sdk.core.navigation.destinations.Destinations
 import com.appcoins.diceroll.sdk.feature.roll_game.ui.navigation.navigateToRollGame
-import com.appcoins.diceroll.sdk.feature.stats.ui.navigation.navigateToStatsScreen
+import com.appcoins.diceroll.sdk.feature.settings.ui.navigation.navigateToSettingsScreen
+import com.appcoins.diceroll.sdk.feature.stats.ui.navigation.navigateToStoreScreen
 import com.appcoins.diceroll.sdk.navigation.TopLevelDestination
 import com.google.accompanist.navigation.material.BottomSheetNavigator
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
@@ -41,7 +42,8 @@ class DiceRollAppState @OptIn(ExperimentalMaterialNavigationApi::class) construc
   val currentTopLevelDestination: TopLevelDestination?
     @Composable get() = when (currentDestination?.route) {
       Destinations.Screen.RollGame.route -> TopLevelDestination.GAME
-      Destinations.Screen.Stats.route -> TopLevelDestination.STATS
+      Destinations.Screen.Store.route -> TopLevelDestination.STORE
+      Destinations.Screen.Settings.route -> TopLevelDestination.SETTINGS
       else -> null
     }
 
@@ -70,7 +72,8 @@ class DiceRollAppState @OptIn(ExperimentalMaterialNavigationApi::class) construc
     }
     when (topLevelDestination) {
       TopLevelDestination.GAME -> navController.navigateToRollGame(topLevelNavOptions)
-      TopLevelDestination.STATS -> navController.navigateToStatsScreen(topLevelNavOptions)
+      TopLevelDestination.STORE -> navController.navigateToStoreScreen(topLevelNavOptions)
+      TopLevelDestination.SETTINGS -> navController.navigateToSettingsScreen(topLevelNavOptions)
     }
   }
 }

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="top_bar_title">Appcoins Dice Roll SDK</string>
   <string name="roll_game_title">Roll Game</string>
-  <string name="stats_title">Statistics</string>
+  <string name="store_title">Store</string>
   <string name="settings_title">Settings</string>
 
   <!-- Generic -->
@@ -56,7 +55,7 @@
   <string name="cache_strategy">Use cache</string>
   <string name="cache_strategy_always">Always</string>
   <string name="cache_strategy_never">Never</string>
-  <string name="sdk_version_title">SDK Billing version:\n</string>
-  <string name="check_for_updates_title">We are always trying to improve our app, check if there are any updates available for you.</string>
+  <string name="sdk_version_title">SDK Billing version</string>
+  <string name="check_for_updates_title">We are always trying to improve our app!</string>
   <string name="check_for_updates_button">Check for updates</string>
 </resources>
