@@ -5,6 +5,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,30 +17,24 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -72,15 +67,23 @@ fun RollGameScreen(
     uiState: RollGameState,
     onBuyClick: (Item) -> Unit,
     onSaveDiceRoll: suspend (diceRoll: DiceRoll) -> Unit,
+    viewModel: RollGameViewModel = hiltViewModel(),
 ) {
     when (uiState) {
         is RollGameState.Loading -> {}
         is RollGameState.Error -> {}
         is RollGameState.Success -> {
+            val goldDiceSubscriptionActiveState by viewModel.goldDiceSubscriptionActive.collectAsStateWithLifecycle()
+            val sdkSetupState by viewModel.sdkConnectionState.collectAsStateWithLifecycle()
+            val attemptsPrice by viewModel.attemptsPrice.collectAsStateWithLifecycle()
+
             RollGameContent(
                 attemptsLeft = DEFAULT_ATTEMPTS_NUMBER,
                 onSaveDiceRoll = onSaveDiceRoll,
                 onBuyClick = onBuyClick,
+                goldDiceSubscriptionActiveState,
+                sdkSetupState,
+                attemptsPrice,
             )
         }
     }
@@ -91,19 +94,19 @@ fun RollGameContent(
     attemptsLeft: Int,
     onSaveDiceRoll: suspend (diceRoll: DiceRoll) -> Unit,
     onBuyClick: (Item) -> Unit,
-    viewModel: RollGameViewModel = hiltViewModel()
+    goldDiceSubscriptionActiveState: Boolean?,
+    sdkSetupState: Boolean,
+    attemptsPrice: String?
 ) {
     var diceValue by rememberSaveable { mutableIntStateOf(-1) }
-    var resultText by rememberSaveable { mutableStateOf(0) }
-    var betNumber by rememberSaveable { mutableStateOf("") }
+    var resultText by rememberSaveable { mutableIntStateOf(0) }
+    var betDice by rememberSaveable { mutableIntStateOf(0) }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val goldDiceSubscriptionActiveState by viewModel.goldDiceSubscriptionActive.collectAsStateWithLifecycle()
         GameDice(attemptsLeft, diceValue, resultText, goldDiceSubscriptionActiveState)
         Column(
             Modifier
@@ -112,35 +115,167 @@ fun RollGameContent(
         ) {
             Text(
                 text = stringResource(id = R.string.roll_game_info),
-                fontSize = 12.sp,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp),
             )
-            Row {
-                Card(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .weight(2f),
-                ) {
-                    TextField(
-                        value = betNumber,
-                        onValueChange = { newValue -> betNumber = convertedBetNumber(newValue) },
-                        label = { Text(stringResource(id = R.string.roll_game_guess_prompt)) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    )
-                }
+
+            if (resultText == 1) {
                 Button(
                     onClick = {
-                        if (attemptsLeft > 0 && betNumber.isNotEmpty()) {
-                            val bet = betNumber
+                        resultText = 0
+                    },
+                    Modifier.fillMaxWidth(),
+                ) {
+                    Text(text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.roll_game_again_button))
+                }
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        modifier = Modifier
+                            .weight(
+                                if (betDice == 1) {
+                                    1.2f
+                                } else {
+                                    1f
+                                }
+                            )
+                            .padding(4.dp)
+                            .clickable {
+                                betDice = 1
+                            },
+                        imageVector = if (betDice == 1) {
+                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_1_selected)
+                        } else {
+                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_1)
+                        },
+                        contentDescription = "Title",
+                    )
+                    Image(
+                        modifier = Modifier
+                            .weight(
+                                if (betDice == 2) {
+                                    1.2f
+                                } else {
+                                    1f
+                                }
+                            )
+                            .weight(1f)
+                            .padding(4.dp)
+                            .clickable {
+                                betDice = 2
+                            },
+                        imageVector = if (betDice == 2) {
+                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_2_selected)
+                        } else {
+                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_2)
+                        },
+                        contentDescription = "Title"
+                    )
+                    Image(
+                        modifier = Modifier
+                            .weight(
+                                if (betDice == 3) {
+                                    1.2f
+                                } else {
+                                    1f
+                                }
+                            )
+                            .weight(1f)
+                            .padding(4.dp)
+                            .clickable {
+                                betDice = 3
+                            },
+                        imageVector = if (betDice == 3) {
+                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_3_selected)
+                        } else {
+                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_3)
+                        },
+                        contentDescription = "Title"
+                    )
+                    Image(
+                        modifier = Modifier
+                            .weight(
+                                if (betDice == 4) {
+                                    1.2f
+                                } else {
+                                    1f
+                                }
+                            )
+                            .weight(1f)
+                            .padding(4.dp)
+                            .clickable {
+                                betDice = 4
+                            },
+                        imageVector = if (betDice == 4) {
+                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_4_selected)
+                        } else {
+                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_4)
+                        },
+                        contentDescription = "Title"
+                    )
+                    Image(
+                        modifier = Modifier
+                            .weight(
+                                if (betDice == 5) {
+                                    1.2f
+                                } else {
+                                    1f
+                                }
+                            )
+                            .weight(1f)
+                            .padding(4.dp)
+                            .clickable {
+                                betDice = 5
+                            },
+                        imageVector = if (betDice == 5) {
+                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_5_selected)
+                        } else {
+                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_5)
+                        },
+                        contentDescription = "Title"
+                    )
+                    Image(
+                        modifier = Modifier
+                            .weight(
+                                if (betDice == 6) {
+                                    1.2f
+                                } else {
+                                    1f
+                                }
+                            )
+                            .weight(1f)
+                            .padding(4.dp)
+                            .clickable {
+                                betDice = 6
+                            },
+                        imageVector = if (betDice == 6) {
+                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_6_selected)
+                        } else {
+                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_6)
+                        },
+                        contentDescription = "Title"
+                    )
+                }
+
+                Button(
+                    onClick = {
+                        if (attemptsLeft > 0 && betDice != 0) {
                             diceValue = Random.nextInt(1, 7)
-                            if (bet.toInt() == diceValue) {
+                            if (betDice == diceValue) {
                                 resultText = 1
                                 runBlocking {
                                     onSaveDiceRoll(
                                         DiceRoll(
                                             id = null,
-                                            rollWin = diceValue == betNumber.toInt(),
-                                            guessNumber = betNumber.toInt(),
+                                            rollWin = diceValue == betDice,
+                                            guessNumber = betDice,
                                             resultNumber = diceValue,
                                             attemptsLeft = DEFAULT_ATTEMPTS_NUMBER
                                         )
@@ -152,75 +287,48 @@ fun RollGameContent(
                                     onSaveDiceRoll(
                                         DiceRoll(
                                             id = null,
-                                            rollWin = diceValue == betNumber.toInt(),
-                                            guessNumber = betNumber.toInt(),
+                                            rollWin = diceValue == betDice,
+                                            guessNumber = betDice,
                                             resultNumber = diceValue,
-                                            attemptsLeft = 3
-
+                                            attemptsLeft = attemptsLeft - 1
                                         )
                                     )
                                 }
                             }
                         }
-                        betNumber = ""
+                        betDice = 0
                     },
-                    Modifier
-                        .weight(1f)
-                        .align(Alignment.CenterVertically),
-                    enabled = attemptsLeft > 0 && betNumber.isNotEmpty()
+                    Modifier.fillMaxWidth(),
+                    enabled = attemptsLeft > 0 && betDice != 0
                 ) {
                     Text(text = stringResource(id = R.string.roll_game_button))
                 }
             }
-            Text(
-                text = stringResource(id = R.string.roll_game_attempts_left) + " $attemptsLeft",
-                fontSize = 12.sp,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                textAlign = TextAlign.Center
-            )
+
         }
 
-        val sdkSetupState by viewModel.sdkConnectionState.collectAsStateWithLifecycle()
-
-        val attemptsPrice by viewModel.attemptsPrice.collectAsStateWithLifecycle()
         val isBuyAttemptsButtonReady = sdkSetupState && attemptsPrice != null
 
-        val goldDicePrice by viewModel.goldDicePrice.collectAsStateWithLifecycle()
-        val isBuyGoldDiceButtonReady = sdkSetupState && goldDicePrice != null
-
-        Button(
-            onClick = { onBuyClick(Item.Attempts) },
-            enabled = isBuyAttemptsButtonReady
-        ) {
-            Text(
-                text =
-                if (isBuyAttemptsButtonReady) {
-                    stringResource(id = R.string.roll_game_attempts_buy_button) +
-                        (attemptsPrice?.let { " $it" } ?: "")
-                } else {
-                    stringResource(id = R.string.payments_sdk_initializing)
-                },
-                textAlign = TextAlign.Center
-            )
-        }
-
-        if (isBuyGoldDiceButtonReady) {
-            Button(onClick = { onBuyClick(Item.GoldDice) }) {
-                Text(
-                    text = stringResource(id = R.string.roll_game_golden_dice_buy_button) +
-                        (goldDicePrice?.let { " $it" } ?: ""),
-                    textAlign = TextAlign.Center
-                )
+        Text(
+            modifier =
+            if (isBuyAttemptsButtonReady) {
+                Modifier.clickable { onBuyClick(Item.Attempts) }
+            } else {
+                Modifier
+            }.fillMaxWidth(),
+            text = if (isBuyAttemptsButtonReady) {
+                stringResource(id = R.string.roll_game_attempts_buy_button) +
+                    (attemptsPrice?.let { " $it" } ?: "")
+            } else {
+                stringResource(id = R.string.payments_sdk_initializing)
+            },
+            textAlign = TextAlign.Center,
+            color = if (isBuyAttemptsButtonReady) {
+                Color.Green
+            } else {
+                Color.Red
             }
-        }
-    }
-}
-
-private fun convertedBetNumber(betNumber: String): String {
-    return if (betNumber.toIntOrNull() != null && betNumber.toInt() in 1..6) {
-        betNumber
-    } else {
-        ""
+        )
     }
 }
 
@@ -365,7 +473,6 @@ private fun GameDice(
                 modifier = Modifier
                     .align(alignment = Alignment.BottomCenter)
                     .padding(0.dp, 0.dp, 0.dp, 12.dp)
-                    .shadow(12.dp)
             ) {
                 Box(
                     modifier = Modifier
@@ -391,7 +498,6 @@ private fun GameDice(
                     modifier = Modifier
                         .clip(shape = RoundedCornerShape(100.dp))
                         .background(Color.Red)
-                        .shadow(18.dp)
                 ) {
                     Text(
                         modifier = Modifier
@@ -445,13 +551,19 @@ fun DiceImage(@DrawableRes imageRes: Int) {
     )
 }
 
-@Preview
+@Preview(
+    showSystemUi = true,
+    // Use to test Landscape
+    //device = "spec:width=411dp,height=891dp,dpi=420,isRound=false,chinSize=0dp,orientation=landscape"
+)
 @Composable
 fun Preview() {
-    GameDice(
+    RollGameContent(
         attemptsLeft = 3,
-        diceValue = 0,
-        result = 0,
-        goldDiceSubscriptionActive = false,
+        onSaveDiceRoll = {},
+        onBuyClick = {},
+        goldDiceSubscriptionActiveState = false,
+        sdkSetupState = true,
+        attemptsPrice = "€ 1.0"
     )
 }
