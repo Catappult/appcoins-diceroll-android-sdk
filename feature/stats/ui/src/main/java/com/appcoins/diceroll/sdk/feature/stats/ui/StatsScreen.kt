@@ -1,6 +1,5 @@
 package com.appcoins.diceroll.sdk.feature.stats.ui
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,10 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
-import com.appcoins.diceroll.sdk.core.ui.widgets.LoadingAnimation
 import com.appcoins.diceroll.sdk.core.utils.R
 import com.appcoins.diceroll.sdk.core.utils.extensions.toPercent
 import com.appcoins.diceroll.sdk.feature.stats.data.model.DiceRoll
@@ -39,47 +35,18 @@ import com.github.tehras.charts.piechart.PieChartData
 import com.github.tehras.charts.piechart.renderer.SimpleSliceDrawer
 
 @Composable
-internal fun StatsRoute(
-    onDetailsClick: (List<DiceRoll>) -> Unit,
-    viewModel: RollGameViewModel = hiltViewModel(),
-) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    StatsScreen(uiState = uiState, onDetailsClick)
-}
-
-@Composable
-fun StatsScreen(
-    uiState: StatsUiState,
-    onDetailsClick: (List<DiceRoll>) -> Unit,
-) {
-    when (uiState) {
-        StatsUiState.Loading -> {
-            LoadingAnimation(stringResource(id = R.string.loading))
-        }
-
-        is StatsUiState.Success -> {
-            StatsContent(
-                diceRollList = uiState.diceRollList,
-                onDetailsClick = onDetailsClick
-            )
-        }
-    }
-}
-
-@Composable
-fun StatsContent(diceRollList: List<DiceRoll>, onDetailsClick: (List<DiceRoll>) -> Unit) {
-    StatsHeaderContent(diceRollList, onDetailsClick)
+fun StatsContent(diceRollList: List<DiceRoll>) {
+    StatsHeaderContent(diceRollList)
     if (diceRollList.isNotEmpty()) {
         StatsDonutCharts(diceRollList)
     }
 }
 
 @Composable
-fun StatsHeaderContent(diceRollList: List<DiceRoll>, onDetailsClick: (List<DiceRoll>) -> Unit) {
+fun StatsHeaderContent(diceRollList: List<DiceRoll>) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onDetailsClick(diceRollList) },
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Card(
@@ -246,8 +213,7 @@ private fun PreviewStatsContent() {
                 DiceRoll(1, true, 1, 1, 2),
                 DiceRoll(2, false, 1, 6, 2),
                 DiceRoll(3, false, 1, 4, 2),
-            ),
-            onDetailsClick = { }
+            )
         )
     }
 }

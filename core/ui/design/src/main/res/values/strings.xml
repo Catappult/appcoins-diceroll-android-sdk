@@ -33,6 +33,10 @@
   <string name="payments_attempts_success_body">You have now the maximum number of attempts, use it carefully</string>
   <string name="payments_golden_dice_success_body">You are now subscribed to the Golden Dice!</string>
 
+  <!-- Store Screen -->
+  <string name="store_screen_title">Want to take more advantage of the game?</string>
+  <string name="store_screen_description">Choose the items you wish to purchase:</string>
+
   <!-- Stats Screen -->
   <string name="stats_win_percentage">Win %</string>
   <string name="stats_games_played">Rolls played</string>

@@ -24,6 +24,7 @@ dependencies {
   projectImplementation(":feature:settings:data")
   projectImplementation(":feature:settings:ui")
   projectImplementation(":feature:stats:ui")
+  projectImplementation(":feature:store:ui")
   projectImplementation(":feature:roll-game:ui")
   projectImplementation(":feature:payments:ui")
   projectImplementation(":payments:appcoins-sdk")

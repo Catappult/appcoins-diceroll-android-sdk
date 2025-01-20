@@ -1,5 +1,7 @@
 package com.appcoins.diceroll.sdk.feature.settings.ui
 
+import android.content.Context
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,9 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -77,10 +81,9 @@ fun UserSettingsContent(
     settingsUiState: Success,
     viewModel: SettingsViewModel,
 ) {
-    val context = LocalContext.current
     ShowSDKInformation()
     GeneralSpacer()
-    ShowUpdateInformation { viewModel.launchAppUpdateDialog(context) }
+    ShowUpdateInformation { viewModel.launchAppUpdateDialog(it) }
     HorizontalDivider()
     SettingsPanel(
         userPrefs = settingsUiState.userPrefs,
@@ -96,15 +99,25 @@ fun SettingsContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
+            .padding(24.dp, 24.dp, 24.dp, 0.dp)
     ) {
-        UserSettingsContent(settingsUiState, viewModel)
-        HorizontalDivider()
-        StatsContent(
-            diceRollList = settingsUiState.diceRollList,
-            onDetailsClick = { }
+        Image(
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally),
+            imageVector = ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.drawable.ic_green_sdk_title),
+            contentDescription = "Title"
         )
+        Column(
+            modifier = Modifier
+                .padding(0.dp, 24.dp, 0.dp, 0.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            UserSettingsContent(settingsUiState, viewModel)
+            HorizontalDivider()
+            StatsContent(
+                diceRollList = settingsUiState.diceRollList
+            )
+        }
     }
 }
 
@@ -127,7 +140,7 @@ fun ShowSDKInformation() {
 }
 
 @Composable
-fun ShowUpdateInformation(onLaunchUpdateClick: () -> Unit) {
+fun ShowUpdateInformation(onLaunchUpdateClick: (Context) -> Unit) {
     Column {
         Text(
             text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.check_for_updates_title),
@@ -150,9 +163,10 @@ fun ShowUpdateInformation(onLaunchUpdateClick: () -> Unit) {
                     .weight(1f)
                     .fillMaxWidth()
             )
+            val context = LocalContext.current
             Button(
                 shape = ButtonDefaults.outlinedShape,
-                onClick = { onLaunchUpdateClick() },
+                onClick = { onLaunchUpdateClick(context) },
             ) {
                 Icon(
                     imageVector = arrowRight,
