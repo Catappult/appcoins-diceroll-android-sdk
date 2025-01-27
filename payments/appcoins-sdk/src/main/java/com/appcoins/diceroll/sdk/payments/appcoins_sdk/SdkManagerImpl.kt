@@ -3,6 +3,7 @@ package com.appcoins.diceroll.sdk.payments.appcoins_sdk
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.mutableStateListOf
 import com.appcoins.diceroll.sdk.core.network.clients.RTDNWebSocketClient
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceStatusUseCase
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.UpdateGoldenDiceStatusUseCase
@@ -10,6 +11,7 @@ import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager.Companion.LOG_
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.data.respository.PurchaseValidatorRepository
 import com.appcoins.sdk.billing.AppcoinsBillingClient
 import com.appcoins.sdk.billing.Purchase
+import com.appcoins.sdk.billing.SkuDetails
 import com.appcoins.sdk.billing.helpers.CatapultBillingAppCoinsFactory
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -50,6 +52,9 @@ class SdkManagerImpl @Inject constructor(
     override val _attemptsPrice: MutableStateFlow<String?> = MutableStateFlow(null)
 
     override val _goldDicePrice: MutableStateFlow<String?> = MutableStateFlow(null)
+
+    override val _purchasableItems: MutableList<SkuDetails> =
+        mutableStateListOf()
 
     override val _purchases: ArrayList<Purchase> = ArrayList()
 

@@ -10,6 +10,7 @@ import com.appcoins.sdk.billing.BillingFlowParams
 import com.appcoins.sdk.billing.Purchase
 import com.appcoins.sdk.billing.PurchasesUpdatedListener
 import com.appcoins.sdk.billing.ResponseCode
+import com.appcoins.sdk.billing.SkuDetails
 import com.appcoins.sdk.billing.SkuDetailsParams
 import com.appcoins.sdk.billing.listeners.AppCoinsBillingStateListener
 import com.appcoins.sdk.billing.listeners.ConsumeResponseListener
@@ -47,6 +48,8 @@ interface SdkManager {
     val _attemptsPrice: MutableStateFlow<String?>
 
     val _goldDicePrice: MutableStateFlow<String?>
+
+    val _purchasableItems: MutableList<SkuDetails>
 
     val _purchases: ArrayList<Purchase>
 
@@ -87,6 +90,7 @@ interface SdkManager {
                             _connectionState.value = false
                             _attemptsPrice.value = null
                             _goldDicePrice.value = null
+                            _purchasableItems.clear()
                         }
                     }
                 }
@@ -96,6 +100,7 @@ interface SdkManager {
                     _connectionState.value = false
                     _attemptsPrice.value = null
                     _goldDicePrice.value = null
+                    _purchasableItems.clear()
                 }
             }
 
@@ -192,6 +197,9 @@ interface SdkManager {
                         LOG_TAG,
                         "SkuDetailsResponseListener: item response ${responseCode.toResponseCode()}, sku $sku"
                     )
+                    if (_purchasableItems.find { it.sku == sku.sku } == null) {
+                        _purchasableItems.add(sku)
+                    }
                     if (sku.sku == "attempts") {
                         _attemptsPrice.value = sku.price
                     }

@@ -7,6 +7,7 @@ import androidx.navigation.NavOptions
 import com.appcoins.diceroll.sdk.core.navigation.buildDestinationRoute
 import com.appcoins.diceroll.sdk.core.navigation.destinations.Destinations
 import com.appcoins.diceroll.sdk.core.navigation.navigateToDestination
+import com.appcoins.diceroll.sdk.feature.payments.ui.Item
 import com.appcoins.diceroll.sdk.feature.store.ui.StoreRoute
 
 fun NavController.navigateToStoreScreen(navOptions: NavOptions) {
@@ -16,10 +17,10 @@ fun NavController.navigateToStoreScreen(navOptions: NavOptions) {
     )
 }
 
-fun NavGraphBuilder.storeRoute(navController: NavHostController) {
+fun NavGraphBuilder.storeRoute(onBuyClick: (Item) -> Unit) {
     this.buildDestinationRoute(
         destination = Destinations.Screen.Store,
     ) {
-        StoreRoute()
+        StoreRoute(onBuyClick)
     }
 }
