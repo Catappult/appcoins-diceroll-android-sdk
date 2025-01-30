@@ -8,7 +8,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import javax.inject.Inject
 
-class GetMessageFromRTNDResponseUseCase @Inject constructor() {
+class GetMessageFromRTDNResponseUseCase @Inject constructor() {
 
     operator fun invoke(message: String, onRemoveSubscription: (String) -> Unit): String? {
         try {
@@ -36,9 +36,6 @@ class GetMessageFromRTNDResponseUseCase @Inject constructor() {
             status.equals("refunded", true) ->
                 "Your purchase for more Attempts was refunded."
 
-            status.equals("charged-back", true) ->
-                "Your purchase for more Attempts was charged-back."
-
             else -> {
                 Log.i(LOG_TAG, "Status is not important for the Attempts purchase.")
                 null
@@ -56,21 +53,14 @@ class GetMessageFromRTNDResponseUseCase @Inject constructor() {
                 CoroutineScope(Dispatchers.IO).launch {
                     onRemoveSubscription("golden_dice")
                 }
-                "Your subscription for the Golden Dice was expired."
+                "Your subscription to the Golden Dice has expired."
             }
 
             status.equals("refunded", true) -> {
                 CoroutineScope(Dispatchers.IO).launch {
                     onRemoveSubscription("golden_dice")
                 }
-                "Your subscription for the Golden Dice was refunded."
-            }
-
-            status.equals("charged-back", true) -> {
-                CoroutineScope(Dispatchers.IO).launch {
-                    onRemoveSubscription("golden_dice")
-                }
-                "Your subscription for the Golden Dice was charged-back."
+                "Your subscription to the Golden Dice was refunded."
             }
 
             else -> {

@@ -28,7 +28,7 @@ class NotificationHandler @Inject constructor(
 
     fun showPurchaseNotification(message: String) {
         val notification = NotificationCompat.Builder(context, notificationChannelID)
-            .setContentTitle("Your Purchase has changed")
+            .setContentTitle("Your purchase status has been updated.")
             .setContentText(message)
             .setSmallIcon(R.drawable.ic_diceroll)
             .setPriority(NotificationManager.IMPORTANCE_HIGH)

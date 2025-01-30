@@ -7,7 +7,7 @@ import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceSt
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.UpdateGoldenDiceStatusUseCase
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.data.respository.PurchaseValidatorRepository
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.rtdn.RTDNMessageListenerImpl
-import com.appcoins.diceroll.sdk.payments.appcoins_sdk.usecases.GetMessageFromRTNDResponseUseCase
+import com.appcoins.diceroll.sdk.payments.appcoins_sdk.usecases.GetMessageFromRTDNResponseUseCase
 import com.appcoins.sdk.billing.AppcoinsBillingClient
 import com.appcoins.sdk.billing.Purchase
 import com.appcoins.sdk.billing.helpers.CatapultBillingAppCoinsFactory
@@ -35,7 +35,7 @@ class SdkManagerImpl @Inject constructor(
     @ApplicationContext
     val context: Context,
     purchaseValidatorRepository: PurchaseValidatorRepository,
-    getMessageFromRTNDResponseUseCase: GetMessageFromRTNDResponseUseCase,
+    getMessageFromRTDNResponseUseCase: GetMessageFromRTDNResponseUseCase,
     notificationHandler: NotificationHandler,
     private val webSocketClient: RTDNWebSocketClient,
     val getGoldenDiceStatusUseCase: GetGoldenDiceStatusUseCase,
@@ -66,7 +66,7 @@ class SdkManagerImpl @Inject constructor(
      */
     private val rtdnListener = RTDNMessageListenerImpl(
         notificationHandler,
-        getMessageFromRTNDResponseUseCase,
+        getMessageFromRTDNResponseUseCase,
         ::onRemoveSubscription
     )
 
