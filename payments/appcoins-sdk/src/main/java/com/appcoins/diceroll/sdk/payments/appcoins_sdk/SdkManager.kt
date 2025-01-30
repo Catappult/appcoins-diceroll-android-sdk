@@ -72,6 +72,7 @@ interface SdkManager {
                                 "AppCoinsBillingStateListener: AppCoins SDK Setup successful. Querying inventory."
                             )
                             _connectionState.value = true
+                            setupRTDNListener()
                             queryPurchases()
                             queryActiveSubscriptions()
                             queryInappsSkus(ArrayList(listOf("attempts")))
@@ -208,6 +209,11 @@ interface SdkManager {
     fun setupSdkConnection(context: Context)
 
     /**
+     * Method to start the Listener of the RTDN Api.
+     */
+    fun setupRTDNListener()
+
+    /**
      * Starts the payment flow for the given SKU.
      *
      * @param sku The SKU identifier for the in-app product.
@@ -296,7 +302,7 @@ interface SdkManager {
             val purchases = purchasesResult.purchases
             for (purchase in purchases) {
                 _purchases.add(purchase)
-                validateAndConsumePurchase(purchase)
+                validateAndConsumePurchase(purchase, true)
             }
             if (purchases.find { it.sku == "golden_dice" } == null) {
                 processGoldenDiceSubscription(false)
@@ -329,7 +335,7 @@ interface SdkManager {
             .isPurchaseValid(sku, token)
             .getOrDefault(false)
 
-    private companion object {
+    companion object {
         const val LOG_TAG = "SdkManager"
     }
 }

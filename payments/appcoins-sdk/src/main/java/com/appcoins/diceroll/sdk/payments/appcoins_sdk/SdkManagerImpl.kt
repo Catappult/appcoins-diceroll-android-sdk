@@ -1,12 +1,17 @@
 package com.appcoins.diceroll.sdk.payments.appcoins_sdk
 
 import android.content.Context
+import com.appcoins.diceroll.sdk.core.network.clients.rtdn.RTDNWebSocketClient
+import com.appcoins.diceroll.sdk.core.ui.notifications.NotificationHandler
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceStatusUseCase
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.UpdateGoldenDiceStatusUseCase
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.data.respository.PurchaseValidatorRepository
+import com.appcoins.diceroll.sdk.payments.appcoins_sdk.rtdn.RTDNMessageListenerImpl
+import com.appcoins.diceroll.sdk.payments.appcoins_sdk.usecases.GetMessageFromRTNDResponseUseCase
 import com.appcoins.sdk.billing.AppcoinsBillingClient
 import com.appcoins.sdk.billing.Purchase
 import com.appcoins.sdk.billing.helpers.CatapultBillingAppCoinsFactory
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +32,12 @@ import javax.inject.Inject
  *
  */
 class SdkManagerImpl @Inject constructor(
+    @ApplicationContext
+    val context: Context,
     purchaseValidatorRepository: PurchaseValidatorRepository,
+    getMessageFromRTNDResponseUseCase: GetMessageFromRTNDResponseUseCase,
+    notificationHandler: NotificationHandler,
+    private val webSocketClient: RTDNWebSocketClient,
     val getGoldenDiceStatusUseCase: GetGoldenDiceStatusUseCase,
     val updateGoldenDiceStatusUseCase: UpdateGoldenDiceStatusUseCase,
 ) : SdkManager {
@@ -49,6 +59,17 @@ class SdkManagerImpl @Inject constructor(
 
     private val BASE_64_ENCODED_PUBLIC_KEY = BuildConfig.CATAPPULT_PUBLIC_KEY
 
+    private var isRTDNConnectionEstablished = false
+
+    /**
+     * Listener for RTDN.
+     */
+    private val rtdnListener = RTDNMessageListenerImpl(
+        notificationHandler,
+        getMessageFromRTNDResponseUseCase,
+        ::onRemoveSubscription
+    )
+
     override fun setupSdkConnection(context: Context) {
         cab =
             CatapultBillingAppCoinsFactory.BuildAppcoinsBilling(
@@ -67,6 +88,19 @@ class SdkManagerImpl @Inject constructor(
         _goldDiceSubscriptionActive.value = active
         CoroutineScope(Dispatchers.IO).launch {
             updateGoldenDiceStatusUseCase(active)
+        }
+    }
+
+    override fun setupRTDNListener() {
+        if (!isRTDNConnectionEstablished) {
+            webSocketClient.connectToRTDNApi(rtdnListener)
+            isRTDNConnectionEstablished = true
+        }
+    }
+
+    private fun onRemoveSubscription(sku: String) {
+        when (sku) {
+            "golden_dice" -> processGoldenDiceSubscription(false)
         }
     }
 }

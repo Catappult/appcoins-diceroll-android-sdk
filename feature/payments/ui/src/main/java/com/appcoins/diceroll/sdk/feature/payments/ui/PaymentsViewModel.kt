@@ -12,6 +12,7 @@ import com.appcoins.diceroll.sdk.feature.payments.ui.result.PaymentsResultUiStat
 import com.appcoins.diceroll.sdk.feature.roll_game.data.DEFAULT_ATTEMPTS_NUMBER
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetAttemptsUseCase
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.ResetAttemptsUseCase
+import com.appcoins.diceroll.sdk.feature.settings.data.usecases.GetUserUseCase
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager
 import com.appcoins.sdk.billing.ResponseCode
 import com.appcoins.sdk.billing.listeners.PurchaseResponse
@@ -34,6 +35,7 @@ class PaymentsViewModel @Inject constructor(
     val savedStateHandle: SavedStateHandle,
     private val sdkManager: SdkManager,
     private val getAttemptsUseCase: GetAttemptsUseCase,
+    private val getUserUseCase: GetUserUseCase
 ) : ViewModel() {
 
     private val itemId = savedStateHandle.get<String>(DestinationArgs.ITEM_ID)
@@ -77,7 +79,7 @@ class PaymentsViewModel @Inject constructor(
             context,
             itemId.toString(),
             getItemType(itemId),
-            getDeveloperPayload(itemId)
+            getUserUseCase().uuid
         )
     }
 
@@ -118,13 +120,6 @@ class PaymentsViewModel @Inject constructor(
             }
         }
     }
-
-    private fun getDeveloperPayload(itemId: String?): String? =
-        when (itemId) {
-            Item.ATTEMPTS_SKU -> """{"user":"user12345","type":"inapp"}"""
-            Item.GOLD_DICE_SKU -> """{"user":"user12345","type":"subs"}"""
-            else -> null
-        }
 
     private fun getItemType(itemId: String?): SkuType =
         when (itemId) {
