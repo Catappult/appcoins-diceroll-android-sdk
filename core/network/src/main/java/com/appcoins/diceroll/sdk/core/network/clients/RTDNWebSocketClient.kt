@@ -36,14 +36,21 @@ class RTDNWebSocketClient @Inject constructor(
         super.onClosing(webSocket, code, reason)
     }
 
-    override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-        Log.i(TAG, "onFailure: there was a failure, message:${response?.message}")
-        super.onFailure(webSocket, t, response)
-    }
-
     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
         Log.i(TAG, "onClosed: connection is closed: reason:$reason")
         super.onClosed(webSocket, code, reason)
+    }
+
+    override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+        Log.i(TAG, "onFailure: there was a failure, message:${response?.message}")
+        super.onFailure(webSocket, t, response)
+        reconnect(webSocket)
+    }
+
+    private fun reconnect(webSocket: WebSocket) {
+        webSocket.cancel()
+        webSocket.close(1000, "Internally closed.")
+        connectToRTDNApi(onMessageCallback)
     }
 
     private companion object {
