@@ -2,7 +2,6 @@ package com.appcoins.diceroll.sdk.payments.appcoins_sdk
 
 import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
-import com.appcoins.diceroll.sdk.core.network.clients.RTDNWebSocketClient
 import com.appcoins.diceroll.sdk.core.network.clients.rtdn.RTDNWebSocketClient
 import com.appcoins.diceroll.sdk.core.ui.notifications.NotificationHandler
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceStatusUseCase
