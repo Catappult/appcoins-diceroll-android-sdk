@@ -79,7 +79,7 @@ interface SdkManager {
                             queryPurchases()
                             queryActiveSubscriptions()
                             queryInappsSkus(ArrayList(listOf("attempts")))
-                            querySubsSkus(ArrayList(listOf("daily_dice")))
+                            querySubsSkus(ArrayList(listOf("golden_dice")))
                         }
 
                         else -> {
@@ -203,7 +203,7 @@ interface SdkManager {
                     if (sku.sku == "attempts") {
                         _attemptsPrice.value = sku.price
                     }
-                    if (sku.sku == "daily_dice") {
+                    if (sku.sku == "golden_dice") {
                         _goldDicePrice.value = sku.price
                     }
                     // You can add these details to a list in order to update
@@ -289,7 +289,7 @@ interface SdkManager {
 
     private fun processPurchase(purchase: Purchase) {
         when (purchase.sku) {
-            "daily_dice" -> processGoldenDiceSubscription(true)
+            "golden_dice" -> processGoldenDiceSubscription(true)
         }
     }
 
@@ -312,7 +312,7 @@ interface SdkManager {
                 _purchases.add(purchase)
                 validateAndConsumePurchase(purchase, true)
             }
-            if (purchases.find { it.sku == "daily_dice" } == null) {
+            if (purchases.find { it.sku == "golden_dice" } == null) {
                 processGoldenDiceSubscription(false)
             }
         }

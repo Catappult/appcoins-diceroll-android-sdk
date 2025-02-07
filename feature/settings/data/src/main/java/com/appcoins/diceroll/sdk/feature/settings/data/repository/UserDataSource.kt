@@ -41,7 +41,7 @@ class UserDataSource @Inject constructor(
     }
 
     private fun generateAndSaveUUID(): String {
-        val uuid = "3ad61aa1-3111-468b-85a6-fe36d56785fe"//UUID.randomUUID().toString()
+        val uuid = UUID.randomUUID().toString()
         CoroutineScope(Dispatchers.IO).launch {
             saveUUID(uuid)
         }

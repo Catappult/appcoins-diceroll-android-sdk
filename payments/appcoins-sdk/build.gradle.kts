@@ -29,6 +29,7 @@ android {
 }
 
 dependencies {
+  projectImplementation(":core:ui:notifications")
   projectImplementation(":core:network")
   projectImplementation(":core:utils")
   projectImplementation(":feature:roll-game:data")
