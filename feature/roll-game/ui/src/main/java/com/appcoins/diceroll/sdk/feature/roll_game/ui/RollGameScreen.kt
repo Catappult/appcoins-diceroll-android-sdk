@@ -1,5 +1,6 @@
 package com.appcoins.diceroll.sdk.feature.roll_game.ui
 
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -24,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,9 +44,14 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.appcoins.diceroll.sdk.core.utils.R
+import com.appcoins.diceroll.sdk.core.utils.payments.PurchaseStateStream
+import com.appcoins.diceroll.sdk.core.utils.payments.models.PaymentState
 import com.appcoins.diceroll.sdk.feature.payments.ui.Item
 import com.appcoins.diceroll.sdk.feature.roll_game.data.DEFAULT_ATTEMPTS_NUMBER
 import com.appcoins.diceroll.sdk.feature.stats.data.model.DiceRoll
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.random.Random
 import com.appcoins.diceroll.sdk.feature.roll_game.ui.R as GameR
@@ -98,6 +105,7 @@ fun RollGameContent(
     sdkSetupState: Boolean,
     attemptsPrice: String?
 ) {
+    var paymentViewVisible by rememberSaveable { mutableStateOf(false) }
     var diceValue by rememberSaveable { mutableIntStateOf(-1) }
     var resultText by rememberSaveable { mutableIntStateOf(0) }
     var betDice by rememberSaveable { mutableIntStateOf(0) }
@@ -312,7 +320,13 @@ fun RollGameContent(
         Text(
             modifier =
             if (isBuyAttemptsButtonReady) {
-                Modifier.clickable { onBuyClick(Item.Attempts) }
+                Modifier.clickable {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        Log.i("SdkManager", "RollGameContent: PaymentLoading")
+                        PurchaseStateStream.publish(PaymentState.PaymentLoading)
+                    }
+                    // onBuyClick(Item.Attempts)
+                }
             } else {
                 Modifier
             }.fillMaxWidth(),
