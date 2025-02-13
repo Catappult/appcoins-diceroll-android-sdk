@@ -64,10 +64,10 @@ sealed class Item(
 
     companion object {
         const val ATTEMPTS_SKU = "attempts"
-        const val ATTEMPTS_SUCCESS_MESSAGE = "Purchase successful!\nYou have received 3 attempts."
+        const val ATTEMPTS_SUCCESS_MESSAGE = "You have received 3 attempts."
 
         const val GOLD_DICE_SKU = "golden_dice"
-        const val GOLD_DICE_SUCCESS_MESSAGE = "Purchase successful!\nYou have received 3 attempts."
+        const val GOLD_DICE_SUCCESS_MESSAGE = "You are now subscribed to the Golden Dice."
 
         fun fromSku(sku: String): Item =
             when (sku) {

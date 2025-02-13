@@ -7,7 +7,6 @@ import com.appcoins.diceroll.sdk.payments.appcoins_sdk.data.respository.Purchase
 import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentError
 import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentLoading
-import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentSuccess
 import com.appcoins.diceroll.sdk.payments.data.streams.PurchaseStateStream
 import com.appcoins.sdk.billing.AppcoinsBillingClient
 import com.appcoins.sdk.billing.BillingFlowParams
@@ -47,8 +46,6 @@ interface SdkManager {
 
     val _connectionState: MutableStateFlow<Boolean>
 
-    val _goldDiceSubscriptionActive: MutableStateFlow<Boolean?>
-
     val _attemptsPrice: MutableStateFlow<String?>
 
     val _goldDicePrice: MutableStateFlow<String?>
@@ -58,6 +55,26 @@ interface SdkManager {
     val _purchases: ArrayList<Purchase>
 
     val _purchaseValidatorRepository: PurchaseValidatorRepository
+
+    /**
+     * Method to start the Setup of the SDK.
+     */
+    fun setupSdkConnection(context: Context)
+
+    /**
+     * Method to start the Listener of the RTDN Api.
+     */
+    fun setupRTDNListener()
+
+    /**
+     * Process the result of a Purchase of type golden_dice
+     */
+    fun processSuccessfulPurchase(purchase: Purchase)
+
+    /**
+     * Process the result of a Purchase of type golden_dice
+     */
+    fun processExpiredPurchases(purchases: List<Purchase>)
 
     /**
      * Listener for AppCoins billing client state changes.
@@ -178,7 +195,6 @@ interface SdkManager {
     val consumeResponseListener: ConsumeResponseListener
         get() =
             ConsumeResponseListener { responseCode, purchaseToken ->
-                updateUIWithConsumeResult(responseCode, purchaseToken)
                 Log.d(
                     LOG_TAG,
                     "ConsumeResponseListener: Consumption finished. Purchase: $purchaseToken, result: $responseCode"
@@ -220,16 +236,6 @@ interface SdkManager {
             }
 
     /**
-     * Method to start the Setup of the SDK.
-     */
-    fun setupSdkConnection(context: Context)
-
-    /**
-     * Method to start the Listener of the RTDN Api.
-     */
-    fun setupRTDNListener()
-
-    /**
      * Starts the payment flow for the given SKU.
      *
      * @param sku The SKU identifier for the in-app product.
@@ -246,7 +252,7 @@ interface SdkManager {
             sku,
             skuType,
             null,
-            "{\"\$type\": 1362796452, \"storeInfo\": null, \"udid\": \"7f31799f-bf34-4430-897a-82f5e5d52e1e\"}",
+            developerPayload,
             "BDS"
         )
 
@@ -254,11 +260,6 @@ interface SdkManager {
             cab.launchBillingFlow(context as Activity, billingFlowParams)
         }
     }
-
-    /**
-     * Process the result of a Purchase of type golden_dice
-     */
-    fun processGoldenDiceSubscription(active: Boolean)
 
     fun launchAppUpdateDialog(context: Context) {
         cab.launchAppUpdateDialog(context)
@@ -274,30 +275,15 @@ interface SdkManager {
             if (isPurchaseValid) {
                 Log.i(LOG_TAG, "Purchase verified successfully from Server side.")
                 cab.consumeAsync(purchase.token, consumeResponseListener)
+                processSuccessfulPurchase(purchase)
             } else {
                 CoroutineScope(Job()).launch {
                     PurchaseStateStream.publish(
-                        PaymentError(Item.fromSku(purchase.sku), ResponseCode.ERROR)
+                        PaymentError(Item.fromSku(purchase.sku), ERROR)
                     )
                 }
                 Log.e(LOG_TAG, "There was an error verifying the Purchase on Server side.")
             }
-        }
-    }
-
-    private fun updateUIWithConsumeResult(responseCode: Int, purchaseToken: String) {
-        CoroutineScope(Job()).launch {
-            val purchase = _purchases.firstOrNull { it.token == purchaseToken }
-            if (purchase != null) {
-                processPurchase(purchase)
-                PurchaseStateStream.publish(PaymentSuccess(Item.fromSku(purchase.sku)))
-            }
-        }
-    }
-
-    private fun processPurchase(purchase: Purchase) {
-        when (purchase.sku) {
-            "golden_dice" -> processGoldenDiceSubscription(true)
         }
     }
 
@@ -320,9 +306,7 @@ interface SdkManager {
                 _purchases.add(purchase)
                 validateAndConsumePurchase(purchase, true)
             }
-            if (purchases.find { it.sku == "golden_dice" } == null) {
-                processGoldenDiceSubscription(false)
-            }
+            processExpiredPurchases(purchases)
         }
     }
 

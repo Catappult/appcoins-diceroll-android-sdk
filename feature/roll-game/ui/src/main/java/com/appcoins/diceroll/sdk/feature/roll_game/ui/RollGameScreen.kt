@@ -25,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -76,15 +75,14 @@ fun RollGameScreen(
         is RollGameState.Loading -> {}
         is RollGameState.Error -> {}
         is RollGameState.Success -> {
-            val goldDiceSubscriptionActiveState by viewModel.goldDiceSubscriptionActive.collectAsStateWithLifecycle()
             val sdkSetupState by viewModel.sdkConnectionState.collectAsStateWithLifecycle()
             val attemptsPrice by viewModel.attemptsPrice.collectAsStateWithLifecycle()
 
             RollGameContent(
                 attemptsLeft = uiState.attemptsLeft ?: DEFAULT_ATTEMPTS_NUMBER,
+                goldenDiceState = uiState.goldenDiceStatus,
                 onSaveDiceRoll = onSaveDiceRoll,
                 onBuyClick = onBuyClick,
-                goldDiceSubscriptionActiveState,
                 sdkSetupState,
                 attemptsPrice,
             )
@@ -95,15 +93,14 @@ fun RollGameScreen(
 @Composable
 fun RollGameContent(
     attemptsLeft: Int,
+    goldenDiceState: Boolean,
     onSaveDiceRoll: suspend (diceRoll: DiceRoll) -> Unit,
     onBuyClick: (Context, Item) -> Unit,
-    goldDiceSubscriptionActiveState: Boolean?,
     sdkSetupState: Boolean,
     attemptsPrice: String?
 ) {
-    var paymentViewVisible by rememberSaveable { mutableStateOf(false) }
     var diceValue by rememberSaveable { mutableIntStateOf(-1) }
-    var resultText by rememberSaveable { mutableIntStateOf(0) }
+    var resultValue by rememberSaveable { mutableIntStateOf(0) }
     var betDice by rememberSaveable { mutableIntStateOf(0) }
     val context = LocalContext.current
     Column(
@@ -112,7 +109,7 @@ fun RollGameContent(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        GameDice(attemptsLeft, diceValue, resultText, goldDiceSubscriptionActiveState)
+        GameDice(attemptsLeft, diceValue, resultValue, goldenDiceState)
         Column(
             Modifier
                 .fillMaxWidth()
@@ -125,10 +122,10 @@ fun RollGameContent(
                 modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp),
             )
 
-            if (resultText == 1) {
+            if (resultValue == 1) {
                 Button(
                     onClick = {
-                        resultText = 0
+                        resultValue = 0
                     },
                     Modifier.fillMaxWidth(),
                 ) {
@@ -274,7 +271,7 @@ fun RollGameContent(
                         if (attemptsLeft > 0 && betDice != 0) {
                             diceValue = Random.nextInt(1, 7)
                             if (betDice == diceValue) {
-                                resultText = 1
+                                resultValue = 1
                                 runBlocking {
                                     onSaveDiceRoll(
                                         DiceRoll(
@@ -282,12 +279,12 @@ fun RollGameContent(
                                             rollWin = diceValue == betDice,
                                             guessNumber = betDice,
                                             resultNumber = diceValue,
-                                            attemptsLeft = DEFAULT_ATTEMPTS_NUMBER
+                                            attemptsLeft = attemptsLeft - 1 + DEFAULT_ATTEMPTS_NUMBER
                                         )
                                     )
                                 }
                             } else {
-                                resultText = -1
+                                resultValue = -1
                                 runBlocking {
                                     onSaveDiceRoll(
                                         DiceRoll(
@@ -349,30 +346,19 @@ private fun GameDice(
     result: Int,
     goldDiceSubscriptionActive: Boolean?
 ) {
-    val baseDice =
-        if (goldDiceSubscriptionActive == true) {
-            GameR.drawable.ic_base_golden_dice
-        } else {
-            GameR.drawable.ic_base_dice
-        }
-    val diceImages = if (goldDiceSubscriptionActive == true) {
-        listOf(
-            GameR.drawable.ic_dice_1_golden,
-            GameR.drawable.ic_dice_2_golden,
-            GameR.drawable.ic_dice_3_golden,
-            GameR.drawable.ic_dice_4_golden,
-            GameR.drawable.ic_dice_5_golden,
-            GameR.drawable.ic_dice_6_golden,
-        )
+    val baseDice = GameR.drawable.ic_base_dice
+    val diceImages = listOf(
+        GameR.drawable.ic_dice_1,
+        GameR.drawable.ic_dice_2,
+        GameR.drawable.ic_dice_3,
+        GameR.drawable.ic_dice_4,
+        GameR.drawable.ic_dice_5,
+        GameR.drawable.ic_dice_6,
+    )
+    val baseColor = if (goldDiceSubscriptionActive == true) {
+        Color.Yellow
     } else {
-        listOf(
-            GameR.drawable.ic_dice_1,
-            GameR.drawable.ic_dice_2,
-            GameR.drawable.ic_dice_3,
-            GameR.drawable.ic_dice_4,
-            GameR.drawable.ic_dice_5,
-            GameR.drawable.ic_dice_6,
-        )
+        Color.Blue
     }
     Box(
         modifier = Modifier.fillMaxWidth()
@@ -386,7 +372,7 @@ private fun GameDice(
                 modifier = Modifier
                     .clip(shape = RoundedCornerShape(0.dp, 0.dp, 16.dp, 16.dp))
                     .height(300.dp)
-                    .background(Color.Blue)
+                    .background(baseColor)
                     .fillMaxWidth(),
             ) {
                 if (result == 1 || result == -1) {
@@ -487,7 +473,7 @@ private fun GameDice(
                 Box(
                     modifier = Modifier
                         .clip(shape = RoundedCornerShape(100.dp))
-                        .background(Color.Blue),
+                        .background(baseColor),
                 ) {
                     Text(
                         modifier = Modifier.padding(12.dp, 12.dp, 12.dp, 12.dp),
@@ -570,9 +556,9 @@ fun DiceImage(@DrawableRes imageRes: Int) {
 fun Preview() {
     RollGameContent(
         attemptsLeft = 3,
+        goldenDiceState = false,
         onSaveDiceRoll = {},
         onBuyClick = { context, item -> },
-        goldDiceSubscriptionActiveState = false,
         sdkSetupState = true,
         attemptsPrice = "€ 1.0"
     )
