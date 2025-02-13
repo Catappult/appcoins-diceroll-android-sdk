@@ -24,7 +24,6 @@ fun PaymentDialog(
     onDismissRequest: () -> Unit,
     content: @Composable ColumnScope.() -> Unit
 ) {
-
     Box(
         modifier = Modifier
             .fillMaxSize()

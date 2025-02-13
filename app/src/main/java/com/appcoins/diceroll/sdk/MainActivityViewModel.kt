@@ -4,11 +4,12 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.appcoins.diceroll.sdk.core.utils.listen
-import com.appcoins.diceroll.sdk.core.utils.payments.PurchaseStateStream
-import com.appcoins.diceroll.sdk.core.utils.payments.models.PaymentState
-import com.appcoins.diceroll.sdk.core.utils.payments.models.PaymentState.PaymentIdle
 import com.appcoins.diceroll.sdk.feature.settings.data.model.UserPrefs
 import com.appcoins.diceroll.sdk.feature.settings.data.repository.UserPrefsDataSource
+import com.appcoins.diceroll.sdk.payments.data.models.PaymentState
+import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentIdle
+import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentLoading
+import com.appcoins.diceroll.sdk.payments.data.streams.PurchaseStateStream
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,7 @@ class MainActivityViewModel @Inject constructor(
             PurchaseStateStream.listen<PaymentState>().collect {
                 Log.i("SdkManager", "observePaymentState: $it ")
                 pendingPaymentStates.add(it)
-                if (paymentState.value == PaymentIdle) {
+                if (paymentState.value == PaymentIdle || paymentState.value == PaymentLoading) {
                     popNewPaymentState()
                 }
             }

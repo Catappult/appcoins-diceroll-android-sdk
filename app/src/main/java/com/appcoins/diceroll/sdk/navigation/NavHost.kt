@@ -29,8 +29,8 @@ fun DiceRollNavHost(
             modifier = Modifier.padding(scaffoldPadding),
         ) {
             settingsGraph(navController)
-            storeGraph(navController)
-            rollGameGraph(navController)
+            storeGraph()
+            rollGameGraph()
         }
     }
 }

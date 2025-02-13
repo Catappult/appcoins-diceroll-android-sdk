@@ -1,12 +1,15 @@
 package com.appcoins.diceroll.sdk.feature.roll_game.ui
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetAttemptsUseCase
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.SaveAttemptsUseCase
+import com.appcoins.diceroll.sdk.feature.settings.data.usecases.GetUserUseCase
 import com.appcoins.diceroll.sdk.feature.stats.data.model.DiceRoll
 import com.appcoins.diceroll.sdk.feature.stats.data.usecases.SaveDiceRollUseCase
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager
+import com.appcoins.diceroll.sdk.payments.data.models.Item
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +22,7 @@ class RollGameViewModel @Inject constructor(
     private val saveDiceRollUseCase: SaveDiceRollUseCase,
     private val saveAttemptsUseCase: SaveAttemptsUseCase,
     private val sdkManager: SdkManager,
+    private val getUserUseCase: GetUserUseCase,
     getAttemptsUseCase: GetAttemptsUseCase,
 ) : ViewModel() {
 
@@ -42,5 +46,14 @@ class RollGameViewModel @Inject constructor(
 
     suspend fun saveDiceRoll(diceRoll: DiceRoll) {
         saveDiceRollUseCase(diceRoll).also { saveAttemptsUseCase(diceRoll.attemptsLeft) }
+    }
+
+    fun launchBillingSdkFlow(context: Context, item: Item) {
+        sdkManager.startPayment(
+            context,
+            item.sku,
+            item.type,
+            getUserUseCase().uuid
+        )
     }
 }

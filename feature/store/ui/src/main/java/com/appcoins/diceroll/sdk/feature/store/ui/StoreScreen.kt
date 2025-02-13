@@ -1,5 +1,6 @@
 package com.appcoins.diceroll.sdk.feature.store.ui
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,13 +31,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.appcoins.diceroll.sdk.core.ui.design.DiceRollIcons
-import com.appcoins.diceroll.sdk.feature.payments.ui.Item
+import com.appcoins.diceroll.sdk.payments.data.models.Item
+import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
 import com.appcoins.sdk.billing.SkuDetails
 import com.appcoins.sdk.billing.types.SkuType
 
 @Composable
 internal fun StoreRoute(
-    onBuyClick: (Item) -> Unit,
     storeViewModel: StoreViewModel = hiltViewModel()
 ) {
     val purchasableItemsList = storeViewModel.purchasableItems
@@ -68,7 +70,7 @@ internal fun StoreRoute(
                 modifier = Modifier.fillMaxHeight()
             ) {
                 items(purchasableItemsList) { sku ->
-                    PurchasableItem(sku, onBuyClick)
+                    PurchasableItem(sku, storeViewModel::launchBillingSdkFlow)
                 }
             }
         }
@@ -76,7 +78,7 @@ internal fun StoreRoute(
 }
 
 @Composable
-fun PurchasableItem(skuDetails: SkuDetails, onBuyClick: (Item) -> Unit) {
+fun PurchasableItem(skuDetails: SkuDetails, onBuyClick: (Context, Item) -> Unit) {
     when (skuDetails.itemType) {
         SkuType.inapp.name -> ConsumableItem(skuDetails = skuDetails, onBuyClick)
         SkuType.subs.name -> SubscriptionItem(skuDetails = skuDetails, onBuyClick)
@@ -89,7 +91,8 @@ fun NonConsumableItem(skuDetails: SkuDetails, onBuyClick: (Item) -> Unit) {
 }
 
 @Composable
-fun ConsumableItem(skuDetails: SkuDetails, onBuyClick: (Item) -> Unit) {
+fun ConsumableItem(skuDetails: SkuDetails, onBuyClick: (Context, Item) -> Unit) {
+    val context = LocalContext.current
     Row(
         modifier = Modifier
             .clip(shape = RoundedCornerShape(16.dp))
@@ -97,7 +100,7 @@ fun ConsumableItem(skuDetails: SkuDetails, onBuyClick: (Item) -> Unit) {
             .padding(16.dp)
             .clickable {
                 when (skuDetails.sku) {
-                    Item.ATTEMPTS_SKU -> onBuyClick(Item.Attempts)
+                    Item.ATTEMPTS_SKU -> onBuyClick(context, Item.Attempts)
                 }
             },
         verticalAlignment = Alignment.CenterVertically
@@ -125,7 +128,8 @@ fun ConsumableItem(skuDetails: SkuDetails, onBuyClick: (Item) -> Unit) {
 }
 
 @Composable
-fun SubscriptionItem(skuDetails: SkuDetails, onBuyClick: (Item) -> Unit) {
+fun SubscriptionItem(skuDetails: SkuDetails, onBuyClick: (Context, Item) -> Unit) {
+    val context = LocalContext.current
     Row(
         modifier = Modifier
             .clip(shape = RoundedCornerShape(16.dp))
@@ -133,7 +137,7 @@ fun SubscriptionItem(skuDetails: SkuDetails, onBuyClick: (Item) -> Unit) {
             .padding(16.dp)
             .clickable {
                 when (skuDetails.sku) {
-                    Item.GOLD_DICE_SKU -> onBuyClick(Item.GoldDice)
+                    Item.GOLD_DICE_SKU -> onBuyClick(context, GoldDice)
                 }
             },
         verticalAlignment = Alignment.CenterVertically
@@ -197,7 +201,7 @@ fun Preview() {
                 modifier = Modifier.fillMaxHeight()
             ) {
                 items(purchasableItemsList) { sku ->
-                    PurchasableItem(sku, { })
+                    PurchasableItem(sku) { _: Context, _: Item -> }
                 }
             }
         }

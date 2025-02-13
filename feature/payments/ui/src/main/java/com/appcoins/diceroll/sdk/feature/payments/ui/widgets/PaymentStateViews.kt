@@ -15,6 +15,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.appcoins.diceroll.sdk.core.ui.design.R
+import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.sdk.billing.ResponseCode
 
 @Composable
@@ -33,7 +34,7 @@ fun LoadingState() {
 }
 
 @Composable
-fun ErrorState(responseCode: ResponseCode, onDismiss: () -> Unit) {
+fun ErrorState(item: Item?, responseCode: ResponseCode, onDismiss: () -> Unit) {
     Image(
         modifier = Modifier.size(50.dp),
         painter = painterResource(id = R.drawable.diceroll_icon),
@@ -42,13 +43,13 @@ fun ErrorState(responseCode: ResponseCode, onDismiss: () -> Unit) {
     Text(
         modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp),
         textAlign = TextAlign.Center,
-        text = "Payment $responseCode",
+        text = item?.getErrorTitle(responseCode) ?: "Payment Failed",
         style = MaterialTheme.typography.bodyLarge
     )
     Text(
         modifier = Modifier.padding(0.dp, 8.dp, 0.dp, 0.dp),
         textAlign = TextAlign.Center,
-        text = "The user $responseCode",
+        text = item?.getErrorMessage(responseCode) ?: "There was an error with the Purchase.",
         style = MaterialTheme.typography.bodySmall
     )
     Button(
@@ -67,7 +68,7 @@ fun ErrorState(responseCode: ResponseCode, onDismiss: () -> Unit) {
 }
 
 @Composable
-fun SuccessState(sku: String, onDismiss: () -> Unit) {
+fun SuccessState(item: Item, onDismiss: () -> Unit) {
     Image(
         modifier = Modifier.size(50.dp),
         painter = painterResource(id = R.drawable.diceroll_icon),
@@ -82,7 +83,7 @@ fun SuccessState(sku: String, onDismiss: () -> Unit) {
     Text(
         modifier = Modifier.padding(0.dp, 8.dp, 0.dp, 0.dp),
         textAlign = TextAlign.Center,
-        text = "You received $sku.",
+        text = item.successPurchaseMessage,
         style = MaterialTheme.typography.bodySmall
     )
     Button(

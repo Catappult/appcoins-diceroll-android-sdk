@@ -3,18 +3,22 @@ package com.appcoins.diceroll.sdk.payments.appcoins_sdk
 import android.app.Activity
 import android.content.Context
 import android.util.Log
-import com.appcoins.diceroll.sdk.core.utils.PurchaseResultStream
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.data.respository.PurchaseValidatorRepository
+import com.appcoins.diceroll.sdk.payments.data.models.Item
+import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentError
+import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentLoading
+import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentSuccess
+import com.appcoins.diceroll.sdk.payments.data.streams.PurchaseStateStream
 import com.appcoins.sdk.billing.AppcoinsBillingClient
 import com.appcoins.sdk.billing.BillingFlowParams
 import com.appcoins.sdk.billing.Purchase
 import com.appcoins.sdk.billing.PurchasesUpdatedListener
 import com.appcoins.sdk.billing.ResponseCode
+import com.appcoins.sdk.billing.ResponseCode.ERROR
 import com.appcoins.sdk.billing.SkuDetails
 import com.appcoins.sdk.billing.SkuDetailsParams
 import com.appcoins.sdk.billing.listeners.AppCoinsBillingStateListener
 import com.appcoins.sdk.billing.listeners.ConsumeResponseListener
-import com.appcoins.sdk.billing.listeners.PurchaseResponse
 import com.appcoins.sdk.billing.listeners.SkuDetailsResponseListener
 import com.appcoins.sdk.billing.types.SkuType
 import kotlinx.coroutines.CoroutineScope
@@ -146,7 +150,11 @@ interface SdkManager {
 
                 else -> {
                     CoroutineScope(Job()).launch {
-                        PurchaseResultStream.publish(PurchaseResponse(responseCode, purchases))
+                        PurchaseStateStream.publish(
+                            PaymentError(
+                                null,
+                                ResponseCode.entries.find { it.value == responseCode } ?: ERROR)
+                        )
                     }
                     Log.d(
                         LOG_TAG,
@@ -230,12 +238,15 @@ interface SdkManager {
      * This will launch the Google Play billing flow. The result will be delivered
      * via the PurchasesUpdatedListener callback.
      */
-    fun startPayment(context: Context, sku: String, skuType: SkuType, developerPayload: String?) {
+    fun startPayment(context: Context, sku: String, skuType: String, developerPayload: String?) {
+        CoroutineScope(Job()).launch {
+            PurchaseStateStream.eventFlow.emit(PaymentLoading)
+        }
         val billingFlowParams = BillingFlowParams(
             sku,
-            skuType.toString(),
+            skuType,
             null,
-            developerPayload,
+            "{\"\$type\": 1362796452, \"storeInfo\": null, \"udid\": \"7f31799f-bf34-4430-897a-82f5e5d52e1e\"}",
             "BDS"
         )
 
@@ -265,11 +276,8 @@ interface SdkManager {
                 cab.consumeAsync(purchase.token, consumeResponseListener)
             } else {
                 CoroutineScope(Job()).launch {
-                    PurchaseResultStream.publish(
-                        PurchaseResponse(
-                            ResponseCode.ERROR.value,
-                            listOf(purchase)
-                        )
+                    PurchaseStateStream.publish(
+                        PaymentError(Item.fromSku(purchase.sku), ResponseCode.ERROR)
                     )
                 }
                 Log.e(LOG_TAG, "There was an error verifying the Purchase on Server side.")
@@ -282,7 +290,7 @@ interface SdkManager {
             val purchase = _purchases.firstOrNull { it.token == purchaseToken }
             if (purchase != null) {
                 processPurchase(purchase)
-                PurchaseResultStream.publish(PurchaseResponse(responseCode, listOf(purchase)))
+                PurchaseStateStream.publish(PaymentSuccess(Item.fromSku(purchase.sku)))
             }
         }
     }

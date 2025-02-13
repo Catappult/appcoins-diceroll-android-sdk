@@ -1,6 +1,6 @@
 package com.appcoins.diceroll.sdk.feature.roll_game.ui
 
-import android.util.Log
+import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -44,27 +45,22 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.appcoins.diceroll.sdk.core.utils.R
-import com.appcoins.diceroll.sdk.core.utils.payments.PurchaseStateStream
-import com.appcoins.diceroll.sdk.core.utils.payments.models.PaymentState
-import com.appcoins.diceroll.sdk.feature.payments.ui.Item
 import com.appcoins.diceroll.sdk.feature.roll_game.data.DEFAULT_ATTEMPTS_NUMBER
 import com.appcoins.diceroll.sdk.feature.stats.data.model.DiceRoll
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.appcoins.diceroll.sdk.payments.data.models.Item
+import com.appcoins.diceroll.sdk.payments.data.models.Item.Attempts
 import kotlinx.coroutines.runBlocking
 import kotlin.random.Random
 import com.appcoins.diceroll.sdk.feature.roll_game.ui.R as GameR
 
 @Composable
 internal fun RollGameRoute(
-    onBuyClick: (Item) -> Unit,
     viewModel: RollGameViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     RollGameScreen(
         uiState,
-        onBuyClick,
+        viewModel::launchBillingSdkFlow,
         viewModel::saveDiceRoll,
     )
 }
@@ -72,7 +68,7 @@ internal fun RollGameRoute(
 @Composable
 fun RollGameScreen(
     uiState: RollGameState,
-    onBuyClick: (Item) -> Unit,
+    onBuyClick: (Context, Item) -> Unit,
     onSaveDiceRoll: suspend (diceRoll: DiceRoll) -> Unit,
     viewModel: RollGameViewModel = hiltViewModel(),
 ) {
@@ -85,7 +81,7 @@ fun RollGameScreen(
             val attemptsPrice by viewModel.attemptsPrice.collectAsStateWithLifecycle()
 
             RollGameContent(
-                attemptsLeft = DEFAULT_ATTEMPTS_NUMBER,
+                attemptsLeft = uiState.attemptsLeft ?: DEFAULT_ATTEMPTS_NUMBER,
                 onSaveDiceRoll = onSaveDiceRoll,
                 onBuyClick = onBuyClick,
                 goldDiceSubscriptionActiveState,
@@ -100,7 +96,7 @@ fun RollGameScreen(
 fun RollGameContent(
     attemptsLeft: Int,
     onSaveDiceRoll: suspend (diceRoll: DiceRoll) -> Unit,
-    onBuyClick: (Item) -> Unit,
+    onBuyClick: (Context, Item) -> Unit,
     goldDiceSubscriptionActiveState: Boolean?,
     sdkSetupState: Boolean,
     attemptsPrice: String?
@@ -109,6 +105,7 @@ fun RollGameContent(
     var diceValue by rememberSaveable { mutableIntStateOf(-1) }
     var resultText by rememberSaveable { mutableIntStateOf(0) }
     var betDice by rememberSaveable { mutableIntStateOf(0) }
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -321,11 +318,10 @@ fun RollGameContent(
             modifier =
             if (isBuyAttemptsButtonReady) {
                 Modifier.clickable {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        Log.i("SdkManager", "RollGameContent: PaymentLoading")
-                        PurchaseStateStream.publish(PaymentState.PaymentLoading)
-                    }
-                    // onBuyClick(Item.Attempts)
+                    onBuyClick(
+                        context,
+                        Attempts
+                    )
                 }
             } else {
                 Modifier
@@ -575,7 +571,7 @@ fun Preview() {
     RollGameContent(
         attemptsLeft = 3,
         onSaveDiceRoll = {},
-        onBuyClick = {},
+        onBuyClick = { context, item -> },
         goldDiceSubscriptionActiveState = false,
         sdkSetupState = true,
         attemptsPrice = "€ 1.0"
