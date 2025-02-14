@@ -46,6 +46,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
 import com.appcoins.diceroll.sdk.core.utils.R
+import com.appcoins.diceroll.sdk.core.utils.tuples.Quadruple
 import com.appcoins.diceroll.sdk.feature.roll_game.data.DEFAULT_ATTEMPTS_NUMBER
 import com.appcoins.diceroll.sdk.feature.stats.data.model.DiceRoll
 import com.appcoins.diceroll.sdk.payments.data.models.Item
@@ -353,27 +354,37 @@ private fun GameDice(
     result: Int,
     goldenDiceActive: Boolean
 ) {
-    val baseDice = GameR.drawable.ic_base_dice
-    val diceImages = listOf(
-        GameR.drawable.ic_dice_1,
-        GameR.drawable.ic_dice_2,
-        GameR.drawable.ic_dice_3,
-        GameR.drawable.ic_dice_4,
-        GameR.drawable.ic_dice_5,
-        GameR.drawable.ic_dice_6,
-    )
-    val radiantImage =
+    val (baseDice, diceImages, radiantImage, titleImage) =
         if (goldenDiceActive) {
-            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_radiant_shadows_1)
+            Quadruple(
+                GameR.drawable.ic_base_golden_dice,
+                listOf(
+                    GameR.drawable.ic_dice_1_golden,
+                    GameR.drawable.ic_dice_2_golden,
+                    GameR.drawable.ic_dice_3_golden,
+                    GameR.drawable.ic_dice_4_golden,
+                    GameR.drawable.ic_dice_5_golden,
+                    GameR.drawable.ic_dice_6_golden,
+                ),
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_radiant_shadows),
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_dice_sdk_title)
+            )
         } else {
-            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.radiant_shadows_1)
+            Quadruple(
+                GameR.drawable.ic_base_dice,
+                listOf(
+                    GameR.drawable.ic_dice_1_blue,
+                    GameR.drawable.ic_dice_2_blue,
+                    GameR.drawable.ic_dice_3_blue,
+                    GameR.drawable.ic_dice_4_blue,
+                    GameR.drawable.ic_dice_5_blue,
+                    GameR.drawable.ic_dice_6_blue,
+                ),
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_radiant_shadows),
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_green_sdk_title)
+            )
         }
-    val titleImage =
-        if (goldenDiceActive) {
-            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_dice_sdk_title)
-        } else {
-            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_green_sdk_title)
-        }
+
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -502,13 +513,13 @@ private fun GameDice(
             Column(
                 modifier = Modifier
                     .align(alignment = Alignment.BottomCenter)
-                    .padding(0.dp, 0.dp, 0.dp, 4.dp)
+                    .padding(0.dp, 0.dp, 0.dp, 8.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .shadow(20.dp, RoundedCornerShape(100))
                         .clip(shape = RoundedCornerShape(100.dp))
-                        .background(Color.Red)
+                        .background(MaterialTheme.colorScheme.error)
                 ) {
                     Text(
                         modifier = Modifier
