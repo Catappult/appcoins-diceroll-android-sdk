@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +28,10 @@ fun PaymentDialog(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Gray.copy(alpha = 0.8F), RectangleShape)
+            .background(
+                MaterialTheme.colorScheme.background.copy(alpha = 0.8F),
+                RectangleShape
+            )
             .clickable { onDismissRequest() },
         contentAlignment = Alignment.Center
     ) {
@@ -36,7 +40,7 @@ fun PaymentDialog(
                 .fillMaxWidth()
                 .padding(24.dp, 0.dp, 24.dp, 0.dp)
                 .clip(shape = RoundedCornerShape(24.dp, 24.dp, 24.dp, 24.dp))
-                .background(Color.DarkGray)
+                .background(MaterialTheme.colorScheme.primaryContainer)
                 .wrapContentHeight(),
         ) {
             Column(

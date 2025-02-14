@@ -13,10 +13,10 @@
                 android:tileMode="clamp"
                 android:type="radial">
                 <item
-                    android:color="#75FBA8"
+                    android:color="#ffffff"
                     android:offset="0.1" />
                 <item
-                    android:color="#4D5E47D4"
+                    android:color="#00ffffff"
                     android:offset="1" />
             </gradient>
         </aapt:attr>

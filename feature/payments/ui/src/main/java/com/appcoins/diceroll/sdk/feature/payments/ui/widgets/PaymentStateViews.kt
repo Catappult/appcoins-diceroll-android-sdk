@@ -12,10 +12,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.appcoins.diceroll.sdk.core.ui.design.R
 import com.appcoins.diceroll.sdk.payments.data.models.Item
+import com.appcoins.diceroll.sdk.payments.data.models.Item.Companion.getGeneralErrorMessage
+import com.appcoins.diceroll.sdk.payments.data.models.Item.Companion.getGeneralErrorTitle
 import com.appcoins.sdk.billing.ResponseCode
 
 @Composable
@@ -29,7 +33,9 @@ fun LoadingState() {
         modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp),
         textAlign = TextAlign.Center,
         text = "Waiting for the payment to be completed...",
-        style = MaterialTheme.typography.bodyLarge
+        color = MaterialTheme.colorScheme.onPrimary,
+        fontWeight = FontWeight.Bold,
+        fontSize = 16.sp
     )
 }
 
@@ -37,20 +43,23 @@ fun LoadingState() {
 fun ErrorState(item: Item?, responseCode: ResponseCode, onDismiss: () -> Unit) {
     Image(
         modifier = Modifier.size(50.dp),
-        painter = painterResource(id = R.drawable.diceroll_icon),
+        painter = painterResource(id = com.appcoins.diceroll.sdk.feature.payments.ui.R.drawable.ic_error),
         contentDescription = null,
     )
     Text(
         modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp),
         textAlign = TextAlign.Center,
-        text = item?.getErrorTitle(responseCode) ?: "Payment Failed",
-        style = MaterialTheme.typography.bodyLarge
+        text = getGeneralErrorTitle(item, responseCode),
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onPrimary,
+        fontSize = 16.sp
     )
     Text(
         modifier = Modifier.padding(0.dp, 8.dp, 0.dp, 0.dp),
         textAlign = TextAlign.Center,
-        text = item?.getErrorMessage(responseCode) ?: "There was an error with the Purchase.",
-        style = MaterialTheme.typography.bodySmall
+        text = getGeneralErrorMessage(item, responseCode),
+        color = MaterialTheme.colorScheme.onPrimary,
+        fontSize = 14.sp
     )
     Button(
         modifier = Modifier
@@ -62,7 +71,9 @@ fun ErrorState(item: Item?, responseCode: ResponseCode, onDismiss: () -> Unit) {
         Text(
             textAlign = TextAlign.Center,
             text = "OK",
-            style = MaterialTheme.typography.bodySmall
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.background
         )
     }
 }
@@ -71,20 +82,23 @@ fun ErrorState(item: Item?, responseCode: ResponseCode, onDismiss: () -> Unit) {
 fun SuccessState(item: Item, onDismiss: () -> Unit) {
     Image(
         modifier = Modifier.size(50.dp),
-        painter = painterResource(id = R.drawable.diceroll_icon),
+        painter = painterResource(id = com.appcoins.diceroll.sdk.feature.payments.ui.R.drawable.ic_success),
         contentDescription = null,
     )
     Text(
         modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp),
         textAlign = TextAlign.Center,
         text = "Success!",
-        style = MaterialTheme.typography.bodyLarge
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onPrimary,
+        fontSize = 16.sp
     )
     Text(
         modifier = Modifier.padding(0.dp, 8.dp, 0.dp, 0.dp),
         textAlign = TextAlign.Center,
         text = item.successPurchaseMessage,
-        style = MaterialTheme.typography.bodySmall
+        color = MaterialTheme.colorScheme.onPrimary,
+        fontSize = 14.sp
     )
     Button(
         modifier = Modifier
@@ -96,7 +110,9 @@ fun SuccessState(item: Item, onDismiss: () -> Unit) {
         Text(
             textAlign = TextAlign.Center,
             text = "OK",
-            style = MaterialTheme.typography.bodySmall
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.background
         )
     }
 }

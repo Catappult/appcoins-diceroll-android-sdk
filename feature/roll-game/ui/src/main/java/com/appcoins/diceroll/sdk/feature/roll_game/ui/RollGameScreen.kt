@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
 import com.appcoins.diceroll.sdk.core.utils.R
 import com.appcoins.diceroll.sdk.feature.roll_game.data.DEFAULT_ATTEMPTS_NUMBER
 import com.appcoins.diceroll.sdk.feature.stats.data.model.DiceRoll
@@ -80,7 +82,7 @@ fun RollGameScreen(
 
             RollGameContent(
                 attemptsLeft = uiState.attemptsLeft ?: DEFAULT_ATTEMPTS_NUMBER,
-                goldenDiceState = uiState.goldenDiceStatus,
+                goldenDiceActive = uiState.goldenDiceStatus,
                 onSaveDiceRoll = onSaveDiceRoll,
                 onBuyClick = onBuyClick,
                 sdkSetupState,
@@ -93,7 +95,7 @@ fun RollGameScreen(
 @Composable
 fun RollGameContent(
     attemptsLeft: Int,
-    goldenDiceState: Boolean,
+    goldenDiceActive: Boolean,
     onSaveDiceRoll: suspend (diceRoll: DiceRoll) -> Unit,
     onBuyClick: (Context, Item) -> Unit,
     sdkSetupState: Boolean,
@@ -109,7 +111,7 @@ fun RollGameContent(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        GameDice(attemptsLeft, diceValue, resultValue, goldenDiceState)
+        GameDice(attemptsLeft, diceValue, resultValue, goldenDiceActive)
         Column(
             Modifier
                 .fillMaxWidth()
@@ -303,7 +305,10 @@ fun RollGameContent(
                     Modifier.fillMaxWidth(),
                     enabled = attemptsLeft > 0 && betDice != 0
                 ) {
-                    Text(text = stringResource(id = R.string.roll_game_button))
+                    Text(
+                        text = stringResource(id = R.string.roll_game_button),
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 
@@ -329,12 +334,14 @@ fun RollGameContent(
             } else {
                 stringResource(id = R.string.payments_sdk_initializing)
             },
+            fontSize = 12.sp,
             textAlign = TextAlign.Center,
             color = if (isBuyAttemptsButtonReady) {
-                Color.Green
+                MaterialTheme.colorScheme.primary
             } else {
-                Color.Red
-            }
+                MaterialTheme.colorScheme.onPrimary
+            },
+            fontWeight = FontWeight.Bold
         )
     }
 }
@@ -344,7 +351,7 @@ private fun GameDice(
     attemptsLeft: Int,
     diceValue: Int,
     result: Int,
-    goldDiceSubscriptionActive: Boolean?
+    goldenDiceActive: Boolean
 ) {
     val baseDice = GameR.drawable.ic_base_dice
     val diceImages = listOf(
@@ -355,11 +362,18 @@ private fun GameDice(
         GameR.drawable.ic_dice_5,
         GameR.drawable.ic_dice_6,
     )
-    val baseColor = if (goldDiceSubscriptionActive == true) {
-        Color.Yellow
-    } else {
-        Color.Blue
-    }
+    val radiantImage =
+        if (goldenDiceActive) {
+            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_radiant_shadows_1)
+        } else {
+            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.radiant_shadows_1)
+        }
+    val titleImage =
+        if (goldenDiceActive) {
+            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_dice_sdk_title)
+        } else {
+            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_green_sdk_title)
+        }
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -372,16 +386,14 @@ private fun GameDice(
                 modifier = Modifier
                     .clip(shape = RoundedCornerShape(0.dp, 0.dp, 16.dp, 16.dp))
                     .height(300.dp)
-                    .background(baseColor)
+                    .background(MaterialTheme.colorScheme.tertiary)
                     .fillMaxWidth(),
             ) {
                 if (result == 1 || result == -1) {
                     Image(
-                        imageVector = ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_radiant_shadows),
+                        imageVector = radiantImage,
                         contentDescription = "Diceroll Winning shadows",
-                        Modifier
-                            .height(300.dp)
-                            .fillMaxWidth()
+                        Modifier.fillMaxWidth()
                     )
                 }
                 Column {
@@ -389,7 +401,7 @@ private fun GameDice(
                         modifier = Modifier
                             .padding(0.dp, 24.dp, 0.dp, 0.dp)
                             .align(Alignment.CenterHorizontally),
-                        imageVector = ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_green_sdk_title),
+                        imageVector = titleImage,
                         contentDescription = "Title"
                     )
                     Box(
@@ -472,14 +484,16 @@ private fun GameDice(
             ) {
                 Box(
                     modifier = Modifier
+                        .shadow(20.dp, RoundedCornerShape(100))
                         .clip(shape = RoundedCornerShape(100.dp))
-                        .background(baseColor),
+                        .background(MaterialTheme.colorScheme.tertiary),
                 ) {
                     Text(
-                        modifier = Modifier.padding(12.dp, 12.dp, 12.dp, 12.dp),
+                        modifier = Modifier.padding(24.dp, 12.dp, 24.dp, 12.dp),
                         text = "attempts left: $attemptsLeft",
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onPrimary
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                 }
             }
@@ -492,25 +506,28 @@ private fun GameDice(
             ) {
                 Column(
                     modifier = Modifier
+                        .shadow(20.dp, RoundedCornerShape(100))
                         .clip(shape = RoundedCornerShape(100.dp))
                         .background(Color.Red)
                 ) {
                     Text(
                         modifier = Modifier
                             .align(alignment = Alignment.CenterHorizontally)
-                            .padding(12.dp, 6.dp, 12.dp, 0.dp),
+                            .padding(24.dp, 6.dp, 24.dp, 0.dp),
                         text = "YOU FAIL!",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onPrimary
+                        fontSize = 14.sp,
+                        lineHeight = 10.sp,
+                        color = Color.White
                     )
                     Text(
                         modifier = Modifier
                             .align(alignment = Alignment.CenterHorizontally)
-                            .padding(12.dp, 0.dp, 12.dp, 12.dp),
+                            .padding(24.dp, 0.dp, 24.dp, 6.dp),
                         text = "attempts left: $attemptsLeft",
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onPrimary
+                        fontSize = 12.sp,
+                        lineHeight = 10.sp,
+                        color = Color.White
                     )
                 }
             }
@@ -523,14 +540,16 @@ private fun GameDice(
             ) {
                 Box(
                     modifier = Modifier
+                        .shadow(20.dp, RoundedCornerShape(100))
                         .clip(shape = RoundedCornerShape(100.dp))
                         .background(Color.White),
                 ) {
                     Text(
-                        modifier = Modifier.padding(12.dp, 12.dp, 12.dp, 12.dp),
+                        modifier = Modifier.padding(24.dp, 12.dp, 24.dp, 12.dp),
                         text = "YOU WON!",
                         fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.secondary
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.background
                     )
                 }
             }
@@ -554,12 +573,14 @@ fun DiceImage(@DrawableRes imageRes: Int) {
 )
 @Composable
 fun Preview() {
-    RollGameContent(
-        attemptsLeft = 3,
-        goldenDiceState = false,
-        onSaveDiceRoll = {},
-        onBuyClick = { context, item -> },
-        sdkSetupState = true,
-        attemptsPrice = "€ 1.0"
-    )
+    DiceRollTheme(darkTheme = true, goldenDiceTheme = true) {
+        RollGameContent(
+            attemptsLeft = 3,
+            goldenDiceActive = true,
+            onSaveDiceRoll = {},
+            onBuyClick = { context, item -> },
+            sdkSetupState = true,
+            attemptsPrice = "€ 1.0"
+        )
+    }
 }

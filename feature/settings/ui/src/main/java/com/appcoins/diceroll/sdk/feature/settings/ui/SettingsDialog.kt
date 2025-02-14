@@ -2,6 +2,9 @@ package com.appcoins.diceroll.sdk.feature.settings.ui
 
 import android.content.Context
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,11 +15,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -24,6 +25,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -70,7 +75,8 @@ fun SettingsScreen(
         is Success -> {
             SettingsContent(
                 settingsUiState = uiState,
-                viewModel = viewModel
+                onLaunchAppUpdate = viewModel::launchAppUpdateDialog,
+                onUpdateThemeConfig = viewModel::updateThemeConfig
             )
         }
     }
@@ -79,22 +85,27 @@ fun SettingsScreen(
 @Composable
 fun UserSettingsContent(
     settingsUiState: Success,
-    viewModel: SettingsViewModel,
+    onLaunchAppUpdate: (Context) -> Unit,
+    onUpdateThemeConfig: (ThemeConfig) -> Unit
 ) {
+    HeaderTitle("Billing Information")
     ShowSDKInformation()
     GeneralSpacer()
-    ShowUpdateInformation { viewModel.launchAppUpdateDialog(it) }
+    HeaderTitle("App Information")
+    ShowUpdateInformation { onLaunchAppUpdate(it) }
+    /* Turn Off until Light color scheme is done
     HorizontalDivider()
     SettingsPanel(
         userPrefs = settingsUiState.userPrefs,
-        onChangeThemeConfig = viewModel::updateThemeConfig,
-    )
+        onChangeThemeConfig = onUpdateThemeConfig,
+    )*/
 }
 
 @Composable
 fun SettingsContent(
     settingsUiState: Success,
-    viewModel: SettingsViewModel,
+    onLaunchAppUpdate: (Context) -> Unit,
+    onUpdateThemeConfig: (ThemeConfig) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -107,13 +118,20 @@ fun SettingsContent(
             imageVector = ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.drawable.ic_green_sdk_title),
             contentDescription = "Title"
         )
+        Text(
+            "Settings",
+            fontSize = 22.sp,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(0.dp, 24.dp, 0.dp, 0.dp)
+        )
         Column(
             modifier = Modifier
                 .padding(0.dp, 24.dp, 0.dp, 0.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            UserSettingsContent(settingsUiState, viewModel)
-            HorizontalDivider()
+            UserSettingsContent(settingsUiState, onLaunchAppUpdate, onUpdateThemeConfig)
+            GeneralSpacer()
+            HeaderTitle("Statistics")
             StatsContent(
                 diceRollList = settingsUiState.diceRollList
             )
@@ -125,14 +143,12 @@ fun SettingsContent(
 fun ShowSDKInformation() {
     Column {
         Text(
-            fontSize = 16.sp,
+            fontSize = 14.sp,
             text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.sdk_version_title),
-            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
             fontWeight = FontWeight.Bold,
         )
         Text(
             text = BuildConfig.SDK_BILLING_LIBRARY_VERSION,
-            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
             fontSize = 12.sp,
         )
 
@@ -144,18 +160,18 @@ fun ShowUpdateInformation(onLaunchUpdateClick: (Context) -> Unit) {
     Column {
         Text(
             text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.check_for_updates_title),
-            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
             fontSize = 12.sp,
         )
         Row(
             modifier = Modifier
-                .padding(top = 8.dp, bottom = 8.dp)
+                .padding(top = 12.dp)
                 .fillMaxWidth(1f),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.check_for_updates_button),
                 fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
                 color = colorResource(id = com.appcoins.diceroll.sdk.feature.settings.ui.R.color.primary)
             )
             Spacer(
@@ -164,13 +180,17 @@ fun ShowUpdateInformation(onLaunchUpdateClick: (Context) -> Unit) {
                     .fillMaxWidth()
             )
             val context = LocalContext.current
-            Button(
-                shape = ButtonDefaults.outlinedShape,
-                onClick = { onLaunchUpdateClick(context) },
+            Box(
+                modifier = Modifier
+                    .clip(shape = RoundedCornerShape(100))
+                    .background(MaterialTheme.colorScheme.primary, RectangleShape)
+                    .padding(4.dp)
+                    .clickable { onLaunchUpdateClick(context) },
             ) {
-                Icon(
+                Image(
                     imageVector = arrowRight,
-                    contentDescription = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.check_for_updates_button)
+                    contentDescription = "Details",
+                    colorFilter = ColorFilter.tint(Color.Black)
                 )
             }
         }
@@ -237,17 +257,26 @@ fun SettingsChooserRow(
     }
 }
 
+@Composable
+fun HeaderTitle(title: String) {
+    Text(
+        title,
+        fontSize = 16.sp,
+        color = MaterialTheme.colorScheme.onBackground,
+        modifier = Modifier.padding(bottom = 16.dp),
+        fontWeight = FontWeight.Bold
+    )
+}
+
 @Preview
 @Composable
 fun Preview() {
-    Column {
-        ShowSDKInformation()
-        GeneralSpacer()
-        ShowUpdateInformation({})
-    }
+    SettingsContent(Success(UserPrefs(), emptyList()), {}, {})
 }
 
 @Composable
 fun GeneralSpacer() {
-    Spacer(modifier = Modifier.padding(all = 22.dp))
+    Spacer(modifier = Modifier.padding(top = 24.dp))
+    HorizontalDivider()
+    Spacer(modifier = Modifier.padding(top = 24.dp))
 }

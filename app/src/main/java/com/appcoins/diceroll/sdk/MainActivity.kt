@@ -71,7 +71,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val darkTheme = shouldUseDarkTheme(uiState)
-            DiceRollTheme(darkTheme = darkTheme) {
+            val goldenDiceTheme = shouldUseGoldenDiceTheme(uiState)
+            DiceRollTheme(darkTheme = darkTheme, goldenDiceTheme = goldenDiceTheme) {
                 Box {
                     DiceRollApp()
                     val paymentState by viewModel.paymentState.collectAsState()
@@ -96,4 +97,12 @@ private fun shouldUseDarkTheme(
         ThemeConfig.LIGHT -> false
         ThemeConfig.DARK -> true
     }
+}
+
+@Composable
+private fun shouldUseGoldenDiceTheme(
+    uiState: MainActivityUiState,
+): Boolean = when (uiState) {
+    Loading -> false
+    is Success -> uiState.goldenDiceStatus
 }

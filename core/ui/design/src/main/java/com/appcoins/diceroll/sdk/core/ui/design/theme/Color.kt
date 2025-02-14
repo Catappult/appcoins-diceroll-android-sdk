@@ -18,3 +18,10 @@ internal val light_red = Color(0xFFFE484E)
 internal val green = Color(0xFF88FE20)
 
 internal val green_prim = Color(0xFF75FBA8)
+
+internal val blue_primary = Color(0xFF5E47D4)
+internal val orange = Color(0xFFFE7101)
+
+internal val grey_blue = Color(0xFF27233C)
+
+internal val blue_background = Color(0xFF100B28)

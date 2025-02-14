@@ -1,6 +1,10 @@
 package com.appcoins.diceroll.sdk.payments.data.models
 
+import android.util.Log
 import com.appcoins.sdk.billing.ResponseCode
+import com.appcoins.sdk.billing.ResponseCode.DEVELOPER_ERROR
+import com.appcoins.sdk.billing.ResponseCode.SERVICE_UNAVAILABLE
+import com.appcoins.sdk.billing.ResponseCode.USER_CANCELED
 import com.appcoins.sdk.billing.types.SkuType
 
 /**
@@ -26,9 +30,9 @@ sealed class Item(
     data object Attempts : ConsumableItem(ATTEMPTS_SKU, ATTEMPTS_SUCCESS_MESSAGE) {
         override fun getErrorMessage(responseCode: ResponseCode): String =
             when (responseCode) {
-                ResponseCode.USER_CANCELED -> "Purchase for Attempts was cancelled."
-                ResponseCode.SERVICE_UNAVAILABLE -> "The Billing Service is not available."
-                ResponseCode.DEVELOPER_ERROR -> "There was an error when creating the Purchase.\nPlease contact us."
+                USER_CANCELED -> "Purchase for Attempts was cancelled."
+                SERVICE_UNAVAILABLE -> "The Billing Service is not available."
+                DEVELOPER_ERROR -> "There was an error when creating the Purchase.\nPlease contact us."
                 else -> "There was an error processing the Purchase. $responseCode"
             }
 
@@ -39,9 +43,9 @@ sealed class Item(
     data object GoldDice : SubscriptionItem(GOLD_DICE_SKU, GOLD_DICE_SUCCESS_MESSAGE) {
         override fun getErrorMessage(responseCode: ResponseCode): String =
             when (responseCode) {
-                ResponseCode.USER_CANCELED -> "Purchase for Golden Dice was cancelled."
-                ResponseCode.SERVICE_UNAVAILABLE -> "The Billing Service is not available."
-                ResponseCode.DEVELOPER_ERROR -> "There was an error when creating the Purchase.\nPlease contact us."
+                USER_CANCELED -> "Purchase for Golden Dice was cancelled."
+                SERVICE_UNAVAILABLE -> "The Billing Service is not available."
+                DEVELOPER_ERROR -> "There was an error when creating the Purchase.\nPlease contact us."
                 else -> "There was an error processing the Purchase. $responseCode"
             }
 
@@ -58,7 +62,7 @@ sealed class Item(
 
     open fun getErrorTitle(responseCode: ResponseCode): String =
         when (responseCode) {
-            ResponseCode.USER_CANCELED -> "Purchase cancelled"
+            USER_CANCELED -> "Purchase cancelled"
             else -> "Purchase Failed"
         }
 
@@ -74,6 +78,25 @@ sealed class Item(
                 ATTEMPTS_SKU -> Attempts
                 GOLD_DICE_SKU -> GoldDice
                 else -> throw Exception()
+            }
+
+        fun getGeneralErrorMessage(item: Item?, responseCode: ResponseCode): String =
+            item?.getErrorMessage(responseCode) ?: when (responseCode) {
+                USER_CANCELED -> "User cancelled the payment during the process."
+                SERVICE_UNAVAILABLE -> "The Billing Service is not available."
+                DEVELOPER_ERROR -> "There was an error during the Purchase.\nPlease contact us."
+                else -> "There was an error processing the Purchase. $responseCode"
+            }.also {
+                Log.i("SdkManager", "getGeneralErrorMessage: $responseCode")
+            }
+
+        fun getGeneralErrorTitle(item: Item?, responseCode: ResponseCode): String =
+            item?.getErrorTitle(responseCode) ?: if (responseCode == USER_CANCELED) {
+                Log.i("SdkManager", "getGeneralErrorTitle: USER_CANCELED")
+                "Purchase cancelled"
+            } else {
+                Log.i("SdkManager", "getGeneralErrorTitle: $responseCode not known")
+                "Purchase Failed"
             }
     }
 }
