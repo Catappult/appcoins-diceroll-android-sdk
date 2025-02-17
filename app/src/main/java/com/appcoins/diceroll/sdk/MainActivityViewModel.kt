@@ -1,6 +1,5 @@
 package com.appcoins.diceroll.sdk
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.appcoins.diceroll.sdk.core.utils.listen
@@ -48,7 +47,6 @@ class MainActivityViewModel @Inject constructor(
     fun observePaymentState() {
         CoroutineScope(Dispatchers.IO).launch {
             PurchaseStateStream.listen<PaymentState>().collect {
-                Log.i("SdkManager", "observePaymentState: $it ")
                 pendingPaymentStates.add(it)
                 if (paymentState.value == PaymentIdle || paymentState.value == PaymentLoading) {
                     popNewPaymentState()

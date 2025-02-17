@@ -14,9 +14,8 @@ import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,19 +23,19 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val userPrefsDataSource: UserPrefsDataSource,
     private val sdkManager: SdkManager,
-    private val getDiceRollsUseCase: GetDiceRollsUseCase
+    getDiceRollsUseCase: GetDiceRollsUseCase
 ) : ViewModel() {
     val uiState: StateFlow<SettingsUiState> =
-        getDiceRollsUseCase()
-            .zip(userPrefsDataSource.getUserPrefs()) { diceRollList, userPrefs ->
-                Pair(diceRollList, userPrefs)
-            }.map {
-                Success(it.second, it.first)
-            }.stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = Loading,
-            )
+        combine(
+            userPrefsDataSource.getUserPrefs(),
+            getDiceRollsUseCase()
+        ) { userPrefs, diceRollList ->
+            Success(userPrefs, diceRollList)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = Loading,
+        )
 
     fun updateThemeConfig(themeConfig: ThemeConfig) {
         viewModelScope.launch {

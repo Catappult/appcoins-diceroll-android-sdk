@@ -11,11 +11,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.appcoins.diceroll.sdk.core.ui.design.R
 import com.appcoins.diceroll.sdk.core.ui.widgets.components.CircularLoadingBar
 import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.diceroll.sdk.payments.data.models.Item.Companion.getGeneralErrorMessage
@@ -28,7 +31,7 @@ fun LoadingState() {
     Text(
         modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp),
         textAlign = TextAlign.Center,
-        text = "Waiting for the payment to be completed...",
+        text = stringResource(R.string.payment_dialog_waiting_title),
         color = MaterialTheme.colorScheme.onPrimary,
         fontWeight = FontWeight.Bold,
         fontSize = 16.sp
@@ -37,15 +40,16 @@ fun LoadingState() {
 
 @Composable
 fun ErrorState(item: Item?, responseCode: ResponseCode, onDismiss: () -> Unit) {
+    val context = LocalContext.current
     Image(
         modifier = Modifier.size(50.dp),
-        painter = painterResource(id = com.appcoins.diceroll.sdk.feature.payments.ui.R.drawable.ic_error),
+        painter = painterResource(id = R.drawable.ic_error),
         contentDescription = null,
     )
     Text(
         modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp),
         textAlign = TextAlign.Center,
-        text = getGeneralErrorTitle(item, responseCode),
+        text = getGeneralErrorTitle(context, item, responseCode),
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onPrimary,
         fontSize = 16.sp
@@ -53,7 +57,7 @@ fun ErrorState(item: Item?, responseCode: ResponseCode, onDismiss: () -> Unit) {
     Text(
         modifier = Modifier.padding(0.dp, 8.dp, 0.dp, 0.dp),
         textAlign = TextAlign.Center,
-        text = getGeneralErrorMessage(item, responseCode),
+        text = getGeneralErrorMessage(context, item, responseCode),
         color = MaterialTheme.colorScheme.onPrimary,
         fontSize = 14.sp
     )
@@ -66,7 +70,7 @@ fun ErrorState(item: Item?, responseCode: ResponseCode, onDismiss: () -> Unit) {
     ) {
         Text(
             textAlign = TextAlign.Center,
-            text = "OK",
+            text = stringResource(R.string.ok),
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.background
@@ -76,15 +80,16 @@ fun ErrorState(item: Item?, responseCode: ResponseCode, onDismiss: () -> Unit) {
 
 @Composable
 fun SuccessState(item: Item, onDismiss: () -> Unit) {
+    val context = LocalContext.current
     Image(
         modifier = Modifier.size(50.dp),
-        painter = painterResource(id = com.appcoins.diceroll.sdk.feature.payments.ui.R.drawable.ic_success),
+        painter = painterResource(id = R.drawable.ic_success),
         contentDescription = null,
     )
     Text(
         modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp),
         textAlign = TextAlign.Center,
-        text = "Success!",
+        text = stringResource(R.string.payment_dialog_success_title),
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onPrimary,
         fontSize = 16.sp
@@ -92,7 +97,7 @@ fun SuccessState(item: Item, onDismiss: () -> Unit) {
     Text(
         modifier = Modifier.padding(0.dp, 8.dp, 0.dp, 0.dp),
         textAlign = TextAlign.Center,
-        text = item.successPurchaseMessage,
+        text = item.getSuccessMessage(context),
         color = MaterialTheme.colorScheme.onPrimary,
         fontSize = 14.sp
     )
@@ -105,7 +110,7 @@ fun SuccessState(item: Item, onDismiss: () -> Unit) {
     ) {
         Text(
             textAlign = TextAlign.Center,
-            text = "OK",
+            text = stringResource(R.string.ok),
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.background

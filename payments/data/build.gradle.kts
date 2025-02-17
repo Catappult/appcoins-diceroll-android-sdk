@@ -11,5 +11,6 @@ android {
 dependencies {
   projectImplementation(":feature:roll-game:data")
   projectImplementation(":core:utils")
+  projectImplementation(":core:ui:design")
   implementation(libs.catappult.android.appcoins.billing)
 }

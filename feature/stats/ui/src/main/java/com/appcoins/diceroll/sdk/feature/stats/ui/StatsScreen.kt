@@ -20,9 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.appcoins.diceroll.sdk.core.ui.design.R
 import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
-import com.appcoins.diceroll.sdk.core.utils.R
 import com.appcoins.diceroll.sdk.core.utils.extensions.toPercent
 import com.appcoins.diceroll.sdk.feature.stats.data.model.DiceRoll
 import com.appcoins.diceroll.sdk.feature.stats.ui.utils.chart_tone1

@@ -42,9 +42,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.appcoins.diceroll.sdk.core.ui.design.DiceRollIcons.arrowRight
+import com.appcoins.diceroll.sdk.core.ui.design.R
 import com.appcoins.diceroll.sdk.core.ui.widgets.BuildConfig
 import com.appcoins.diceroll.sdk.core.ui.widgets.LoadingAnimation
-import com.appcoins.diceroll.sdk.core.utils.R
 import com.appcoins.diceroll.sdk.feature.settings.data.model.ThemeConfig
 import com.appcoins.diceroll.sdk.feature.settings.data.model.UserPrefs
 import com.appcoins.diceroll.sdk.feature.settings.ui.SettingsUiState.Loading
@@ -88,10 +88,10 @@ fun UserSettingsContent(
     onLaunchAppUpdate: (Context) -> Unit,
     onUpdateThemeConfig: (ThemeConfig) -> Unit
 ) {
-    HeaderTitle("Billing Information")
+    HeaderTitle(stringResource(R.string.settings_title_billing_information))
     ShowSDKInformation()
     GeneralSpacer()
-    HeaderTitle("App Information")
+    HeaderTitle(stringResource(R.string.settings_title_app_information))
     ShowUpdateInformation { onLaunchAppUpdate(it) }
     /* Turn Off until Light color scheme is done
     HorizontalDivider()
@@ -115,11 +115,11 @@ fun SettingsContent(
         Image(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally),
-            imageVector = ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.drawable.ic_green_sdk_title),
+            imageVector = ImageVector.vectorResource(id = R.drawable.ic_green_sdk_title),
             contentDescription = "Title"
         )
         Text(
-            "Settings",
+            stringResource(R.string.settings_title),
             fontSize = 22.sp,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(0.dp, 24.dp, 0.dp, 0.dp)
@@ -131,7 +131,7 @@ fun SettingsContent(
         ) {
             UserSettingsContent(settingsUiState, onLaunchAppUpdate, onUpdateThemeConfig)
             GeneralSpacer()
-            HeaderTitle("Statistics")
+            HeaderTitle(stringResource(R.string.settings_title_statistics))
             StatsContent(
                 diceRollList = settingsUiState.diceRollList
             )
@@ -144,7 +144,7 @@ fun ShowSDKInformation() {
     Column {
         Text(
             fontSize = 14.sp,
-            text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.sdk_version_title),
+            text = stringResource(id = R.string.sdk_version_title),
             fontWeight = FontWeight.Bold,
         )
         Text(
@@ -159,7 +159,7 @@ fun ShowSDKInformation() {
 fun ShowUpdateInformation(onLaunchUpdateClick: (Context) -> Unit) {
     Column {
         Text(
-            text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.check_for_updates_title),
+            text = stringResource(id = R.string.check_for_updates_title),
             fontSize = 12.sp,
         )
         Row(
@@ -169,7 +169,7 @@ fun ShowUpdateInformation(onLaunchUpdateClick: (Context) -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.check_for_updates_button),
+                text = stringResource(id = R.string.check_for_updates_button),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = colorResource(id = com.appcoins.diceroll.sdk.feature.settings.ui.R.color.primary)

@@ -22,9 +22,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.appcoins.diceroll.sdk.MainActivityUiState.Loading
 import com.appcoins.diceroll.sdk.MainActivityUiState.Success
 import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
-import com.appcoins.diceroll.sdk.feature.payments.ui.PaymentScreen
 import com.appcoins.diceroll.sdk.feature.settings.data.model.ThemeConfig
-import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentIdle
 import com.appcoins.diceroll.sdk.ui.DiceRollApp
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -74,13 +72,8 @@ class MainActivity : ComponentActivity() {
             val goldenDiceTheme = shouldUseGoldenDiceTheme(uiState)
             DiceRollTheme(darkTheme = darkTheme, goldenDiceTheme = goldenDiceTheme) {
                 Box {
-                    DiceRollApp()
                     val paymentState by viewModel.paymentState.collectAsState()
-                    if (paymentState != PaymentIdle) {
-                        PaymentScreen(paymentState) {
-                            viewModel.onPaymentDialogDismissed()
-                        }
-                    }
+                    DiceRollApp(paymentState, viewModel::onPaymentDialogDismissed)
                 }
             }
         }

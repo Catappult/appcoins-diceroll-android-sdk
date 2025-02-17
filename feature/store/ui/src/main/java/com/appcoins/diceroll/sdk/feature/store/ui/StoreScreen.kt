@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.appcoins.diceroll.sdk.core.ui.design.DiceRollIcons
+import com.appcoins.diceroll.sdk.core.ui.design.R
 import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
 import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
@@ -59,7 +60,7 @@ internal fun StoreRoute(
         Image(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally),
-            imageVector = ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.drawable.ic_green_sdk_title),
+            imageVector = ImageVector.vectorResource(id = R.drawable.ic_green_sdk_title),
             contentDescription = "Title"
         )
         Column(
@@ -67,12 +68,12 @@ internal fun StoreRoute(
                 .padding(0.dp, 24.dp, 0.dp, 0.dp)
         ) {
             Text(
-                text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.store_screen_title),
+                text = stringResource(id = R.string.store_screen_title),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.store_screen_description),
+                text = stringResource(id = R.string.store_screen_description),
                 fontSize = 12.sp,
                 modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp),
             )
@@ -193,7 +194,7 @@ fun SubscriptionItem(
                             fontSize = 16.sp
                         )
                         Text(
-                            text = "Unsubscribe",
+                            text = stringResource(R.string.store_screen_unsubscribe_button_text),
                             Modifier
                                 .fillMaxWidth()
                                 .padding(top = 24.dp)
@@ -249,7 +250,7 @@ fun SubscriptionItem(
                                 RectangleShape
                             )
                             .padding(8.dp, 4.dp, 8.dp, 4.dp),
-                        text = "Subscribed",
+                        text = stringResource(R.string.store_screen_subscribed_text),
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
@@ -320,7 +321,7 @@ fun Preview() {
             Image(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally),
-                imageVector = ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.drawable.ic_green_sdk_title),
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_green_sdk_title),
                 contentDescription = "Title"
             )
             Column(
@@ -328,12 +329,12 @@ fun Preview() {
                     .padding(0.dp, 24.dp, 0.dp, 0.dp)
             ) {
                 Text(
-                    text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.store_screen_title),
+                    text = stringResource(id = R.string.store_screen_title),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.store_screen_description),
+                    text = stringResource(id = R.string.store_screen_description),
                     fontSize = 12.sp,
                     modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp),
                 )

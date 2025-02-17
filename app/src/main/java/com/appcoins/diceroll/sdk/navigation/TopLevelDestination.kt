@@ -2,7 +2,7 @@ package com.appcoins.diceroll.sdk.navigation
 
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.appcoins.diceroll.sdk.core.ui.design.DiceRollIcons
-import com.appcoins.diceroll.sdk.core.utils.R
+import com.appcoins.diceroll.sdk.core.ui.design.R
 
 /**
  * Type for the top level destinations in the application. Each of these destinations

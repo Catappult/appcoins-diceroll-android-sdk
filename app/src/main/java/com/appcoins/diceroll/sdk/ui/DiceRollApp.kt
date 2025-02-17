@@ -11,13 +11,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import com.appcoins.diceroll.sdk.core.ui.widgets.components.DiceRollNavigationBarItem
+import com.appcoins.diceroll.sdk.feature.payments.ui.PaymentScreen
 import com.appcoins.diceroll.sdk.navigation.DiceRollNavHost
 import com.appcoins.diceroll.sdk.navigation.TopLevelDestination
+import com.appcoins.diceroll.sdk.payments.data.models.PaymentState
+import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentIdle
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 
 @OptIn(ExperimentalMaterialNavigationApi::class)
 @Composable
-fun DiceRollApp() {
+fun DiceRollApp(paymentState: PaymentState, onPaymentDialogDismissed: () -> Unit) {
     val appState: DiceRollAppState = rememberDiceRollAppState()
     Scaffold(
         bottomBar = {
@@ -33,6 +36,11 @@ fun DiceRollApp() {
             appState.bottomSheetNavigator,
             scaffoldPadding = scaffoldPadding,
         )
+    }
+    if (paymentState != PaymentIdle) {
+        PaymentScreen(paymentState) {
+            onPaymentDialogDismissed()
+        }
     }
 }
 

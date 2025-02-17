@@ -16,13 +16,11 @@ android {
 
 dependencies {
   implementation(libs.catappult.android.appcoins.billing)
-    implementation(project(":payments:data"))
-    implementation(project(":feature:roll-game:data"))
-
-    projectImplementation(":core:ui:design")
+  projectImplementation(":core:ui:design")
   projectImplementation(":core:ui:widgets")
   projectImplementation(":core:utils")
   projectImplementation(":core:navigation")
+  projectImplementation(":feature:roll-game:data")
   projectImplementation(":feature:settings:data")
   projectImplementation(":feature:settings:ui")
   projectImplementation(":feature:stats:ui")
@@ -30,6 +28,7 @@ dependencies {
   projectImplementation(":feature:roll-game:ui")
   projectImplementation(":feature:payments:ui")
   projectImplementation(":payments:appcoins-sdk")
+  projectImplementation(":payments:data")
   implementation(libs.androidx.splashscreen)
   implementation(libs.bundles.androidx.compose)
   implementation(libs.bundles.androidx.compose.accompanist)

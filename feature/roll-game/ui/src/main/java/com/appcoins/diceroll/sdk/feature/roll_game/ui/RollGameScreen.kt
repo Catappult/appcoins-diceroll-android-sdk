@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,8 +45,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.appcoins.diceroll.sdk.core.ui.design.R
 import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
-import com.appcoins.diceroll.sdk.core.utils.R
 import com.appcoins.diceroll.sdk.core.utils.tuples.Quadruple
 import com.appcoins.diceroll.sdk.feature.roll_game.data.DEFAULT_ATTEMPTS_NUMBER
 import com.appcoins.diceroll.sdk.feature.stats.data.model.DiceRoll
@@ -135,140 +136,7 @@ fun RollGameContent(
                     Text(text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.roll_game_again_button))
                 }
             } else {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        modifier = Modifier
-                            .weight(
-                                if (betDice == 1) {
-                                    1.2f
-                                } else {
-                                    1f
-                                }
-                            )
-                            .padding(4.dp)
-                            .clickable {
-                                betDice = 1
-                            },
-                        imageVector = if (betDice == 1) {
-                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_1_selected)
-                        } else {
-                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_1)
-                        },
-                        contentDescription = "Title",
-                    )
-                    Image(
-                        modifier = Modifier
-                            .weight(
-                                if (betDice == 2) {
-                                    1.2f
-                                } else {
-                                    1f
-                                }
-                            )
-                            .weight(1f)
-                            .padding(4.dp)
-                            .clickable {
-                                betDice = 2
-                            },
-                        imageVector = if (betDice == 2) {
-                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_2_selected)
-                        } else {
-                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_2)
-                        },
-                        contentDescription = "Title"
-                    )
-                    Image(
-                        modifier = Modifier
-                            .weight(
-                                if (betDice == 3) {
-                                    1.2f
-                                } else {
-                                    1f
-                                }
-                            )
-                            .weight(1f)
-                            .padding(4.dp)
-                            .clickable {
-                                betDice = 3
-                            },
-                        imageVector = if (betDice == 3) {
-                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_3_selected)
-                        } else {
-                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_3)
-                        },
-                        contentDescription = "Title"
-                    )
-                    Image(
-                        modifier = Modifier
-                            .weight(
-                                if (betDice == 4) {
-                                    1.2f
-                                } else {
-                                    1f
-                                }
-                            )
-                            .weight(1f)
-                            .padding(4.dp)
-                            .clickable {
-                                betDice = 4
-                            },
-                        imageVector = if (betDice == 4) {
-                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_4_selected)
-                        } else {
-                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_4)
-                        },
-                        contentDescription = "Title"
-                    )
-                    Image(
-                        modifier = Modifier
-                            .weight(
-                                if (betDice == 5) {
-                                    1.2f
-                                } else {
-                                    1f
-                                }
-                            )
-                            .weight(1f)
-                            .padding(4.dp)
-                            .clickable {
-                                betDice = 5
-                            },
-                        imageVector = if (betDice == 5) {
-                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_5_selected)
-                        } else {
-                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_5)
-                        },
-                        contentDescription = "Title"
-                    )
-                    Image(
-                        modifier = Modifier
-                            .weight(
-                                if (betDice == 6) {
-                                    1.2f
-                                } else {
-                                    1f
-                                }
-                            )
-                            .weight(1f)
-                            .padding(4.dp)
-                            .clickable {
-                                betDice = 6
-                            },
-                        imageVector = if (betDice == 6) {
-                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_6_selected)
-                        } else {
-                            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_6)
-                        },
-                        contentDescription = "Title"
-                    )
-                }
-
+                DicesRow(betDice) { diceClicked -> betDice = diceClicked }
                 Button(
                     onClick = {
                         if (attemptsLeft > 0 && betDice != 0) {
@@ -321,10 +189,7 @@ fun RollGameContent(
             modifier =
             if (isBuyAttemptsButtonReady) {
                 Modifier.clickable {
-                    onBuyClick(
-                        context,
-                        Attempts
-                    )
+                    onBuyClick(context, Attempts)
                 }
             } else {
                 Modifier
@@ -348,6 +213,133 @@ fun RollGameContent(
 }
 
 @Composable
+private fun DicesRow(betDice: Int, onDiceClicked: (Int) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            modifier = Modifier
+                .weight(
+                    if (betDice == 1) {
+                        1.2f
+                    } else {
+                        1f
+                    }
+                )
+                .padding(4.dp)
+                .clickable { onDiceClicked(1) },
+            imageVector = if (betDice == 1) {
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_1_selected)
+            } else {
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_1)
+            },
+            contentDescription = "Title",
+        )
+        Image(
+            modifier = Modifier
+                .weight(
+                    if (betDice == 2) {
+                        1.2f
+                    } else {
+                        1f
+                    }
+                )
+                .weight(1f)
+                .padding(4.dp)
+                .clickable {
+                    onDiceClicked(2)
+                },
+            imageVector = if (betDice == 2) {
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_2_selected)
+            } else {
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_2)
+            },
+            contentDescription = "Title"
+        )
+        Image(
+            modifier = Modifier
+                .weight(
+                    if (betDice == 3) {
+                        1.2f
+                    } else {
+                        1f
+                    }
+                )
+                .weight(1f)
+                .padding(4.dp)
+                .clickable { onDiceClicked(3) },
+            imageVector = if (betDice == 3) {
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_3_selected)
+            } else {
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_3)
+            },
+            contentDescription = "Title"
+        )
+        Image(
+            modifier = Modifier
+                .weight(
+                    if (betDice == 4) {
+                        1.2f
+                    } else {
+                        1f
+                    }
+                )
+                .weight(1f)
+                .padding(4.dp)
+                .clickable { onDiceClicked(4) },
+            imageVector = if (betDice == 4) {
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_4_selected)
+            } else {
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_4)
+            },
+            contentDescription = "Title"
+        )
+        Image(
+            modifier = Modifier
+                .weight(
+                    if (betDice == 5) {
+                        1.2f
+                    } else {
+                        1f
+                    }
+                )
+                .weight(1f)
+                .padding(4.dp)
+                .clickable { onDiceClicked(5) },
+            imageVector = if (betDice == 5) {
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_5_selected)
+            } else {
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_5)
+            },
+            contentDescription = "Title"
+        )
+        Image(
+            modifier = Modifier
+                .weight(
+                    if (betDice == 6) {
+                        1.2f
+                    } else {
+                        1f
+                    }
+                )
+                .weight(1f)
+                .padding(4.dp)
+                .clickable { onDiceClicked(6) },
+            imageVector = if (betDice == 6) {
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_6_selected)
+            } else {
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_dice_6)
+            },
+            contentDescription = "Title"
+        )
+    }
+}
+
+@Composable
 private fun GameDice(
     attemptsLeft: Int,
     diceValue: Int,
@@ -355,39 +347,9 @@ private fun GameDice(
     goldenDiceActive: Boolean
 ) {
     val (baseDice, diceImages, radiantImage, titleImage) =
-        if (goldenDiceActive) {
-            Quadruple(
-                GameR.drawable.ic_base_golden_dice,
-                listOf(
-                    GameR.drawable.ic_dice_1_golden,
-                    GameR.drawable.ic_dice_2_golden,
-                    GameR.drawable.ic_dice_3_golden,
-                    GameR.drawable.ic_dice_4_golden,
-                    GameR.drawable.ic_dice_5_golden,
-                    GameR.drawable.ic_dice_6_golden,
-                ),
-                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_radiant_shadows),
-                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_dice_sdk_title)
-            )
-        } else {
-            Quadruple(
-                GameR.drawable.ic_base_dice,
-                listOf(
-                    GameR.drawable.ic_dice_1_blue,
-                    GameR.drawable.ic_dice_2_blue,
-                    GameR.drawable.ic_dice_3_blue,
-                    GameR.drawable.ic_dice_4_blue,
-                    GameR.drawable.ic_dice_5_blue,
-                    GameR.drawable.ic_dice_6_blue,
-                ),
-                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_radiant_shadows),
-                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_green_sdk_title)
-            )
-        }
+        getGameResources(goldenDiceActive)
 
-    Box(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Box(modifier = Modifier.fillMaxWidth()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -443,6 +405,16 @@ private fun GameDice(
                                     DiceImage(imageRes = imageRes)
                                 }
                             }
+                            if (result == -1) {
+                                Image(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(100.dp, 0.dp, 0.dp, 60.dp)
+                                        .align(Alignment.Center),
+                                    imageVector = ImageVector.vectorResource(com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_failure),
+                                    contentDescription = "Failure Image"
+                                )
+                            }
                         }
 
                         if (result == 1) {
@@ -472,101 +444,137 @@ private fun GameDice(
                                 contentDescription = "Success Image"
                             )
                         }
-
-                        if (result == -1) {
-                            Image(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(100.dp, 0.dp, 0.dp, 60.dp)
-                                    .align(Alignment.Center),
-                                imageVector = ImageVector.vectorResource(com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_failure),
-                                contentDescription = "Failure Image"
-                            )
-                        }
                     }
                 }
             }
         }
         if (result == 0) {
-            Column(
-                modifier = Modifier
-                    .align(alignment = Alignment.BottomCenter)
-                    .padding(0.dp, 0.dp, 0.dp, 12.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .shadow(20.dp, RoundedCornerShape(100))
-                        .clip(shape = RoundedCornerShape(100.dp))
-                        .background(MaterialTheme.colorScheme.tertiary),
-                ) {
-                    Text(
-                        modifier = Modifier.padding(24.dp, 12.dp, 24.dp, 12.dp),
-                        text = "attempts left: $attemptsLeft",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-            }
+            GameReady(attemptsLeft)
         }
         if (result == -1) {
-            Column(
-                modifier = Modifier
-                    .align(alignment = Alignment.BottomCenter)
-                    .padding(0.dp, 0.dp, 0.dp, 8.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .shadow(20.dp, RoundedCornerShape(100))
-                        .clip(shape = RoundedCornerShape(100.dp))
-                        .background(MaterialTheme.colorScheme.error)
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .align(alignment = Alignment.CenterHorizontally)
-                            .padding(24.dp, 6.dp, 24.dp, 0.dp),
-                        text = "YOU FAIL!",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        lineHeight = 10.sp,
-                        color = Color.White
-                    )
-                    Text(
-                        modifier = Modifier
-                            .align(alignment = Alignment.CenterHorizontally)
-                            .padding(24.dp, 0.dp, 24.dp, 6.dp),
-                        text = "attempts left: $attemptsLeft",
-                        fontSize = 12.sp,
-                        lineHeight = 10.sp,
-                        color = Color.White
-                    )
-                }
-            }
+            GameLost(attemptsLeft)
         }
         if (result == 1) {
-            Column(
-                modifier = Modifier
-                    .align(alignment = Alignment.BottomCenter)
-                    .padding(0.dp, 0.dp, 0.dp, 12.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .shadow(20.dp, RoundedCornerShape(100))
-                        .clip(shape = RoundedCornerShape(100.dp))
-                        .background(Color.White),
-                ) {
-                    Text(
-                        modifier = Modifier.padding(24.dp, 12.dp, 24.dp, 12.dp),
-                        text = "YOU WON!",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.background
-                    )
-                }
-            }
+            GameWon()
         }
     }
 }
+
+@Composable
+fun BoxScope.GameReady(attemptsLeft: Int) {
+    Column(
+        modifier = Modifier
+            .align(alignment = Alignment.BottomCenter)
+            .padding(0.dp, 0.dp, 0.dp, 12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .shadow(20.dp, RoundedCornerShape(100))
+                .clip(shape = RoundedCornerShape(100.dp))
+                .background(MaterialTheme.colorScheme.tertiary),
+        ) {
+            Text(
+                modifier = Modifier.padding(24.dp, 12.dp, 24.dp, 12.dp),
+                text = stringResource(R.string.roll_game_attempts_left) + " $attemptsLeft",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+fun BoxScope.GameLost(attemptsLeft: Int) {
+    Column(
+        modifier = Modifier
+            .align(alignment = Alignment.BottomCenter)
+            .padding(0.dp, 0.dp, 0.dp, 8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .shadow(20.dp, RoundedCornerShape(100))
+                .clip(shape = RoundedCornerShape(100.dp))
+                .background(MaterialTheme.colorScheme.error)
+        ) {
+            Text(
+                modifier = Modifier
+                    .align(alignment = Alignment.CenterHorizontally)
+                    .padding(24.dp, 6.dp, 24.dp, 0.dp),
+                text = stringResource(R.string.roll_game_result_failure),
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                lineHeight = 10.sp,
+                color = Color.White
+            )
+            Text(
+                modifier = Modifier
+                    .align(alignment = Alignment.CenterHorizontally)
+                    .padding(24.dp, 0.dp, 24.dp, 6.dp),
+                text = stringResource(R.string.roll_game_attempts_left) + " $attemptsLeft",
+                fontSize = 12.sp,
+                lineHeight = 10.sp,
+                color = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+fun BoxScope.GameWon() {
+    Column(
+        modifier = Modifier
+            .align(alignment = Alignment.BottomCenter)
+            .padding(0.dp, 0.dp, 0.dp, 12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .shadow(20.dp, RoundedCornerShape(100))
+                .clip(shape = RoundedCornerShape(100.dp))
+                .background(Color.White),
+        ) {
+            Text(
+                modifier = Modifier.padding(24.dp, 12.dp, 24.dp, 12.dp),
+                text = stringResource(R.string.roll_game_result_success),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.background
+            )
+        }
+    }
+}
+
+@Composable
+fun getGameResources(goldenDiceActive: Boolean) =
+    if (goldenDiceActive) {
+        Quadruple(
+            GameR.drawable.ic_base_golden_dice,
+            listOf(
+                GameR.drawable.ic_dice_1_golden,
+                GameR.drawable.ic_dice_2_golden,
+                GameR.drawable.ic_dice_3_golden,
+                GameR.drawable.ic_dice_4_golden,
+                GameR.drawable.ic_dice_5_golden,
+                GameR.drawable.ic_dice_6_golden,
+            ),
+            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_radiant_shadows),
+            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_dice_sdk_title)
+        )
+    } else {
+        Quadruple(
+            GameR.drawable.ic_base_dice,
+            listOf(
+                GameR.drawable.ic_dice_1_blue,
+                GameR.drawable.ic_dice_2_blue,
+                GameR.drawable.ic_dice_3_blue,
+                GameR.drawable.ic_dice_4_blue,
+                GameR.drawable.ic_dice_5_blue,
+                GameR.drawable.ic_dice_6_blue,
+            ),
+            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_radiant_shadows),
+            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_green_sdk_title)
+        )
+    }
 
 @Composable
 fun DiceImage(@DrawableRes imageRes: Int) {
