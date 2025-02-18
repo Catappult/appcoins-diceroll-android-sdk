@@ -1,22 +1,19 @@
 package com.appcoins.diceroll.sdk.payments.appcoins_sdk
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateListOf
 import com.appcoins.diceroll.sdk.core.network.clients.rtdn.RTDNWebSocketClient
 import com.appcoins.diceroll.sdk.core.ui.notifications.NotificationHandler
-import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceStatusUseCase
-import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.UpdateGoldenDiceStatusUseCase
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.data.respository.PurchaseValidatorRepository
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.rtdn.RTDNMessageListenerImpl
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.usecases.GetMessageFromRTDNResponseUseCase
+import com.appcoins.diceroll.sdk.payments.data.PaymentsResultManager
 import com.appcoins.sdk.billing.AppcoinsBillingClient
 import com.appcoins.sdk.billing.Purchase
+import com.appcoins.sdk.billing.SkuDetails
 import com.appcoins.sdk.billing.helpers.CatapultBillingAppCoinsFactory
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -38,19 +35,19 @@ class SdkManagerImpl @Inject constructor(
     getMessageFromRTDNResponseUseCase: GetMessageFromRTDNResponseUseCase,
     notificationHandler: NotificationHandler,
     private val webSocketClient: RTDNWebSocketClient,
-    val getGoldenDiceStatusUseCase: GetGoldenDiceStatusUseCase,
-    val updateGoldenDiceStatusUseCase: UpdateGoldenDiceStatusUseCase,
+    private val paymentsResultManager: PaymentsResultManager,
 ) : SdkManager {
 
     override lateinit var cab: AppcoinsBillingClient
 
     override val _connectionState: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    override val _goldDiceSubscriptionActive: MutableStateFlow<Boolean?> = MutableStateFlow(null)
-
     override val _attemptsPrice: MutableStateFlow<String?> = MutableStateFlow(null)
 
     override val _goldDicePrice: MutableStateFlow<String?> = MutableStateFlow(null)
+
+    override val _purchasableItems: MutableList<SkuDetails> =
+        mutableStateListOf()
 
     override val _purchases: ArrayList<Purchase> = ArrayList()
 
@@ -78,17 +75,14 @@ class SdkManagerImpl @Inject constructor(
                 purchasesUpdatedListener
             )
         cab.startConnection(appCoinsBillingStateListener)
-
-        CoroutineScope(Dispatchers.IO).launch {
-            _goldDiceSubscriptionActive.value = getGoldenDiceStatusUseCase().firstOrNull()
-        }
     }
 
-    override fun processGoldenDiceSubscription(active: Boolean) {
-        _goldDiceSubscriptionActive.value = active
-        CoroutineScope(Dispatchers.IO).launch {
-            updateGoldenDiceStatusUseCase(active)
-        }
+    override fun processSuccessfulPurchase(purchase: Purchase) {
+        paymentsResultManager.processSuccessfulResult(purchase)
+    }
+
+    override fun processExpiredPurchases(purchases: List<Purchase>) {
+        paymentsResultManager.processExpiredSubscriptions(purchases.map { it.sku })
     }
 
     override fun setupRTDNListener() {
@@ -99,8 +93,6 @@ class SdkManagerImpl @Inject constructor(
     }
 
     private fun onRemoveSubscription(sku: String) {
-        when (sku) {
-            "golden_dice" -> processGoldenDiceSubscription(false)
-        }
+        paymentsResultManager.removeExpiredSubscription(sku)
     }
 }

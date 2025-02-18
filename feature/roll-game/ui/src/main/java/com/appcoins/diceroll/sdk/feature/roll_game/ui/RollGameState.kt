@@ -21,6 +21,7 @@ sealed interface RollGameState {
    * The screen is visible and the content was loaded successfully.
    */
   data class Success(
-    val attemptsLeft: Int?
+    val attemptsLeft: Int?,
+    val goldenDiceStatus: Boolean
   ) : RollGameState
 }
