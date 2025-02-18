@@ -3,10 +3,10 @@ package com.appcoins.diceroll.sdk.payments.data
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceStatusUseCase
 import com.appcoins.diceroll.sdk.payments.data.models.Item.Attempts
 import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
+import com.appcoins.diceroll.sdk.payments.data.models.InternalPurchase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessExpiredGoldenDicePurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessSuccessfulAttemptsPurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessSuccessfulGoldenDicePurchaseUseCase
-import com.appcoins.sdk.billing.Purchase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
@@ -19,9 +19,9 @@ class PaymentsResultManager @Inject constructor(
     private val processExpiredGoldenDicePurchaseUseCase: ProcessExpiredGoldenDicePurchaseUseCase,
     private val getGoldenDiceStatusUseCase: GetGoldenDiceStatusUseCase,
 ) {
-    fun processSuccessfulResult(purchase: Purchase) {
+    fun processSuccessfulResult(internalPurchase: InternalPurchase) {
         CoroutineScope(Dispatchers.IO).launch {
-            when (purchase.sku) {
+            when (internalPurchase.sku) {
                 Attempts.sku -> processSuccessfulAttemptsPurchaseUseCase()
                 GoldDice.sku -> processSuccessfulGoldenDicePurchaseUseCase()
             }

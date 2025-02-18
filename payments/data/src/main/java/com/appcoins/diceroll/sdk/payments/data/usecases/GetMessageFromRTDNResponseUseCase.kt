@@ -1,7 +1,6 @@
-package com.appcoins.diceroll.sdk.payments.appcoins_sdk.usecases
+package com.appcoins.diceroll.sdk.payments.data.usecases
 
 import android.util.Log
-import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager.Companion.LOG_TAG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,5 +67,9 @@ class GetMessageFromRTDNResponseUseCase @Inject constructor() {
                 null
             }
         }
+    }
+
+    private companion object {
+        const val LOG_TAG = "GetMessageFromRTDNResponseUseCase"
     }
 }

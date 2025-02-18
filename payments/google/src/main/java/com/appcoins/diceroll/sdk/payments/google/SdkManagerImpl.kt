@@ -1,17 +1,17 @@
-package com.appcoins.diceroll.sdk.payments.appcoins_sdk
+package com.appcoins.diceroll.sdk.payments.google
 
 import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
+import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.ProductDetails
+import com.android.billingclient.api.Purchase
 import com.appcoins.diceroll.sdk.core.network.clients.rtdn.RTDNWebSocketClient
 import com.appcoins.diceroll.sdk.core.ui.notifications.NotificationHandler
-import com.appcoins.diceroll.sdk.payments.appcoins_sdk.data.respository.PurchaseValidatorRepository
 import com.appcoins.diceroll.sdk.payments.data.PaymentsResultManager
+import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails
 import com.appcoins.diceroll.sdk.payments.data.rtdn.RTDNMessageListenerImpl
 import com.appcoins.diceroll.sdk.payments.data.usecases.GetMessageFromRTDNResponseUseCase
-import com.appcoins.sdk.billing.AppcoinsBillingClient
-import com.appcoins.sdk.billing.Purchase
-import com.appcoins.sdk.billing.SkuDetails
-import com.appcoins.sdk.billing.helpers.CatapultBillingAppCoinsFactory
+import com.appcoins.diceroll.sdk.payments.google.data.respository.PurchaseValidatorRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
@@ -38,7 +38,7 @@ class SdkManagerImpl @Inject constructor(
     private val paymentsResultManager: PaymentsResultManager,
 ) : SdkManager {
 
-    override lateinit var cab: AppcoinsBillingClient
+    override lateinit var cab: BillingClient
 
     override val _connectionState: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -46,15 +46,15 @@ class SdkManagerImpl @Inject constructor(
 
     override val _goldDicePrice: MutableStateFlow<String?> = MutableStateFlow(null)
 
-    override val _purchasableItems: MutableList<SkuDetails> =
+    override val _purchasableItems: MutableList<InternalSkuDetails> =
         mutableStateListOf()
+
+    override val myItems: MutableList<ProductDetails> = mutableStateListOf()
 
     override val _purchases: ArrayList<Purchase> = ArrayList()
 
     override val _purchaseValidatorRepository: PurchaseValidatorRepository =
         purchaseValidatorRepository
-
-    private val BASE_64_ENCODED_PUBLIC_KEY = BuildConfig.CATAPPULT_PUBLIC_KEY
 
     private var isRTDNConnectionEstablished = false
 
@@ -68,25 +68,20 @@ class SdkManagerImpl @Inject constructor(
     )
 
     override fun setupSdkConnection(context: Context) {
-        cab =
-            CatapultBillingAppCoinsFactory.BuildAppcoinsBilling(
-                context,
-                BASE_64_ENCODED_PUBLIC_KEY,
-                purchasesUpdatedListener
-            )
-        cab.startConnection(appCoinsBillingStateListener)
+        cab = BillingClient.newBuilder(context).setListener(purchasesUpdatedListener).build()
+        cab.startConnection(billingClientStateListener)
     }
 
     override fun processSuccessfulPurchase(purchase: Purchase) {
         paymentsResultManager.processSuccessfulResult(
             com.appcoins.diceroll.sdk.payments.data.models.InternalPurchase(
-                purchase.sku
+                purchase.products.first()
             )
         )
     }
 
     override fun processExpiredPurchases(purchases: List<Purchase>) {
-        paymentsResultManager.processExpiredSubscriptions(purchases.map { it.sku })
+        paymentsResultManager.processExpiredSubscriptions(purchases.map { it.products.first() })
     }
 
     override fun setupRTDNListener() {

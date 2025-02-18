@@ -23,7 +23,7 @@ import com.appcoins.diceroll.sdk.core.ui.widgets.components.CircularLoadingBar
 import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.diceroll.sdk.payments.data.models.Item.Companion.getGeneralErrorMessage
 import com.appcoins.diceroll.sdk.payments.data.models.Item.Companion.getGeneralErrorTitle
-import com.appcoins.sdk.billing.ResponseCode
+
 
 @Composable
 fun LoadingState() {

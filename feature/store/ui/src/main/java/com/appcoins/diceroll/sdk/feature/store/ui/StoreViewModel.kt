@@ -6,9 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceStatusUseCase
 import com.appcoins.diceroll.sdk.feature.settings.data.usecases.GetUserUseCase
 import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager
+import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails
 import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
-import com.appcoins.sdk.billing.SkuDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,7 +24,7 @@ class StoreViewModel @Inject constructor(
     private val getGoldenDiceStatusUseCase: GetGoldenDiceStatusUseCase,
 ) : ViewModel() {
 
-    internal val purchasableItems: List<SkuDetails> get() = sdkManager._purchasableItems
+    internal val purchasableItems: List<InternalSkuDetails> get() = sdkManager._purchasableItems
 
     fun launchBillingSdkFlow(context: Context, item: Item) {
         sdkManager.startPayment(
@@ -35,7 +35,7 @@ class StoreViewModel @Inject constructor(
         )
     }
 
-    fun getSubscriptionStateForSKU(skuDetails: SkuDetails): StateFlow<Boolean> {
+    fun getSubscriptionStateForSKU(skuDetails: InternalSkuDetails): StateFlow<Boolean> {
         when (skuDetails.sku) {
             GoldDice.sku -> return getGoldenDiceStatusUseCase()
                 .map {

@@ -1,9 +1,9 @@
-package com.appcoins.diceroll.sdk.payments.appcoins_sdk.rtdn
+package com.appcoins.diceroll.sdk.payments.data.rtdn
 
 import android.util.Log
 import com.appcoins.diceroll.sdk.core.network.clients.rtdn.RTDNMessageListener
 import com.appcoins.diceroll.sdk.core.ui.notifications.NotificationHandler
-import com.appcoins.diceroll.sdk.payments.appcoins_sdk.usecases.GetMessageFromRTDNResponseUseCase
+import com.appcoins.diceroll.sdk.payments.data.usecases.GetMessageFromRTDNResponseUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

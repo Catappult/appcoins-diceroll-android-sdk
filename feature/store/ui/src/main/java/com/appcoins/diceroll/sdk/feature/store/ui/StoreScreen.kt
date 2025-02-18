@@ -42,10 +42,10 @@ import com.appcoins.diceroll.sdk.core.ui.design.R
 import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
 import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
-import com.appcoins.sdk.billing.SkuDetails
-import com.appcoins.sdk.billing.types.SkuType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType as SkuType
+import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails as SkuDetails
 
 @Composable
 internal fun StoreRoute(
@@ -99,8 +99,8 @@ fun PurchasableItem(
     subscriptionStatusStateFlow: (SkuDetails) -> StateFlow<Boolean>,
 ) {
     when (skuDetails.itemType) {
-        SkuType.inapp.name -> ConsumableItem(skuDetails = skuDetails, onBuyClick)
-        SkuType.subs.name -> SubscriptionItem(
+        SkuType.INAPP.name -> ConsumableItem(skuDetails = skuDetails, onBuyClick)
+        SkuType.SUBS.name -> SubscriptionItem(
             skuDetails = skuDetails,
             onBuyClick,
             subscriptionStatusStateFlow

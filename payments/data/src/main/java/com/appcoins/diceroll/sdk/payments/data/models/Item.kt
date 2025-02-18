@@ -2,11 +2,11 @@ package com.appcoins.diceroll.sdk.payments.data.models
 
 import android.content.Context
 import com.appcoins.diceroll.sdk.core.ui.design.R
-import com.appcoins.sdk.billing.ResponseCode
-import com.appcoins.sdk.billing.ResponseCode.DEVELOPER_ERROR
-import com.appcoins.sdk.billing.ResponseCode.SERVICE_UNAVAILABLE
-import com.appcoins.sdk.billing.ResponseCode.USER_CANCELED
-import com.appcoins.sdk.billing.types.SkuType
+import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode.DEVELOPER_ERROR
+import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode.SERVICE_UNAVAILABLE
+import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode.USER_CANCELED
+import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode as ResponseCode
+import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType as SkuType
 
 /**
  * Payment item in game to represent and match a given SKU.
@@ -15,9 +15,9 @@ sealed class Item(
     open val sku: String,
     open val type: String,
 ) {
-    sealed class ConsumableItem(override val sku: String) : Item(sku, SkuType.inapp.toString())
+    sealed class ConsumableItem(override val sku: String) : Item(sku, SkuType.INAPP.value)
 
-    sealed class SubscriptionItem(override val sku: String) : Item(sku, SkuType.subs.toString()) {
+    sealed class SubscriptionItem(override val sku: String) : Item(sku, SkuType.SUBS.value) {
         abstract fun getExpirationMessage(context: Context): String
     }
 
