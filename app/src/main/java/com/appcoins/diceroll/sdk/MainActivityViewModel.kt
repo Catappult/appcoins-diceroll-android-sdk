@@ -1,7 +1,9 @@
 package com.appcoins.diceroll.sdk
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.appcoins.diceroll.sdk.core.permissions.PermissionsManager
 import com.appcoins.diceroll.sdk.core.utils.listen
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceStatusUseCase
 import com.appcoins.diceroll.sdk.feature.settings.data.model.UserPrefs
@@ -25,6 +27,7 @@ import javax.inject.Inject
 class MainActivityViewModel @Inject constructor(
     val userPrefs: UserPrefsDataSource,
     getGoldenDiceStatusUseCase: GetGoldenDiceStatusUseCase,
+    val permissionsManager: PermissionsManager
 ) : ViewModel() {
 
     val uiState: StateFlow<MainActivityUiState> =
@@ -58,6 +61,10 @@ class MainActivityViewModel @Inject constructor(
     fun onPaymentDialogDismissed() {
         paymentState.value = PaymentIdle
         popNewPaymentState()
+    }
+
+    fun requestPermissions(activity: Activity) {
+        permissionsManager.requestPermissions(activity)
     }
 
     private fun popNewPaymentState() {

@@ -24,9 +24,6 @@ class StoreViewModel @Inject constructor(
     private val getGoldenDiceStatusUseCase: GetGoldenDiceStatusUseCase,
 ) : ViewModel() {
 
-    internal val uiState: StateFlow<StoreState> =
-        MutableStateFlow(StoreState.Loading)
-
     internal val purchasableItems: List<SkuDetails> get() = sdkManager._purchasableItems
 
     fun launchBillingSdkFlow(context: Context, item: Item) {

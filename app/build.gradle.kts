@@ -19,6 +19,7 @@ dependencies {
   projectImplementation(":core:ui:design")
   projectImplementation(":core:ui:widgets")
   projectImplementation(":core:utils")
+  projectImplementation(":core:permissions")
   projectImplementation(":core:navigation")
   projectImplementation(":feature:roll-game:data")
   projectImplementation(":feature:settings:data")

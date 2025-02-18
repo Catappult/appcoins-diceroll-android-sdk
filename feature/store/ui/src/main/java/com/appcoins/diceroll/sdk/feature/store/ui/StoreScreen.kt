@@ -109,10 +109,6 @@ fun PurchasableItem(
 }
 
 @Composable
-fun NonConsumableItem(skuDetails: SkuDetails, onBuyClick: (Item) -> Unit) {
-}
-
-@Composable
 fun ConsumableItem(skuDetails: SkuDetails, onBuyClick: (Context, Item) -> Unit) {
     val context = LocalContext.current
     Row(

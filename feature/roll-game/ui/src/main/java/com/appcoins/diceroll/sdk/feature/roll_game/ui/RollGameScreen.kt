@@ -133,7 +133,7 @@ fun RollGameContent(
                     },
                     Modifier.fillMaxWidth(),
                 ) {
-                    Text(text = stringResource(id = com.appcoins.diceroll.sdk.core.ui.design.R.string.roll_game_again_button))
+                    Text(text = stringResource(id = R.string.roll_game_again_button))
                 }
             } else {
                 DicesRow(betDice) { diceClicked -> betDice = diceClicked }
@@ -150,7 +150,7 @@ fun RollGameContent(
                                             rollWin = diceValue == betDice,
                                             guessNumber = betDice,
                                             resultNumber = diceValue,
-                                            attemptsLeft = attemptsLeft - 1 + DEFAULT_ATTEMPTS_NUMBER
+                                            attemptsLeft = attemptsLeft + DEFAULT_ATTEMPTS_NUMBER
                                         )
                                     )
                                 }
