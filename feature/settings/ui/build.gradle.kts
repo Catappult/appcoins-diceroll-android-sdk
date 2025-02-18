@@ -11,6 +11,8 @@ android {
 dependencies {
   projectImplementation(":payments:appcoins-sdk")
   projectImplementation(":feature:settings:data")
+  projectImplementation(":feature:stats:data")
+  projectImplementation(":feature:stats:ui")
   projectImplementation(":core:ui:design")
   projectImplementation(":core:ui:widgets")
   projectImplementation(":core:utils")

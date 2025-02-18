@@ -6,7 +6,6 @@ import androidx.navigation.NavOptions
 import com.appcoins.diceroll.sdk.core.navigation.destinations.Destinations
 import com.appcoins.diceroll.sdk.core.navigation.buildDestinationRoute
 import com.appcoins.diceroll.sdk.core.navigation.navigateToDestination
-import com.appcoins.diceroll.sdk.feature.payments.ui.Item
 import com.appcoins.diceroll.sdk.feature.roll_game.ui.RollGameRoute
 
 fun NavController.navigateToRollGame(navOptions: NavOptions) {
@@ -16,10 +15,10 @@ fun NavController.navigateToRollGame(navOptions: NavOptions) {
   )
 }
 
-fun NavGraphBuilder.rollGameRoute(onBuyClick: (Item) -> Unit) {
+fun NavGraphBuilder.rollGameRoute() {
   this.buildDestinationRoute(
     destination = Destinations.Screen.RollGame,
   ) {
-    RollGameRoute(onBuyClick)
+    RollGameRoute()
   }
 }

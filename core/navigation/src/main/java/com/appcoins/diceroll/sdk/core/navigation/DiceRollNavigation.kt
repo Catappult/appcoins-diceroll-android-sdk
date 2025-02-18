@@ -28,8 +28,7 @@ fun NavController.navigateToDestination(
 
 /**
  * Builds a screen for the specified destination, taking into consideration the type of screen that
- * should be created, either a [Destinations.Screen], a [Destinations.Dialog] or
- * a [Destinations.BottomSheet], by passing the destination object, with optional arguments and
+ * should be created a [Destinations.Screen] by passing the destination object, with optional arguments and
  * deeplink, and with the provided Composable content.
  *
  * @param destination The destination to build the screen for, providing the type of screen.
@@ -68,24 +67,6 @@ fun NavGraphBuilder.buildDestinationRoute(
         destinationDeeplinks = destinationDeeplinksList,
         content = destinationComposable,
         shouldNavigate = shouldAnimate,
-      )
-    }
-
-    NavigationType.Dialog -> {
-      dialogHandler(
-        route = finalRoute,
-        destinationArgs = destinationArgsList,
-        destinationDeeplinks = destinationDeeplinksList,
-        content = destinationComposable,
-      )
-    }
-
-    NavigationType.BottomSheet -> {
-      bottomSheetHandler(
-        route = finalRoute,
-        destinationArgs = destinationArgsList,
-        destinationDeeplinks = destinationDeeplinksList,
-        content = destinationComposable,
       )
     }
   }

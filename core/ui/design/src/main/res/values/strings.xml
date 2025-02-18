@@ -1,62 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="top_bar_title">Appcoins Dice Roll SDK</string>
-  <string name="roll_game_title">Roll Game</string>
-  <string name="stats_title">Statistics</string>
-  <string name="settings_title">Settings</string>
+    <string name="roll_game_title">Roll Game</string>
+    <string name="store_title">Store</string>
+    <string name="settings_title">Settings</string>
 
-  <!-- Generic -->
-  <string name="loading">Loading…</string>
-  <string name="empty_error">Something went wrong</string>
-  <string name="confirm">Confirm</string>
+    <!-- Generic -->
+    <string name="loading">Loading…</string>
+    <string name="ok">OK</string>
 
-  <!-- Roll Game Screen -->
-  <string name="roll_game_guess_prompt">Enter your guess</string>
-  <string name="roll_game_attempts_left">Attempts left: </string>
-  <string name="roll_game_result_correct">Correct!</string>
-  <string name="roll_game_result_incorrect">Incorrect!</string>
-  <string name="roll_game_info">Try to guess the dice number on the next roll</string>
-  <string name="roll_game_button">Roll Dice</string>
-  <string name="roll_game_buy_button">Buy more attempts</string>
+    <!-- Roll Game Screen -->
+    <string name="roll_game_attempts_left">Attempts left: </string>
+    <string name="roll_game_result_success">YOU WON!</string>
+    <string name="roll_game_result_failure">YOU FAIL!</string>
+    <string name="roll_game_info">Try to guess the dice number on the next roll</string>
+    <string name="roll_game_button">Roll Dice</string>
+    <string name="roll_game_again_button">Roll Dice again</string>
+    <string name="roll_game_attempts_buy_button">Buy more attempts</string>
 
-  <!-- Payments Screen -->
-  <string name="payments_sku_error_body">The payment item is not available to buy</string>
-  <string name="payments_attempts_error_body">You already have the maximum number of attempts available</string>
-  <string name="payments_golden_dice_error_body">You are already subscribed to the Golden Dice</string>
-  <string name="payments_loading">Waiting for the payment to be completed…</string>
-  <string name="payments_user_canceled_title">Payment Canceled</string>
-  <string name="payments_user_canceled_body">During the process, the user canceled</string>
-  <string name="payments_failed_title">Payment Failed</string>
-  <string name="payments_attempts_failed_body">The attempts was not given because there was a problem with the payment</string>
-  <string name="payments_golden_dice_failed_body">The subscription for the Golden Dice failed because there was a problem with the payment</string>
-  <string name="payments_success_title">Payment successful</string>
-  <string name="payments_attempts_success_body">You have now the maximum number of attempts, use it carefully</string>
-  <string name="payments_golden_dice_success_body">You are now subscribed to the Golden Dice!</string>
+    <!-- Payments Screen -->
+    <string name="payments_sdk_initializing">SDK connecting to Billing Service</string>
 
-  <!-- Stats Screen -->
-  <string name="stats_win_percentage">Win %</string>
-  <string name="stats_games_played">Rolls played</string>
-  <string name="stats_games_won">Rolls won</string>
-  <string name="stats_guess_distribution">Guess distribution</string>
-  <string name="stats_result_distribution">Result distribution</string>
+    <!-- Payments Dialog -->
+    <string name="payment_dialog_waiting_title">Waiting for the payment to be completed…</string>
+    <string name="payment_dialog_success_title">Success!</string>
 
-  <!-- Stats Details Screen -->
-  <string name="stats_details_guess">Guess: </string>
-  <string name="stats_details_result">Result: </string>
-  <string name="stats_details_attempts_left">Attempts left: </string>
-  <string name="stats_details_win">WIN</string>
-  <string name="stats_details_loss">LOSS</string>
+    <!-- Store Screen -->
+    <string name="store_screen_title">Want to take more advantage of the game?</string>
+    <string name="store_screen_description">Choose the items you wish to purchase:</string>
+    <string name="store_screen_unsubscribe_button_text">Unsubscribe</string>
+    <string name="store_screen_subscribed_text">Subscribed</string>
 
+    <!-- Stats Screen -->
+    <string name="stats_win_percentage">Win %</string>
+    <string name="stats_games_played">Rolls played</string>
+    <string name="stats_games_won">Rolls won</string>
+    <string name="stats_guess_distribution">Guess distribution</string>
+    <string name="stats_result_distribution">Result distribution</string>
 
-  <!-- Settings Screen -->
-  <string name="settings_theme">Theme</string>
-  <string name="settings_theme_system">System default theme</string>
-  <string name="settings_theme_light">Light theme</string>
-  <string name="settings_theme_dark">Dark theme</string>
-  <string name="cache_strategy">Use cache</string>
-  <string name="cache_strategy_always">Always</string>
-  <string name="cache_strategy_never">Never</string>
-  <string name="sdk_version_title">SDK Billing version:\n</string>
-  <string name="check_for_updates_title">We are always trying to improve our app, check if there are any updates available for you.</string>
-  <string name="check_for_updates_button">Check for updates</string>
+    <!-- Payment Items -->
+    <string name="payment_item_attempts_error_message_user_cancelled">Purchase for Attempts was cancelled.</string>
+    <string name="payment_item_attempts_refund_message">Your Purchase for Attempts was Refunded.</string>
+    <string name="payment_item_attempts_success_message">You have received 3 attempts.</string>
+    <string name="payment_item_golden_dice_error_message_user_cancelled">Purchase for Golden Dice was cancelled.</string>
+    <string name="payment_item_golden_dice_refund_message">Your Subscription for the Golden Dice was Refunded.</string>
+    <string name="payment_item_golden_dice_success_message">You are now subscribed to the Golden Dice.</string>
+    <string name="payment_item_golden_dice_expiration_message">Your subscription for the Golden Dice was expired.\nPurchase again to get it!</string>
+
+    <string name="payment_item_general_error_title_user_cancelled">Purchase cancelled</string>
+    <string name="payment_item_general_error_title_unknown">Purchase Failed</string>
+    <string name="payment_item_general_error_message_service_unavailable">The Billing Service is not available.</string>
+    <string name="payment_item_general_error_message_developer_error">There was an error during the Purchase.\nPlease contact us.</string>
+    <string name="payment_item_general_error_message_user_cancelled">User cancelled the payment during the process.</string>
+    <string name="payment_item_general_error_message_unknown">There was an error processing the Purchase.</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">System default theme</string>
+    <string name="settings_theme_light">Light theme</string>
+    <string name="settings_theme_dark">Dark theme</string>
+    <string name="cache_strategy">Use cache</string>
+    <string name="sdk_version_title">SDK Billing version</string>
+    <string name="check_for_updates_title">We are always trying to improve our app!</string>
+    <string name="check_for_updates_button">Check for updates</string>
+    <string name="settings_title_billing_information">Billing Information</string>
+    <string name="settings_title_app_information">App Information</string>
+    <string name="settings_title_statistics">Statistics</string>
 </resources>
