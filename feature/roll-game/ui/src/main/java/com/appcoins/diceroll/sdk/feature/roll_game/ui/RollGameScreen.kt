@@ -489,7 +489,7 @@ fun BoxScope.GameLost(attemptsLeft: Int) {
     Column(
         modifier = Modifier
             .align(alignment = Alignment.BottomCenter)
-            .padding(0.dp, 0.dp, 0.dp, 8.dp)
+            .padding(0.dp, 0.dp, 0.dp, 12.dp)
     ) {
         Column(
             modifier = Modifier
