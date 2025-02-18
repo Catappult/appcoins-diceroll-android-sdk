@@ -86,7 +86,7 @@ sealed class Item(
             responseCode: ResponseCode
         ): String =
             item?.getErrorMessage(context, responseCode) ?: when (responseCode) {
-                USER_CANCELED -> context.resources.getString(R.string.payment_item_attempts_error_message_user_cancelled)
+                USER_CANCELED -> context.resources.getString(R.string.payment_item_general_error_message_user_cancelled)
                 SERVICE_UNAVAILABLE -> context.resources.getString(R.string.payment_item_general_error_message_service_unavailable)
 
                 DEVELOPER_ERROR -> context.resources.getString(R.string.payment_item_general_error_message_developer_error)
