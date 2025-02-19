@@ -1,6 +1,6 @@
 package com.appcoins.diceroll.sdk.feature.roll_game.ui
 
-import android.content.Context
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetAttemptsUseCase
@@ -9,7 +9,7 @@ import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.SaveAttemptsUse
 import com.appcoins.diceroll.sdk.feature.settings.data.usecases.GetUserUseCase
 import com.appcoins.diceroll.sdk.feature.stats.data.model.DiceRoll
 import com.appcoins.diceroll.sdk.feature.stats.data.usecases.SaveDiceRollUseCase
-import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager
+import com.appcoins.diceroll.sdk.payments.billing.SdkManager
 import com.appcoins.diceroll.sdk.payments.data.models.Item
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -48,7 +48,7 @@ class RollGameViewModel @Inject constructor(
         saveDiceRollUseCase(diceRoll).also { saveAttemptsUseCase(diceRoll.attemptsLeft) }
     }
 
-    fun launchBillingSdkFlow(context: Context, item: Item) {
+    fun launchBillingSdkFlow(context: Activity, item: Item) {
         sdkManager.startPayment(
             context,
             item.sku,

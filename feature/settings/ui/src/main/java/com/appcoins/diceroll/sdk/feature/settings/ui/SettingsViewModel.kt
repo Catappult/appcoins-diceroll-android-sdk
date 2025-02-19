@@ -10,7 +10,7 @@ import com.appcoins.diceroll.sdk.feature.settings.ui.SettingsUiState.Loading
 import com.appcoins.diceroll.sdk.feature.settings.ui.SettingsUiState.Success
 import com.appcoins.diceroll.sdk.feature.stats.data.model.DiceRoll
 import com.appcoins.diceroll.sdk.feature.stats.data.usecases.GetDiceRollsUseCase
-import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager
+import com.appcoins.diceroll.sdk.payments.billing.SdkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

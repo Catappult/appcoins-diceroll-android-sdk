@@ -1,5 +1,6 @@
 package com.appcoins.diceroll.sdk.feature.store.ui
 
+import android.app.Activity
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -40,11 +41,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.appcoins.diceroll.sdk.core.ui.design.DiceRollIcons
 import com.appcoins.diceroll.sdk.core.ui.design.R
 import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
+import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType.INAPP
+import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType.SUBS
 import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType as SkuType
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails as SkuDetails
 
 @Composable
@@ -95,12 +97,12 @@ internal fun StoreRoute(
 @Composable
 fun PurchasableItem(
     skuDetails: SkuDetails,
-    onBuyClick: (Context, Item) -> Unit,
+    onBuyClick: (Activity, Item) -> Unit,
     subscriptionStatusStateFlow: (SkuDetails) -> StateFlow<Boolean>,
 ) {
-    when (skuDetails.itemType) {
-        SkuType.INAPP.name -> ConsumableItem(skuDetails = skuDetails, onBuyClick)
-        SkuType.SUBS.name -> SubscriptionItem(
+    when (skuDetails.skuType) {
+        INAPP -> ConsumableItem(skuDetails = skuDetails, onBuyClick)
+        SUBS -> SubscriptionItem(
             skuDetails = skuDetails,
             onBuyClick,
             subscriptionStatusStateFlow
@@ -109,8 +111,8 @@ fun PurchasableItem(
 }
 
 @Composable
-fun ConsumableItem(skuDetails: SkuDetails, onBuyClick: (Context, Item) -> Unit) {
-    val context = LocalContext.current
+fun ConsumableItem(skuDetails: SkuDetails, onBuyClick: (Activity, Item) -> Unit) {
+    val context = LocalContext.current as Activity
     Row(
         modifier = Modifier
             .clip(shape = RoundedCornerShape(16.dp))
@@ -158,10 +160,10 @@ fun ConsumableItem(skuDetails: SkuDetails, onBuyClick: (Context, Item) -> Unit) 
 @Composable
 fun SubscriptionItem(
     skuDetails: SkuDetails,
-    onBuyClick: (Context, Item) -> Unit,
+    onBuyClick: (Activity, Item) -> Unit,
     subscriptionStatusStateFlow: (SkuDetails) -> StateFlow<Boolean>,
 ) {
-    val context = LocalContext.current
+    val context = LocalContext.current as Activity
     val isSubscriptionActive by subscriptionStatusStateFlow(skuDetails).collectAsStateWithLifecycle()
     if (isSubscriptionActive) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -352,35 +354,15 @@ fun Preview() {
 fun getListOfItems(): ArrayList<SkuDetails> =
     arrayListOf(
         SkuDetails(
-            "subs",
             "golden_dice",
-            "subs",
-            "€ 1.0",
-            1L,
-            "EUR",
-            "APPC 10.92",
-            10.92.toLong(),
-            "APPC",
-            "$ 1.1",
-            1.1.toLong(),
-            "USD",
+            SUBS,
             "Golden Dice",
-            "More attempts for the Diceroll",
+            "€ 1.0",
         ),
         SkuDetails(
-            "inapp",
             "attempts",
-            "inapp",
-            "€ 1.0",
-            1L,
-            "EUR",
-            "APPC 10.92",
-            10.92.toLong(),
-            "APPC",
-            "$ 1.1",
-            1.1.toLong(),
-            "USD",
+            INAPP,
             "Attempts",
-            "More attempts for the Diceroll",
+            "€ 1.0",
         ),
     )

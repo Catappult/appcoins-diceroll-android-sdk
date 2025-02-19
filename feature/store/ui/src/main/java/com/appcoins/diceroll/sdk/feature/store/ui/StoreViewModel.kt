@@ -1,11 +1,11 @@
 package com.appcoins.diceroll.sdk.feature.store.ui
 
-import android.content.Context
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceStatusUseCase
 import com.appcoins.diceroll.sdk.feature.settings.data.usecases.GetUserUseCase
-import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager
+import com.appcoins.diceroll.sdk.payments.billing.SdkManager
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails
 import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
@@ -26,7 +26,7 @@ class StoreViewModel @Inject constructor(
 
     internal val purchasableItems: List<InternalSkuDetails> get() = sdkManager._purchasableItems
 
-    fun launchBillingSdkFlow(context: Context, item: Item) {
+    fun launchBillingSdkFlow(context: Activity, item: Item) {
         sdkManager.startPayment(
             context,
             item.sku,

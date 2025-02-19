@@ -1,5 +1,6 @@
 package com.appcoins.diceroll.sdk.feature.roll_game.ui
 
+import android.app.Activity
 import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.Crossfade
@@ -71,7 +72,7 @@ internal fun RollGameRoute(
 @Composable
 fun RollGameScreen(
     uiState: RollGameState,
-    onBuyClick: (Context, Item) -> Unit,
+    onBuyClick: (Activity, Item) -> Unit,
     onSaveDiceRoll: suspend (diceRoll: DiceRoll) -> Unit,
     viewModel: RollGameViewModel = hiltViewModel(),
 ) {
@@ -99,14 +100,14 @@ fun RollGameContent(
     attemptsLeft: Int,
     goldenDiceActive: Boolean,
     onSaveDiceRoll: suspend (diceRoll: DiceRoll) -> Unit,
-    onBuyClick: (Context, Item) -> Unit,
+    onBuyClick: (Activity, Item) -> Unit,
     sdkSetupState: Boolean,
     attemptsPrice: String?
 ) {
     var diceValue by rememberSaveable { mutableIntStateOf(-1) }
     var resultValue by rememberSaveable { mutableIntStateOf(0) }
     var betDice by rememberSaveable { mutableIntStateOf(0) }
-    val context = LocalContext.current
+    val context = LocalContext.current as Activity
     Column(
         modifier = Modifier
             .fillMaxSize()
