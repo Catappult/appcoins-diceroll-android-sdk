@@ -1,6 +1,6 @@
 package com.appcoins.diceroll.sdk.payments.data.models
 
-import com.appcoins.sdk.billing.ResponseCode
+import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode as ResponseCode
 
 interface PaymentState {
     data object PaymentIdle : PaymentState

@@ -1,6 +1,6 @@
 package com.appcoins.diceroll.sdk.feature.store.ui
 
-import android.content.Context
+import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -40,12 +40,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.appcoins.diceroll.sdk.core.ui.design.DiceRollIcons
 import com.appcoins.diceroll.sdk.core.ui.design.R
 import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
+import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType.INAPP
+import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType.SUBS
 import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
-import com.appcoins.sdk.billing.SkuDetails
-import com.appcoins.sdk.billing.types.SkuType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails as SkuDetails
 
 @Composable
 internal fun StoreRoute(
@@ -95,12 +96,12 @@ internal fun StoreRoute(
 @Composable
 fun PurchasableItem(
     skuDetails: SkuDetails,
-    onBuyClick: (Context, Item) -> Unit,
+    onBuyClick: (Activity, Item) -> Unit,
     subscriptionStatusStateFlow: (SkuDetails) -> StateFlow<Boolean>,
 ) {
-    when (skuDetails.itemType) {
-        SkuType.inapp.name -> ConsumableItem(skuDetails = skuDetails, onBuyClick)
-        SkuType.subs.name -> SubscriptionItem(
+    when (skuDetails.skuType) {
+        INAPP -> ConsumableItem(skuDetails = skuDetails, onBuyClick)
+        SUBS -> SubscriptionItem(
             skuDetails = skuDetails,
             onBuyClick,
             subscriptionStatusStateFlow
@@ -109,8 +110,8 @@ fun PurchasableItem(
 }
 
 @Composable
-fun ConsumableItem(skuDetails: SkuDetails, onBuyClick: (Context, Item) -> Unit) {
-    val context = LocalContext.current
+fun ConsumableItem(skuDetails: SkuDetails, onBuyClick: (Activity, Item) -> Unit) {
+    val context = LocalContext.current as Activity
     Row(
         modifier = Modifier
             .clip(shape = RoundedCornerShape(16.dp))
@@ -158,146 +159,144 @@ fun ConsumableItem(skuDetails: SkuDetails, onBuyClick: (Context, Item) -> Unit) 
 @Composable
 fun SubscriptionItem(
     skuDetails: SkuDetails,
-    onBuyClick: (Context, Item) -> Unit,
+    onBuyClick: (Activity, Item) -> Unit,
     subscriptionStatusStateFlow: (SkuDetails) -> StateFlow<Boolean>,
 ) {
-    val context = LocalContext.current
+    val context = LocalContext.current as Activity
     val isSubscriptionActive by subscriptionStatusStateFlow(skuDetails).collectAsStateWithLifecycle()
     if (isSubscriptionActive) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box {
-                Row(
-                    modifier = Modifier
-                        .clip(shape = RoundedCornerShape(0.dp, 0.dp, 16.dp, 16.dp))
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .padding(16.dp, 16.dp, 16.dp, 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text(
-                            text = skuDetails.title,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-                        Text(
-                            text = skuDetails.price,
-                            fontSize = 16.sp
-                        )
-                        Text(
-                            text = stringResource(R.string.store_screen_unsubscribe_button_text),
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(top = 24.dp)
-                                .clickable {
-                                    Toast.makeText(
-                                        context,
-                                        "To unsubscribe go to the Wallet App.",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                },
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+        ActiveSubscriptionItem(skuDetails, context)
+    } else {
+        InactiveSubscriptionItem(context, skuDetails, onBuyClick)
+    }
+    Row(modifier = Modifier.padding(8.dp)) { }
+}
+
+@Composable
+fun InactiveSubscriptionItem(
+    context: Activity,
+    skuDetails: SkuDetails,
+    onBuyClick: (Activity, Item) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .clip(shape = RoundedCornerShape(16.dp))
+            .background(color = MaterialTheme.colorScheme.primaryContainer, RectangleShape)
+            .padding(16.dp)
+            .clickable {
+                when (skuDetails.sku) {
+                    Item.GOLD_DICE_SKU -> onBuyClick(context, GoldDice)
                 }
-                Row(
+            },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f),
+        ) {
+            Text(
+                text = skuDetails.title,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+            Text(
+                text = skuDetails.price,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 16.sp
+            )
+        }
+        Box(
+            modifier = Modifier
+                .clip(shape = RoundedCornerShape(100))
+                .background(MaterialTheme.colorScheme.primary, RectangleShape)
+                .padding(4.dp),
+        ) {
+            Image(
+                imageVector = DiceRollIcons.arrowRight,
+                contentDescription = "Details",
+                colorFilter = ColorFilter.tint(Color.Black)
+            )
+        }
+    }
+}
+
+@Composable
+fun ActiveSubscriptionItem(skuDetails: SkuDetails, context: Activity) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(
+            modifier = Modifier
+                .clip(shape = RoundedCornerShape(16.dp, 16.dp, 16.dp, 16.dp))
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(16.dp)
+                )
+        ) {
+            Row(
+                modifier = Modifier
+                    .clip(shape = RoundedCornerShape(16.dp))
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                        RectangleShape
+                    )
+                    .border(
+                        width = 2.dp,
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+            ) {
+                Column(
                     modifier = Modifier
-                        .clip(shape = RoundedCornerShape(16.dp))
+                        .padding(16.dp)
+                        .weight(1f)
+                        .align(Alignment.CenterVertically),
+                ) {
+                    Text(
+                        text = skuDetails.title,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = skuDetails.price,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontSize = 16.sp
+                    )
+                }
+                Text(
+                    modifier = Modifier
+                        .clip(shape = RoundedCornerShape(100, 0, 0, 100))
                         .background(
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                             RectangleShape
                         )
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(16.dp)
-                        ),
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .weight(1f)
-                            .align(Alignment.CenterVertically),
-                    ) {
-                        Text(
-                            text = skuDetails.title,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 16.sp
-                        )
-                        Text(
-                            text = skuDetails.price,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 16.sp
-                        )
-                    }
-                    Text(
-                        modifier = Modifier
-                            .clip(shape = RoundedCornerShape(100, 0, 0, 100))
-                            .background(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                RectangleShape
-                            )
-                            .padding(8.dp, 4.dp, 8.dp, 4.dp),
-                        text = stringResource(R.string.store_screen_subscribed_text),
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-    } else {
-        Row(
-            modifier = Modifier
-                .clip(shape = RoundedCornerShape(16.dp))
-                .background(color = MaterialTheme.colorScheme.primaryContainer, RectangleShape)
-                .padding(16.dp)
-                .clickable {
-                    when (skuDetails.sku) {
-                        Item.GOLD_DICE_SKU -> onBuyClick(context, GoldDice)
-                    }
-                },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f),
-            ) {
-                Text(
-                    text = skuDetails.title,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = skuDetails.price,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = 16.sp
+                        .padding(8.dp, 4.dp, 8.dp, 4.dp),
+                    text = stringResource(R.string.store_screen_subscribed_text),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
-            Box(
-                modifier = Modifier
-                    .clip(shape = RoundedCornerShape(100))
-                    .background(MaterialTheme.colorScheme.primary, RectangleShape)
-                    .padding(4.dp),
-            ) {
-                Image(
-                    imageVector = DiceRollIcons.arrowRight,
-                    contentDescription = "Details",
-                    colorFilter = ColorFilter.tint(Color.Black)
-                )
-            }
+            Text(
+                text = stringResource(R.string.store_screen_unsubscribe_button_text),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp, 16.dp, 16.dp, 8.dp)
+                    .clickable {
+                        Toast.makeText(
+                            context,
+                            "To unsubscribe go to the Wallet App.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    },
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
-    Row(modifier = Modifier.padding(8.dp)) { }
 }
 
 @Preview(
@@ -340,7 +339,7 @@ fun Preview() {
                     items(purchasableItemsList) { sku ->
                         PurchasableItem(
                             sku,
-                            { _: Context, _: Item -> },
+                            { _: Activity, _: Item -> },
                             { skuDetails -> MutableStateFlow(true) })
                     }
                 }
@@ -352,35 +351,15 @@ fun Preview() {
 fun getListOfItems(): ArrayList<SkuDetails> =
     arrayListOf(
         SkuDetails(
-            "subs",
             "golden_dice",
-            "subs",
+            SUBS,
+            "Golden Dice (AppCoins Diceroll SDK)",
             "€ 1.0",
-            1L,
-            "EUR",
-            "APPC 10.92",
-            10.92.toLong(),
-            "APPC",
-            "$ 1.1",
-            1.1.toLong(),
-            "USD",
-            "Golden Dice",
-            "More attempts for the Diceroll",
         ),
         SkuDetails(
-            "inapp",
             "attempts",
-            "inapp",
-            "€ 1.0",
-            1L,
-            "EUR",
-            "APPC 10.92",
-            10.92.toLong(),
-            "APPC",
-            "$ 1.1",
-            1.1.toLong(),
-            "USD",
+            INAPP,
             "Attempts",
-            "More attempts for the Diceroll",
+            "€ 1.0",
         ),
     )

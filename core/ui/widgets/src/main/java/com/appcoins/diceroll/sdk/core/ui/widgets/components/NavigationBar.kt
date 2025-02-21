@@ -1,7 +1,7 @@
 package com.appcoins.diceroll.sdk.core.ui.widgets.components
 
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material3.*
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 

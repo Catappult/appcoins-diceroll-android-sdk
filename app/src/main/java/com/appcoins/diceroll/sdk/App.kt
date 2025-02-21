@@ -1,7 +1,7 @@
 package com.appcoins.diceroll.sdk
 
 import android.app.Application
-import com.appcoins.diceroll.sdk.payments.appcoins_sdk.SdkManager
+import com.appcoins.diceroll.sdk.payments.billing.SdkManager
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -16,5 +16,4 @@ class App : Application() {
 
         sdkManager.setupSdkConnection(this)
     }
-
 }

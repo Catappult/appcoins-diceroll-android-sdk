@@ -28,7 +28,7 @@ dependencies {
   projectImplementation(":feature:store:ui")
   projectImplementation(":feature:roll-game:ui")
   projectImplementation(":feature:payments:ui")
-  projectImplementation(":payments:appcoins-sdk")
+  projectImplementation(":payments:billing")
   projectImplementation(":payments:data")
   implementation(libs.androidx.splashscreen)
   implementation(libs.bundles.androidx.compose)
