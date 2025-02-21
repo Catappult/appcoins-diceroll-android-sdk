@@ -101,7 +101,7 @@ interface SdkManager {
                         BillingResponseCode.OK -> {
                             Log.d(
                                 LOG_TAG,
-                                "BillingClientStateListener: AppCoins SDK Setup successful. Querying inventory."
+                                "BillingClientStateListener: Google SDK Setup successful. Querying inventory."
                             )
                             _connectionState.value = true
                             setupRTDNListener()
@@ -114,7 +114,7 @@ interface SdkManager {
                         else -> {
                             Log.d(
                                 LOG_TAG,
-                                "BillingClientStateListener: Problem setting up AppCoins SDK: ${billingResult.responseCode}"
+                                "BillingClientStateListener: Problem setting up Google SDK: ${billingResult.responseCode}"
                             )
                             _connectionState.value = false
                             _attemptsPrice.value = null
@@ -124,7 +124,7 @@ interface SdkManager {
                 }
 
                 override fun onBillingServiceDisconnected() {
-                    Log.d(LOG_TAG, "BillingClientStateListener: AppCoins SDK Disconnected")
+                    Log.d(LOG_TAG, "BillingClientStateListener: Google SDK Disconnected")
                     _connectionState.value = false
                     _attemptsPrice.value = null
                     _purchasableItems.clear()
@@ -255,20 +255,12 @@ interface SdkManager {
         productDetailsList: List<ProductDetails>,
         skuType: String
     ) {
+        Log.d(
+            LOG_TAG,
+            "processSkuDetailsResult: item response ${billingResult.responseCode}, response message: ${billingResult.debugMessage}"
+        )
         if (billingResult.responseCode == 0) {
-            Log.d(
-                LOG_TAG,
-                "processSkuDetailsResult: productListSize -> ${productDetailsList.size}"
-            )
-            Log.d(
-                LOG_TAG,
-                "processSkuDetailsResult: item response ${billingResult.responseCode}, response message: ${billingResult.debugMessage}"
-            )
             for (productDetails in productDetailsList) {
-                Log.d(
-                    LOG_TAG,
-                    "processSkuDetailsResult: item response ${billingResult.responseCode}, productDetails $productDetails"
-                )
                 if (_purchasableItems.find { it.sku == productDetails.productId } == null) {
                     _purchasableItems.add(
                         InternalSkuDetails(
@@ -285,15 +277,8 @@ interface SdkManager {
                         _attemptsPrice.value =
                             productDetails.oneTimePurchaseOfferDetails?.formattedPrice
                     }
-                    // You can add these details to a list in order to update
-                    // UI or use it in any other way
                 }
             }
-        } else {
-            Log.e(
-                LOG_TAG,
-                "processSkuDetailsResult: item response ${billingResult.responseCode}, response message: ${billingResult.debugMessage}"
-            )
         }
     }
 
@@ -421,15 +406,7 @@ interface SdkManager {
             )
             if (purchasesResult.billingResult.responseCode == InternalResponseCode.OK.value) {
                 val purchases = purchasesResult.purchasesList
-                Log.i(
-                    LOG_TAG,
-                    "queryPurchases: purchases size: ${purchases.size}"
-                )
                 for (purchase in purchases) {
-                    Log.i(
-                        LOG_TAG,
-                        "queryPurchases: purchase sku: ${purchase.products.first()}"
-                    )
                     _purchases.add(purchase)
                     validateAndConsumePurchase(purchase)
                 }
@@ -448,15 +425,7 @@ interface SdkManager {
             )
             if (purchasesResult.billingResult.responseCode == InternalResponseCode.OK.value) {
                 val purchases = purchasesResult.purchasesList
-                Log.i(
-                    LOG_TAG,
-                    "queryActiveSubscriptions: purchases size: ${purchases.size}"
-                )
                 for (purchase in purchases) {
-                    Log.i(
-                        LOG_TAG,
-                        "queryActiveSubscriptions: purchase sku: ${purchase.products.first()}"
-                    )
                     _purchases.add(purchase)
                     validateAndAcknowledgePurchase(purchase)
                 }
@@ -488,11 +457,6 @@ interface SdkManager {
     }
 
     private fun querySubsSkus(skuList: List<String>) {
-        Log.i(
-            "SdkManager",
-            "querySubsSkus: isFeatureSupported ${billingClient.isFeatureSupported(BillingClient.FeatureType.SUBSCRIPTIONS)} ${skuList}"
-        )
-
         val queryProductDetailsParams =
             QueryProductDetailsParams.newBuilder()
                 .setProductList(
