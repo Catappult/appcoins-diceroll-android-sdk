@@ -31,10 +31,10 @@ sealed class Item(
             }
 
         override fun getRefundMessage(context: Context): String =
-            context.resources.getString(R.string.payment_item_attempts_error_message_user_cancelled)
+            context.resources.getString(R.string.payment_item_attempts_refund_message)
 
         override fun getSuccessMessage(context: Context): String =
-            context.resources.getString(R.string.payment_item_attempts_error_message_user_cancelled)
+            context.resources.getString(R.string.payment_item_attempts_success_message)
     }
 
     data object GoldDice : SubscriptionItem(GOLD_DICE_SKU) {
