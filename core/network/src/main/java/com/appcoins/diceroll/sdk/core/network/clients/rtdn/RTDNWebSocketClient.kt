@@ -4,6 +4,10 @@ import android.util.Log
 import com.appcoins.diceroll.sdk.core.network.clients.WebSocketClient
 import com.appcoins.diceroll.sdk.core.utils.rtdnWebSocketUrl
 import com.appcoins.diceroll.sdk.feature.settings.data.usecases.GetUserUseCase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import okhttp3.Response
 import okhttp3.WebSocket
 import javax.inject.Inject
@@ -13,6 +17,7 @@ class RTDNWebSocketClient @Inject constructor(
 ) : WebSocketClient() {
 
     private lateinit var rtdnMessageListener: RTDNMessageListener
+    private var exponentialFactor = 1L
 
     fun connectToRTDNApi(rtdnMessageListener: RTDNMessageListener) {
         this.rtdnMessageListener = rtdnMessageListener
@@ -30,6 +35,7 @@ class RTDNWebSocketClient @Inject constructor(
     override fun onOpen(webSocket: WebSocket, response: Response) {
         Log.i(TAG, "onOpen: connection is completed, message:${response.message}")
         super.onOpen(webSocket, response)
+        exponentialFactor = 1
     }
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
@@ -51,7 +57,13 @@ class RTDNWebSocketClient @Inject constructor(
     private fun reconnect(webSocket: WebSocket) {
         webSocket.cancel()
         webSocket.close(1000, "Internally closed.")
-        connectToRTDNApi(rtdnMessageListener)
+        CoroutineScope(Dispatchers.IO).launch {
+            delay(1000 * exponentialFactor)
+            if (exponentialFactor < 60) {
+                exponentialFactor *= 2
+            }
+            connectToRTDNApi(rtdnMessageListener)
+        }
     }
 
     private companion object {
