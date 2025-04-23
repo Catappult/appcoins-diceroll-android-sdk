@@ -99,7 +99,7 @@ interface SdkManager {
                 override fun onBillingSetupFinished(billingResult: BillingResult) {
                     when (billingResult.responseCode) {
                         BillingResponseCode.OK -> {
-                            Log.d(
+                            Log.i(
                                 LOG_TAG,
                                 "BillingClientStateListener: Google SDK Setup successful. Querying inventory."
                             )
@@ -107,12 +107,12 @@ interface SdkManager {
                             setupRTDNListener()
                             queryPurchases()
                             queryActiveSubscriptions()
-                            queryInappsSkus(ArrayList(listOf("attempts")))
-                            querySubsSkus(ArrayList(listOf("golden_dice")))
+                            queryInappsSkus(ArrayList(Skus.INAPPS))
+                            querySubsSkus(ArrayList(Skus.SUBS))
                         }
 
                         else -> {
-                            Log.d(
+                            Log.i(
                                 LOG_TAG,
                                 "BillingClientStateListener: Problem setting up Google SDK: ${billingResult.responseCode}"
                             )
@@ -124,7 +124,7 @@ interface SdkManager {
                 }
 
                 override fun onBillingServiceDisconnected() {
-                    Log.d(LOG_TAG, "BillingClientStateListener: Google SDK Disconnected")
+                    Log.i(LOG_TAG, "BillingClientStateListener: Google SDK Disconnected")
                     _connectionState.value = false
                     _attemptsPrice.value = null
                     _purchasableItems.clear()
@@ -162,7 +162,9 @@ interface SdkManager {
                                     "\noriginalJson: ${purchase.originalJson}" +
                                     "\nisAutoRenewing: ${purchase.isAutoRenewing}"
                             )
-                            if (myItems.firstOrNull { it.productId == purchase.products.first() }?.productType == ProductType.SUBS) {
+
+                            val product = purchase.products.first()
+                            if (isSubscriptionTypeProduct(product) || isNonConsumableProduct(product)) {
                                 validateAndAcknowledgePurchase(purchase)
                             } else {
                                 validateAndConsumePurchase(purchase)
@@ -196,6 +198,15 @@ interface SdkManager {
                 }
             }
         }
+
+    private fun isSubscriptionTypeProduct(product: String?): Boolean {
+        return myItems.firstOrNull { it.productId == product }?.productType == ProductType.SUBS
+    }
+
+    private fun isNonConsumableProduct(product: String?): Boolean {
+        val nonConsumableProducts = listOf("non_consumable_attempts")
+        return nonConsumableProducts.contains(product)
+    }
 
     /**
      * Listener for handling consume purchase responses.
@@ -426,6 +437,20 @@ interface SdkManager {
             if (purchasesResult.billingResult.responseCode == InternalResponseCode.OK.value) {
                 val purchases = purchasesResult.purchasesList
                 for (purchase in purchases) {
+                    Log.i(
+                        LOG_TAG, "queryActiveSubscriptions: purchase data:" +
+                            "\nsku: ${purchase.products.firstOrNull()}" +
+                            "\nitemType: ${purchase}" +
+                            "\npackageName: ${purchase.packageName}" +
+                            "\ndeveloperPayload: ${purchase.developerPayload}" +
+                            "\npurchaseState: ${purchase.purchaseState}" +
+                            "\npurchaseTime: ${purchase.purchaseTime}" +
+                            "\ntoken: ${purchase.purchaseToken}" +
+                            "\norderId: ${purchase.orderId}" +
+                            "\nsignature: ${purchase.signature}" +
+                            "\noriginalJson: ${purchase.originalJson}" +
+                            "\nisAutoRenewing: ${purchase.isAutoRenewing}"
+                    )
                     _purchases.add(purchase)
                     validateAndAcknowledgePurchase(purchase)
                 }

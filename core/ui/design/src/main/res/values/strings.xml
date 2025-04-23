@@ -41,6 +41,9 @@
     <string name="payment_item_attempts_error_message_user_cancelled">Purchase for Attempts was cancelled.</string>
     <string name="payment_item_attempts_refund_message">Your Purchase for Attempts was Refunded.</string>
     <string name="payment_item_attempts_success_message">You have received 3 attempts.</string>
+    <string name="payment_item_non_consumable_attempts_error_message_user_cancelled">Purchase for Non-Consumable Attempts was cancelled.</string>
+    <string name="payment_item_non_consumable_attempts_refund_message">Your Purchase for Non-Consumable Attempts was Refunded.</string>
+    <string name="payment_item_non_consumable_attempts_success_message">You have received 10 non-consumable attempts.</string>
     <string name="payment_item_golden_dice_error_message_user_cancelled">Purchase for Golden Dice was cancelled.</string>
     <string name="payment_item_golden_dice_refund_message">Your Subscription for the Golden Dice was Refunded.</string>
     <string name="payment_item_golden_dice_success_message">You are now subscribed to the Golden Dice.</string>

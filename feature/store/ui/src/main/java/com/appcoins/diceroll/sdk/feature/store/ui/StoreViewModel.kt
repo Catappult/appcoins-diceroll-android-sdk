@@ -9,6 +9,7 @@ import com.appcoins.diceroll.sdk.payments.billing.SdkManager
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails
 import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
+import com.appcoins.diceroll.sdk.payments.data.models.Item.TrialDice
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -37,7 +38,7 @@ class StoreViewModel @Inject constructor(
 
     fun getSubscriptionStateForSKU(skuDetails: InternalSkuDetails): StateFlow<Boolean> {
         when (skuDetails.sku) {
-            GoldDice.sku -> return getGoldenDiceStatusUseCase()
+            GoldDice.sku, TrialDice.sku -> return getGoldenDiceStatusUseCase()
                 .map {
                     it
                 }.stateIn(

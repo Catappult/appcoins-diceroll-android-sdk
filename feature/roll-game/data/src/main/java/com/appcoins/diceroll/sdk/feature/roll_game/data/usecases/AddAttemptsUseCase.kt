@@ -6,5 +6,6 @@ import javax.inject.Inject
 
 class AddAttemptsUseCase @Inject constructor(private val datastore: AttemptsDataSource) {
 
-    suspend operator fun invoke() = datastore.addAttempts(DEFAULT_ATTEMPTS_NUMBER)
+    suspend operator fun invoke(attempts: Int = DEFAULT_ATTEMPTS_NUMBER) =
+        datastore.addAttempts(attempts)
 }
