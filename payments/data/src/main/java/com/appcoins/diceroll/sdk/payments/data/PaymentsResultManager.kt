@@ -4,6 +4,8 @@ import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceSt
 import com.appcoins.diceroll.sdk.payments.data.models.InternalPurchase
 import com.appcoins.diceroll.sdk.payments.data.models.Item.Attempts
 import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
+import com.appcoins.diceroll.sdk.payments.data.models.Item.NonConsumableAttempts
+import com.appcoins.diceroll.sdk.payments.data.models.Item.TrialDice
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessExpiredGoldenDicePurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessSuccessfulAttemptsPurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessSuccessfulGoldenDicePurchaseUseCase
@@ -22,8 +24,11 @@ class PaymentsResultManager @Inject constructor(
     fun processSuccessfulResult(internalPurchase: InternalPurchase) {
         CoroutineScope(Dispatchers.IO).launch {
             when (internalPurchase.sku) {
-                Attempts.sku -> processSuccessfulAttemptsPurchaseUseCase()
-                GoldDice.sku -> processSuccessfulGoldenDicePurchaseUseCase()
+                Attempts.sku -> processSuccessfulAttemptsPurchaseUseCase(Attempts)
+                NonConsumableAttempts.sku ->
+                    processSuccessfulAttemptsPurchaseUseCase(NonConsumableAttempts)
+
+                GoldDice.sku, TrialDice.sku -> processSuccessfulGoldenDicePurchaseUseCase()
             }
         }
     }
@@ -31,7 +36,7 @@ class PaymentsResultManager @Inject constructor(
     fun processExpiredSubscriptions(listSkus: List<String>) {
         CoroutineScope(Dispatchers.IO).launch {
             if (getGoldenDiceStatusUseCase.invoke().firstOrNull() == true) {
-                if (listSkus.firstOrNull { it == GoldDice.sku } == null) {
+                if (listSkus.firstOrNull { it == GoldDice.sku || it == TrialDice.sku } == null) {
                     processExpiredGoldenDicePurchaseUseCase()
                 }
             }

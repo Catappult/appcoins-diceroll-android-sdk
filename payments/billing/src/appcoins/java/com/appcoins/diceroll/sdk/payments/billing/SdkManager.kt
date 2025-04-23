@@ -8,6 +8,7 @@ import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode.ERROR
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType
 import com.appcoins.diceroll.sdk.payments.data.models.Item
+import com.appcoins.diceroll.sdk.payments.data.models.Item.TrialDice
 import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentError
 import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentLoading
 import com.appcoins.diceroll.sdk.payments.data.streams.PurchaseStateStream
@@ -48,8 +49,6 @@ interface SdkManager {
     val _connectionState: MutableStateFlow<Boolean>
 
     val _attemptsPrice: MutableStateFlow<String?>
-
-    val _goldDicePrice: MutableStateFlow<String?>
 
     val _purchasableItems: MutableList<InternalSkuDetails>
 
@@ -100,8 +99,8 @@ interface SdkManager {
                             setupRTDNListener()
                             queryPurchases()
                             queryActiveSubscriptions()
-                            queryInappsSkus(ArrayList(listOf("attempts")))
-                            querySubsSkus(ArrayList(listOf("golden_dice")))
+                            queryInappsSkus(ArrayList(Skus.INAPPS))
+                            querySubsSkus(ArrayList(Skus.SUBS))
                         }
 
                         else -> {
@@ -111,7 +110,6 @@ interface SdkManager {
                             )
                             _connectionState.value = false
                             _attemptsPrice.value = null
-                            _goldDicePrice.value = null
                             _purchasableItems.clear()
                         }
                     }
@@ -121,7 +119,6 @@ interface SdkManager {
                     Log.d(LOG_TAG, "AppCoinsBillingStateListener: AppCoins SDK Disconnected")
                     _connectionState.value = false
                     _attemptsPrice.value = null
-                    _goldDicePrice.value = null
                     _purchasableItems.clear()
                 }
             }
@@ -235,9 +232,6 @@ interface SdkManager {
                     if (sku.sku == "attempts") {
                         _attemptsPrice.value = sku.price
                     }
-                    if (sku.sku == "golden_dice") {
-                        _goldDicePrice.value = sku.price
-                    }
                 }
             }
 
@@ -254,6 +248,7 @@ interface SdkManager {
         CoroutineScope(Job()).launch {
             PurchaseStateStream.eventFlow.emit(PaymentLoading)
         }
+
         val billingFlowParams = BillingFlowParams(
             sku,
             skuType,
@@ -268,7 +263,11 @@ interface SdkManager {
     }
 
     fun launchAppUpdateDialog(context: Context) {
-        cab.launchAppUpdateDialog(context)
+        CoroutineScope(Dispatchers.IO).launch {
+            if (cab.isAppUpdateAvailable) {
+                cab.launchAppUpdateDialog(context)
+            }
+        }
     }
 
     private fun validateAndConsumePurchase(purchase: Purchase, skipValidation: Boolean = false) {

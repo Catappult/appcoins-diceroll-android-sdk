@@ -43,7 +43,6 @@ import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType.INAPP
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType.SUBS
 import com.appcoins.diceroll.sdk.payments.data.models.Item
-import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails as SkuDetails
@@ -120,8 +119,8 @@ fun ConsumableItem(skuDetails: SkuDetails, onBuyClick: (Activity, Item) -> Unit)
             )
             .padding(16.dp)
             .clickable {
-                when (skuDetails.sku) {
-                    Item.ATTEMPTS_SKU -> onBuyClick(context, Item.Attempts)
+                Item.fromSku(skuDetails.sku)?.let {
+                    onBuyClick(context, it)
                 }
             },
         verticalAlignment = Alignment.CenterVertically
@@ -184,8 +183,8 @@ fun InactiveSubscriptionItem(
             .background(color = MaterialTheme.colorScheme.primaryContainer, RectangleShape)
             .padding(16.dp)
             .clickable {
-                when (skuDetails.sku) {
-                    Item.GOLD_DICE_SKU -> onBuyClick(context, GoldDice)
+                Item.fromSku(skuDetails.sku)?.let {
+                    onBuyClick(context, it)
                 }
             },
         verticalAlignment = Alignment.CenterVertically

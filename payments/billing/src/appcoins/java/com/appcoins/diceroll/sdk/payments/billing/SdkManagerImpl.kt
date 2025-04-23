@@ -45,8 +45,6 @@ class SdkManagerImpl @Inject constructor(
 
     override val _attemptsPrice: MutableStateFlow<String?> = MutableStateFlow(null)
 
-    override val _goldDicePrice: MutableStateFlow<String?> = MutableStateFlow(null)
-
     override val _purchasableItems: MutableList<InternalSkuDetails> =
         mutableStateListOf()
 
@@ -80,9 +78,7 @@ class SdkManagerImpl @Inject constructor(
 
     override fun processSuccessfulPurchase(purchase: Purchase) {
         paymentsResultManager.processSuccessfulResult(
-            InternalPurchase(
-                purchase.sku
-            )
+            InternalPurchase(purchase.sku)
         )
     }
 

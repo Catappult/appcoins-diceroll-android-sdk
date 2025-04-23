@@ -56,3 +56,4 @@ object PreferencesKeys {
 }
 
 const val DEFAULT_ATTEMPTS_NUMBER = 3
+const val NON_CONSUMABLE_ATTEMPTS_NUMBER = 10
