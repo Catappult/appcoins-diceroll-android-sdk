@@ -16,11 +16,13 @@ androidx_preference_version = "1.2.0"
 androidx_room_version = "2.6.0-beta01"
 androidx_splashscreen = "1.0.1"
 build_tools_version = "30.0.3"
-catappult_billing_version = "0.9.0.7"
+catappult_billing_version = "0.9.0.8"
+#catappult_billing_version = "0.9.0.8.dev-SNAPSHOT"
 coil_version = "2.3.0"
 corektx_version = "1.12.0"
 coroutines_version = "1.7.2"
 desugar_version = "2.0.3"
+google_billing_version = "7.1.1"
 google_services = "4.3.5"
 gradle_plugin_version = "8.1.2"
 gson_version = "2.9.0"
@@ -105,6 +107,7 @@ lottie = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie_v
 charts_tehras = { module = "com.github.tehras:charts", version.ref = "tehras_charts_version" }
 android-support-annotations = { module = "com.android.support:support-annotations", version.ref = "support_annotations" }
 catappult-android-appcoins-billing = { module = "io.catappult:android-appcoins-billing", version.ref = "catappult_billing_version" }
+google-billing = { module = "com.android.billingclient:billing-ktx", version.ref = "google_billing_version" }
 
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains_annotations_version" }
 android-desugar = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_version" }

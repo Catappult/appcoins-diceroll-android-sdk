@@ -49,8 +49,6 @@ class AndroidAppPlugin : Plugin<Project> {
         productFlavors {
           create(Config.googlePlayBillingVersion) {
             dimension = Config.versionFlavorDimension
-            applicationIdSuffix = ".gp"
-            versionNameSuffix = ".gp"
           }
           create(Config.appcoinsBillingVersion) {
             dimension = Config.versionFlavorDimension

@@ -1,12 +1,14 @@
 package com.appcoins.diceroll.sdk.payments.data
 
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceStatusUseCase
+import com.appcoins.diceroll.sdk.payments.data.models.InternalPurchase
 import com.appcoins.diceroll.sdk.payments.data.models.Item.Attempts
 import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
+import com.appcoins.diceroll.sdk.payments.data.models.Item.NonConsumableAttempts
+import com.appcoins.diceroll.sdk.payments.data.models.Item.TrialDice
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessExpiredGoldenDicePurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessSuccessfulAttemptsPurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessSuccessfulGoldenDicePurchaseUseCase
-import com.appcoins.sdk.billing.Purchase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
@@ -19,11 +21,14 @@ class PaymentsResultManager @Inject constructor(
     private val processExpiredGoldenDicePurchaseUseCase: ProcessExpiredGoldenDicePurchaseUseCase,
     private val getGoldenDiceStatusUseCase: GetGoldenDiceStatusUseCase,
 ) {
-    fun processSuccessfulResult(purchase: Purchase) {
+    fun processSuccessfulResult(internalPurchase: InternalPurchase) {
         CoroutineScope(Dispatchers.IO).launch {
-            when (purchase.sku) {
-                Attempts.sku -> processSuccessfulAttemptsPurchaseUseCase()
-                GoldDice.sku -> processSuccessfulGoldenDicePurchaseUseCase()
+            when (internalPurchase.sku) {
+                Attempts.sku -> processSuccessfulAttemptsPurchaseUseCase(Attempts)
+                NonConsumableAttempts.sku ->
+                    processSuccessfulAttemptsPurchaseUseCase(NonConsumableAttempts)
+
+                GoldDice.sku, TrialDice.sku -> processSuccessfulGoldenDicePurchaseUseCase()
             }
         }
     }
@@ -31,7 +36,7 @@ class PaymentsResultManager @Inject constructor(
     fun processExpiredSubscriptions(listSkus: List<String>) {
         CoroutineScope(Dispatchers.IO).launch {
             if (getGoldenDiceStatusUseCase.invoke().firstOrNull() == true) {
-                if (listSkus.firstOrNull { it == GoldDice.sku } == null) {
+                if (listSkus.firstOrNull { it == GoldDice.sku || it == TrialDice.sku } == null) {
                     processExpiredGoldenDicePurchaseUseCase()
                 }
             }

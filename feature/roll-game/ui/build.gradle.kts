@@ -13,7 +13,7 @@ dependencies {
   projectImplementation(":feature:stats:data")
   projectImplementation(":feature:roll-game:data")
   projectImplementation(":feature:payments:ui")
-  projectImplementation(":payments:appcoins-sdk")
+  projectImplementation(":payments:billing")
   projectImplementation(":payments:data")
   projectImplementation(":core:ui:design")
   projectImplementation(":core:utils")

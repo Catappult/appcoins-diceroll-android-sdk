@@ -9,7 +9,7 @@ android {
 }
 
 dependencies {
-  projectImplementation(":payments:appcoins-sdk")
+  projectImplementation(":payments:billing")
   projectImplementation(":feature:settings:data")
   projectImplementation(":feature:stats:data")
   projectImplementation(":feature:stats:ui")
