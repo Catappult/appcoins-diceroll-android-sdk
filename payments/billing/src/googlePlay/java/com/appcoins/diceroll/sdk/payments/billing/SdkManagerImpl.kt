@@ -48,7 +48,7 @@ class SdkManagerImpl @Inject constructor(
     override val _purchasableItems: MutableList<InternalSkuDetails> =
         mutableStateListOf()
 
-    override val myItems: MutableList<ProductDetails> = mutableStateListOf()
+    override val _myItems: MutableList<ProductDetails> = mutableStateListOf()
 
     override val _purchases: ArrayList<Purchase> = ArrayList()
 
