@@ -235,8 +235,6 @@ interface SdkManager {
             PurchaseStateStream.eventFlow.emit(PaymentLoading)
         }
 
-        val shouldStartFreeTrial = isFreeTrialSubscription(sku, skuType, developerPayload)
-
         val productDetails = _myItems.firstOrNull { it.productId == sku }
 
         if (productDetails == null) {
@@ -245,6 +243,8 @@ interface SdkManager {
             }
             return
         }
+
+        val shouldStartFreeTrial = isFreeTrialSubscription(productDetails)
 
         val productDetailsParamsList = listOf(
             BillingFlowParams.ProductDetailsParams.newBuilder()
@@ -464,11 +464,7 @@ interface SdkManager {
         return nonConsumableProducts.contains(product)
     }
 
-    private fun isFreeTrialSubscription(
-        sku: String,
-        skuType: String,
-        developerPayload: String?
-    ): Boolean {
+    private fun isFreeTrialSubscription(productDetails: ProductDetails): Boolean {
         // First verify if the Free Trial feature and Obfucasted Account Id parameter are available
         if (billingClient.isFeatureSupported(FeatureType.FREE_TRIALS) != 0) {
             return false
@@ -479,11 +475,11 @@ interface SdkManager {
         }
 
         // Verify if the Sku Type is a Subscription
-        if (skuType != SkuType.subs.toString()) {
+        if (productDetails.productType != SkuType.subs.toString()) {
             return false
         }
 
-        return sku == "trial_dice"
+        return productDetails.productId == "trial_dice"
     }
 
     companion object {
