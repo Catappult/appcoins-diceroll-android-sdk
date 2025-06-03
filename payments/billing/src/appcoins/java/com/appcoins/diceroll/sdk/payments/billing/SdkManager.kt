@@ -27,7 +27,12 @@ interface SdkManager {
                 private val BASE_64_ENCODED_PUBLIC_KEY = BuildConfig.CATAPPULT_PUBLIC_KEY
             4 - Initiate the integration for the Aptoide Billing and confirm the BuildVariant is set to appcoinsDebug or appcoinsRelease
             5 - Add the Aptoide billing Library in the TODO_APTOIDE_SDK_DEPENDENCY comment section
-        Add the
+        In the end the Aptoide Billing is supposed to:
+            1 - Show correctly the available items to Buy.
+            2 - Allow to Buy the item available
+            3 - Show the price for the Attempts in the Main Screen
+            4 - Allow to buy the Golden Dice
+            5 - Verify if there are new versions available in the Settings
      */
 
     companion object {
