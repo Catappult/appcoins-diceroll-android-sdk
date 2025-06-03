@@ -15,7 +15,6 @@ android {
 }
 
 dependencies {
-  implementation(libs.catappult.android.appcoins.billing)
   projectImplementation(":core:ui:design")
   projectImplementation(":core:ui:widgets")
   projectImplementation(":core:utils")
