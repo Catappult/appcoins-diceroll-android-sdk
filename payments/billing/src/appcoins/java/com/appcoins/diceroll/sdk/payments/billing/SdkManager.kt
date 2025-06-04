@@ -16,6 +16,7 @@ import com.appcoins.diceroll.sdk.payments.data.streams.PurchaseStateStream
 import com.appcoins.sdk.billing.AppcoinsBillingClient
 import com.appcoins.sdk.billing.BillingFlowParams
 import com.appcoins.sdk.billing.BillingResult
+import com.appcoins.sdk.billing.CatapultAppcoinsBilling.BillingResponseCode
 import com.appcoins.sdk.billing.CatapultAppcoinsBilling.ProductType
 import com.appcoins.sdk.billing.ConsumeParams
 import com.appcoins.sdk.billing.FeatureType
@@ -33,7 +34,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode as ResponseCode
 
 /**
  * Manages the AppCoins SDK integration for in-app billing.
@@ -92,15 +92,15 @@ interface SdkManager {
      * of the AppCoins billing client and has two methods to act on connection and
      * disconnection events.
      *
-     * @param responseCode The response code from the billing client
+     * @param billingResult The response code from the billing client
      */
     val appCoinsBillingStateListener: AppCoinsBillingStateListener
         get() =
             object : AppCoinsBillingStateListener {
-                override fun onBillingSetupFinished(responseCode: Int) {
-                    when (responseCode) {
-                        ResponseCode.OK.value -> {
-                            Log.d(
+                override fun onBillingSetupFinished(billingResult: BillingResult) {
+                    when (billingResult.responseCode) {
+                        BillingResponseCode.OK -> {
+                            Log.i(
                                 LOG_TAG,
                                 "AppCoinsBillingStateListener: AppCoins SDK Setup successful. Querying inventory."
                             )
@@ -113,9 +113,9 @@ interface SdkManager {
                         }
 
                         else -> {
-                            Log.d(
+                            Log.i(
                                 LOG_TAG,
-                                "AppCoinsBillingStateListener: Problem setting up AppCoins SDK: ${responseCode.toResponseCode()}"
+                                "AppCoinsBillingStateListener: Problem setting up AppCoins SDK: ${billingResult.responseCode.toResponseCode()}"
                             )
                             _connectionState.value = false
                             _attemptsPrice.value = null
@@ -125,7 +125,7 @@ interface SdkManager {
                 }
 
                 override fun onBillingServiceDisconnected() {
-                    Log.d(LOG_TAG, "AppCoinsBillingStateListener: AppCoins SDK Disconnected")
+                    Log.i(LOG_TAG, "AppCoinsBillingStateListener: AppCoins SDK Disconnected")
                     _connectionState.value = false
                     _attemptsPrice.value = null
                     _purchasableItems.clear()
@@ -142,13 +142,13 @@ interface SdkManager {
      * Based on the response code, it can process the purchases or
      * handle errors.
      *
-     * @param responseCode The response code from the billing client
+     * @param billingResult The [BillingResult] from the billing client
      * @param purchases The list of Purchase objects with the purchase data
      */
     val purchasesUpdatedListener: PurchasesUpdatedListener
-        get() = PurchasesUpdatedListener { responseCode: Int, purchases: List<Purchase> ->
-            when (responseCode) {
-                ResponseCode.OK.value -> {
+        get() = PurchasesUpdatedListener { billingResult: BillingResult, purchases: List<Purchase> ->
+            when (billingResult.responseCode) {
+                BillingResponseCode.OK -> {
                     if (purchases.isNotEmpty()) {
                         for (purchase in purchases) {
                             _purchases.add(purchase)
@@ -179,7 +179,8 @@ interface SdkManager {
                             PurchaseStateStream.publish(
                                 PaymentError(
                                     null,
-                                    ResponseCode.entries.find { it.value == responseCode } ?: ERROR)
+                                    InternalResponseCode.entries.find { it.value == billingResult.responseCode }
+                                        ?: ERROR)
                             )
                         }
                     }
@@ -190,12 +191,13 @@ interface SdkManager {
                         PurchaseStateStream.publish(
                             PaymentError(
                                 null,
-                                ResponseCode.entries.find { it.value == responseCode } ?: ERROR)
+                                InternalResponseCode.entries.find { it.value == billingResult.responseCode }
+                                    ?: ERROR)
                         )
                     }
                     Log.d(
                         LOG_TAG,
-                        "PurchasesUpdatedListener: response ${responseCode.toResponseCode()}"
+                        "PurchasesUpdatedListener: response ${billingResult.responseCode} response message: ${billingResult.debugMessage}"
                     )
                 }
             }
@@ -209,15 +211,15 @@ interface SdkManager {
      *
      * It can be used to determine if the consumption was successful.
      *
-     * @param responseCode The response code from consuming purchase
+     * @param billingResult The [BillingResult] from consuming purchase
      * @param purchaseToken The token of the consumed purchase
      */
     val consumeResponseListener: ConsumeResponseListener
         get() =
-            ConsumeResponseListener { responseCode, purchaseToken ->
+            ConsumeResponseListener { billingResult, purchaseToken ->
                 Log.d(
                     LOG_TAG,
-                    "ConsumeResponseListener: Consumption finished. Purchase: $purchaseToken, result: $responseCode"
+                    "ConsumeResponseListener: Consumption finished. Purchase: $purchaseToken, result: $billingResult"
                 )
             }
 
@@ -329,7 +331,7 @@ interface SdkManager {
         billingClient.queryPurchasesAsync(
             QueryPurchasesParams.newBuilder().setProductType(ProductType.INAPP).build()
         ) { billingResult, purchases ->
-            if (billingResult.responseCode == InternalResponseCode.OK.value) {
+            if (billingResult.responseCode == BillingResponseCode.OK) {
                 for (purchase in purchases) {
                     _purchases.add(purchase)
                     validateAndConsumePurchase(purchase)
@@ -343,12 +345,14 @@ interface SdkManager {
             val purchasesResult = billingClient.queryPurchasesAsync(
                 QueryPurchasesParams.newBuilder().setProductType(ProductType.SUBS).build()
             )
-            val purchases = purchasesResult.purchases
-            for (purchase in purchases) {
-                _purchases.add(purchase)
-                validateAndAcknowledgePurchase(purchase)
+            if (purchasesResult.billingResult.responseCode == BillingResponseCode.OK) {
+                val purchases = purchasesResult.purchasesList
+                for (purchase in purchases) {
+                    _purchases.add(purchase)
+                    validateAndAcknowledgePurchase(purchase)
+                }
+                processExpiredPurchases(purchases)
             }
-            processExpiredPurchases(purchases)
         }
     }
 
@@ -466,11 +470,11 @@ interface SdkManager {
 
     private fun isFreeTrialSubscription(productDetails: ProductDetails): Boolean {
         // First verify if the Free Trial feature and Obfucasted Account Id parameter are available
-        if (billingClient.isFeatureSupported(FeatureType.FREE_TRIALS) != 0) {
+        if (billingClient.isFeatureSupported(FeatureType.FREE_TRIALS).responseCode != 0) {
             return false
         }
 
-        if (billingClient.isFeatureSupported(FeatureType.OBFUSCATED_ACCOUNT_ID) != 0) {
+        if (billingClient.isFeatureSupported(FeatureType.OBFUSCATED_ACCOUNT_ID).responseCode != 0) {
             return false
         }
 

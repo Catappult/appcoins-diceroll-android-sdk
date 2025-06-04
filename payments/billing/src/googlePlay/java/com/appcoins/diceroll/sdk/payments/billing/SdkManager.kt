@@ -92,6 +92,8 @@ interface SdkManager {
      * This listener handles events related to the connection state
      * of the Google billing client and has two methods to act on connection and
      * disconnection events.
+     *
+     * @param billingResult The response code from the billing client
      */
     val billingClientStateListener: BillingClientStateListener
         get() =
@@ -350,7 +352,7 @@ interface SdkManager {
         billingClient.queryPurchasesAsync(
             QueryPurchasesParams.newBuilder().setProductType(ProductType.INAPP).build()
         ) { billingResult, purchases ->
-            if (billingResult.responseCode == InternalResponseCode.OK.value) {
+            if (billingResult.responseCode == BillingResponseCode.OK) {
                 for (purchase in purchases) {
                     _purchases.add(purchase)
                     validateAndConsumePurchase(purchase)
@@ -364,7 +366,7 @@ interface SdkManager {
             val purchasesResult = billingClient.queryPurchasesAsync(
                 QueryPurchasesParams.newBuilder().setProductType(ProductType.SUBS).build()
             )
-            if (purchasesResult.billingResult.responseCode == InternalResponseCode.OK.value) {
+            if (purchasesResult.billingResult.responseCode == BillingResponseCode.OK) {
                 val purchases = purchasesResult.purchasesList
                 for (purchase in purchases) {
                     _purchases.add(purchase)
