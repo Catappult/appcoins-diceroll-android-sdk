@@ -3,8 +3,6 @@ package com.appcoins.diceroll.sdk.payments.billing
 import android.app.Activity
 import android.content.Context
 import android.util.Log
-import com.android.billingclient.api.AcknowledgePurchaseParams
-import com.android.billingclient.api.AcknowledgePurchaseResponseListener
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClient.BillingResponseCode
 import com.android.billingclient.api.BillingClient.ProductType
@@ -109,8 +107,8 @@ interface SdkManager {
                             setupRTDNListener()
                             queryPurchases()
                             queryActiveSubscriptions()
-                            queryInappsSkus(ArrayList(Skus.INAPPS))
-                            querySubsSkus(ArrayList(Skus.SUBS))
+                            queryInappProducts(ArrayList(Skus.INAPPS))
+                            querySubsProducts(ArrayList(Skus.SUBS))
                         }
 
                         else -> {
@@ -155,8 +153,7 @@ interface SdkManager {
                             _purchases.add(purchase)
                             Log.i(
                                 LOG_TAG, "PurchasesUpdatedListener: purchase data:" +
-                                    "\nsku: ${purchase.products.firstOrNull()}" +
-                                    "\nitemType: ${purchase}" +
+                                    "\nsku: ${purchase.products.first()}" +
                                     "\npackageName: ${purchase.packageName}" +
                                     "\ndeveloperPayload: ${purchase.developerPayload}" +
                                     "\npurchaseState: ${purchase.purchaseState}" +
@@ -253,17 +250,13 @@ interface SdkManager {
      * This will launch the Google Play billing flow. The result will be delivered
      * via the PurchasesUpdatedListener callback.
      */
-    fun startPayment(
-        activity: Activity,
-        sku: String,
-        skuType: String? = null,
-        developerPayload: String?
-    ) {
+    fun startPayment(activity: Activity, sku: String, skuType: String, developerPayload: String?) {
         CoroutineScope(Job()).launch {
             PurchaseStateStream.eventFlow.emit(PaymentLoading)
         }
 
         val productDetails = _myItems.firstOrNull { it.productId == sku }
+
         if (productDetails == null) {
             CoroutineScope(Job()).launch {
                 PurchaseStateStream.eventFlow.emit(PaymentError(null, ITEM_UNAVAILABLE))
@@ -377,7 +370,7 @@ interface SdkManager {
         }
     }
 
-    private fun queryInappsSkus(skuList: List<String>) {
+    private fun queryInappProducts(skuList: List<String>) {
         val queryProductDetailsParams =
             QueryProductDetailsParams.newBuilder()
                 .setProductList(
@@ -391,7 +384,7 @@ interface SdkManager {
                 .build()
 
         billingClient.queryProductDetailsAsync(queryProductDetailsParams) { billingResult, details ->
-            processSkuDetailsResult(
+            processProductDetailsResult(
                 billingResult,
                 details,
                 ProductType.INAPP
@@ -399,7 +392,7 @@ interface SdkManager {
         }
     }
 
-    private fun querySubsSkus(skuList: List<String>) {
+    private fun querySubsProducts(skuList: List<String>) {
         val queryProductDetailsParams =
             QueryProductDetailsParams.newBuilder()
                 .setProductList(
@@ -413,7 +406,7 @@ interface SdkManager {
                 .build()
 
         billingClient.queryProductDetailsAsync(queryProductDetailsParams) { billingResult, details ->
-            processSkuDetailsResult(
+            processProductDetailsResult(
                 billingResult,
                 details,
                 ProductType.SUBS
@@ -434,14 +427,14 @@ interface SdkManager {
      * @param productDetailsList List of ProductDetails objects
      * @param skuType Type of Product
      */
-    private fun processSkuDetailsResult(
+    private fun processProductDetailsResult(
         billingResult: BillingResult,
         productDetailsList: List<ProductDetails>,
         skuType: String
     ) {
         Log.d(
             LOG_TAG,
-            "processSkuDetailsResult: item response ${billingResult.responseCode}, response message: ${billingResult.debugMessage}"
+            "processProductDetailsResult: item response ${billingResult.responseCode}, response message: ${billingResult.debugMessage}"
         )
         if (billingResult.responseCode == 0) {
             for (productDetails in productDetailsList) {

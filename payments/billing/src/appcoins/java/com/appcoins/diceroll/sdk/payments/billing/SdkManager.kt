@@ -28,7 +28,6 @@ import com.appcoins.sdk.billing.QueryProductDetailsParams.Product
 import com.appcoins.sdk.billing.QueryPurchasesParams
 import com.appcoins.sdk.billing.listeners.AppCoinsBillingStateListener
 import com.appcoins.sdk.billing.listeners.ConsumeResponseListener
-import com.appcoins.sdk.billing.types.SkuType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -108,8 +107,8 @@ interface SdkManager {
                             setupRTDNListener()
                             queryPurchases()
                             queryActiveSubscriptions()
-                            queryInappsSkus(ArrayList(Skus.INAPPS))
-                            querySubsSkus(ArrayList(Skus.SUBS))
+                            queryInappProducts(ArrayList(Skus.INAPPS))
+                            querySubsProducts(ArrayList(Skus.SUBS))
                         }
 
                         else -> {
@@ -146,28 +145,27 @@ interface SdkManager {
      * @param purchases The list of Purchase objects with the purchase data
      */
     val purchasesUpdatedListener: PurchasesUpdatedListener
-        get() = PurchasesUpdatedListener { billingResult: BillingResult, purchases: List<Purchase> ->
+        get() = PurchasesUpdatedListener { billingResult: BillingResult, purchases: MutableList<Purchase>? ->
             when (billingResult.responseCode) {
                 BillingResponseCode.OK -> {
-                    if (purchases.isNotEmpty()) {
+                    if (!purchases.isNullOrEmpty()) {
                         for (purchase in purchases) {
                             _purchases.add(purchase)
                             Log.i(
                                 LOG_TAG, "PurchasesUpdatedListener: purchase data:" +
-                                    "\nsku: ${purchase.sku}" +
-                                    "\nitemType: ${purchase.itemType}" +
+                                    "\nsku: ${purchase.products.first()}" +
                                     "\npackageName: ${purchase.packageName}" +
                                     "\ndeveloperPayload: ${purchase.developerPayload}" +
                                     "\npurchaseState: ${purchase.purchaseState}" +
                                     "\npurchaseTime: ${purchase.purchaseTime}" +
-                                    "\ntoken: ${purchase.token}" +
+                                    "\ntoken: ${purchase.purchaseToken}" +
                                     "\norderId: ${purchase.orderId}" +
                                     "\nsignature: ${purchase.signature}" +
                                     "\noriginalJson: ${purchase.originalJson}" +
                                     "\nisAutoRenewing: ${purchase.isAutoRenewing}"
                             )
 
-                            val product = purchase.sku
+                            val product = purchase.products.first()
                             if (isSubscriptionTypeProduct(product) || isNonConsumableProduct(product)) {
                                 validateAndAcknowledgePurchase(purchase)
                             } else {
@@ -232,7 +230,7 @@ interface SdkManager {
      * This will launch the Google Play billing flow. The result will be delivered
      * via the PurchasesUpdatedListener callback.
      */
-    fun startPayment(context: Context, sku: String, skuType: String, developerPayload: String?) {
+    fun startPayment(activity: Activity, sku: String, skuType: String, developerPayload: String?) {
         CoroutineScope(Job()).launch {
             PurchaseStateStream.eventFlow.emit(PaymentLoading)
         }
@@ -266,7 +264,7 @@ interface SdkManager {
                 }.build()
 
         CoroutineScope(Job()).launch {
-            billingClient.launchBillingFlow(context as Activity, billingFlowParams)
+            billingClient.launchBillingFlow(activity, billingFlowParams)
         }
     }
 
@@ -280,8 +278,8 @@ interface SdkManager {
 
     private fun validateAndConsumePurchase(purchase: Purchase, skipValidation: Boolean = false) {
         CoroutineScope(Job()).launch {
-            val product = purchase.sku
-            val purchaseToken = purchase.token ?: ""
+            val product = purchase.products.first()
+            val purchaseToken = purchase.purchaseToken
             val isPurchaseValid =
                 skipValidation || BuildConfig.DEBUG || isPurchaseValid(product, purchaseToken)
 
@@ -306,8 +304,8 @@ interface SdkManager {
         skipValidation: Boolean = true
     ) {
         CoroutineScope(Job()).launch {
-            val product = purchase.sku
-            val purchaseToken = purchase.token ?: ""
+            val product = purchase.products.first()
+            val purchaseToken = purchase.purchaseToken
             val isPurchaseValid =
                 skipValidation || BuildConfig.DEBUG || isPurchaseValid(product, purchaseToken)
 
@@ -356,7 +354,7 @@ interface SdkManager {
         }
     }
 
-    private fun queryInappsSkus(skuList: List<String>) {
+    private fun queryInappProducts(skuList: List<String>) {
         val queryProductDetailsParams =
             QueryProductDetailsParams.newBuilder()
                 .setProductList(
@@ -370,7 +368,7 @@ interface SdkManager {
                 .build()
 
         billingClient.queryProductDetailsAsync(queryProductDetailsParams) { billingResult, details ->
-            processSkuDetailsResult(
+            processProductDetailsResult(
                 billingResult,
                 details,
                 ProductType.INAPP
@@ -378,7 +376,7 @@ interface SdkManager {
         }
     }
 
-    private fun querySubsSkus(skuList: List<String>) {
+    private fun querySubsProducts(skuList: List<String>) {
         val queryProductDetailsParams =
             QueryProductDetailsParams.newBuilder()
                 .setProductList(
@@ -392,7 +390,7 @@ interface SdkManager {
                 .build()
 
         billingClient.queryProductDetailsAsync(queryProductDetailsParams) { billingResult, details ->
-            processSkuDetailsResult(
+            processProductDetailsResult(
                 billingResult,
                 details,
                 ProductType.SUBS
@@ -413,14 +411,14 @@ interface SdkManager {
      * @param productDetailsList List of ProductDetails objects
      * @param skuType Type of Product
      */
-    private fun processSkuDetailsResult(
+    private fun processProductDetailsResult(
         billingResult: BillingResult,
         productDetailsList: List<ProductDetails>,
         skuType: String
     ) {
         Log.d(
             LOG_TAG,
-            "processSkuDetailsResult: item response ${billingResult.responseCode}, response message: ${billingResult.debugMessage}"
+            "processProductDetailsResult: item response ${billingResult.responseCode}, response message: ${billingResult.debugMessage}"
         )
         if (billingResult.responseCode == 0) {
             for (productDetails in productDetailsList) {
@@ -470,16 +468,16 @@ interface SdkManager {
 
     private fun isFreeTrialSubscription(productDetails: ProductDetails): Boolean {
         // First verify if the Free Trial feature and Obfucasted Account Id parameter are available
-        if (billingClient.isFeatureSupported(FeatureType.FREE_TRIALS).responseCode != 0) {
+        if (billingClient.isFeatureSupported(FeatureType.FREE_TRIALS).responseCode != BillingResponseCode.OK) {
             return false
         }
 
-        if (billingClient.isFeatureSupported(FeatureType.OBFUSCATED_ACCOUNT_ID).responseCode != 0) {
+        if (billingClient.isFeatureSupported(FeatureType.OBFUSCATED_ACCOUNT_ID).responseCode != BillingResponseCode.OK) {
             return false
         }
 
         // Verify if the Sku Type is a Subscription
-        if (productDetails.productType != SkuType.subs.toString()) {
+        if (productDetails.productType != ProductType.SUBS) {
             return false
         }
 
