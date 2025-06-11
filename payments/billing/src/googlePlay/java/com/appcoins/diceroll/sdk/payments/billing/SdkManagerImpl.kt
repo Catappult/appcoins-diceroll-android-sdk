@@ -76,9 +76,7 @@ class SdkManagerImpl @Inject constructor(
 
     override fun processSuccessfulPurchase(purchase: Purchase) {
         paymentsResultManager.processSuccessfulResult(
-            InternalPurchase(
-                purchase.products.first()
-            )
+            InternalPurchase(purchase.products.first())
         )
     }
 

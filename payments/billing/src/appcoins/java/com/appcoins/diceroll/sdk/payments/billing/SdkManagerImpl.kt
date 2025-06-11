@@ -13,7 +13,6 @@ import com.appcoins.diceroll.sdk.payments.data.usecases.GetMessageFromRTDNRespon
 import com.appcoins.sdk.billing.AppcoinsBillingClient
 import com.appcoins.sdk.billing.ProductDetails
 import com.appcoins.sdk.billing.Purchase
-import com.appcoins.sdk.billing.helpers.CatapultBillingAppCoinsFactory
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
@@ -56,9 +55,9 @@ class SdkManagerImpl @Inject constructor(
     override val _purchaseValidatorRepository: PurchaseValidatorRepository =
         purchaseValidatorRepository
 
-    private val BASE_64_ENCODED_PUBLIC_KEY = BuildConfig.CATAPPULT_PUBLIC_KEY
-
     private var isRTDNConnectionEstablished = false
+
+    private val BASE_64_ENCODED_PUBLIC_KEY = BuildConfig.CATAPPULT_PUBLIC_KEY
 
     /**
      * Listener for RTDN.
@@ -70,23 +69,21 @@ class SdkManagerImpl @Inject constructor(
     )
 
     override fun setupSdkConnection(context: Context) {
-        billingClient =
-            CatapultBillingAppCoinsFactory.BuildAppcoinsBilling(
-                context,
-                BASE_64_ENCODED_PUBLIC_KEY,
-                purchasesUpdatedListener
-            )
+        billingClient = AppcoinsBillingClient.newBuilder(context)
+            .setListener(purchasesUpdatedListener)
+            .setPublicKey(BASE_64_ENCODED_PUBLIC_KEY)
+            .build()
         billingClient.startConnection(appCoinsBillingStateListener)
     }
 
     override fun processSuccessfulPurchase(purchase: Purchase) {
         paymentsResultManager.processSuccessfulResult(
-            InternalPurchase(purchase.sku)
+            InternalPurchase(purchase.products.first())
         )
     }
 
     override fun processExpiredPurchases(purchases: List<Purchase>) {
-        paymentsResultManager.processExpiredSubscriptions(purchases.map { it.sku })
+        paymentsResultManager.processExpiredSubscriptions(purchases.map { it.products.first() })
     }
 
     override fun setupRTDNListener() {

@@ -14,10 +14,10 @@ import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentError
 import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentLoading
 import com.appcoins.diceroll.sdk.payments.data.streams.PurchaseStateStream
 import com.appcoins.sdk.billing.AppcoinsBillingClient
+import com.appcoins.sdk.billing.AppcoinsBillingClient.BillingResponseCode
+import com.appcoins.sdk.billing.AppcoinsBillingClient.ProductType
 import com.appcoins.sdk.billing.BillingFlowParams
 import com.appcoins.sdk.billing.BillingResult
-import com.appcoins.sdk.billing.CatapultAppcoinsBilling.BillingResponseCode
-import com.appcoins.sdk.billing.CatapultAppcoinsBilling.ProductType
 import com.appcoins.sdk.billing.ConsumeParams
 import com.appcoins.sdk.billing.FeatureType
 import com.appcoins.sdk.billing.ProductDetails
