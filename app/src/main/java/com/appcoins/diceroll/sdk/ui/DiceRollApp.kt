@@ -12,6 +12,9 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import com.appcoins.diceroll.sdk.core.ui.widgets.components.DiceRollNavigationBarItem
 import com.appcoins.diceroll.sdk.feature.payments.ui.PaymentScreen
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.SubscriptionPrefs
+import com.appcoins.diceroll.sdk.feature.roll_game.ui.widgets.DiceSelectionDialog
 import com.appcoins.diceroll.sdk.navigation.DiceRollNavHost
 import com.appcoins.diceroll.sdk.navigation.TopLevelDestination
 import com.appcoins.diceroll.sdk.payments.data.models.PaymentState
@@ -20,7 +23,14 @@ import com.google.accompanist.navigation.material.ExperimentalMaterialNavigation
 
 @OptIn(ExperimentalMaterialNavigationApi::class)
 @Composable
-fun DiceRollApp(paymentState: PaymentState, onPaymentDialogDismissed: () -> Unit) {
+fun DiceRollApp(
+    paymentState: PaymentState,
+    onPaymentDialogDismissed: () -> Unit,
+    diceSelectionDialogVisibilityState: Boolean,
+    subscriptionPrefs: SubscriptionPrefs,
+    onDiceSelectionDialogDismissed: () -> Unit,
+    onDiceSelected: (Subscription) -> Unit
+) {
     val appState: DiceRollAppState = rememberDiceRollAppState()
     Scaffold(
         bottomBar = {
@@ -41,6 +51,10 @@ fun DiceRollApp(paymentState: PaymentState, onPaymentDialogDismissed: () -> Unit
         PaymentScreen(paymentState) {
             onPaymentDialogDismissed()
         }
+    }
+
+    if (diceSelectionDialogVisibilityState) {
+        DiceSelectionDialog(subscriptionPrefs, onDiceSelectionDialogDismissed, onDiceSelected)
     }
 }
 
