@@ -13,21 +13,21 @@ import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentError
 import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentLoading
 import com.appcoins.diceroll.sdk.payments.data.streams.PurchaseStateStream
-import com.appcoins.sdk.billing.AppcoinsBillingClient
-import com.appcoins.sdk.billing.AppcoinsBillingClient.BillingResponseCode
-import com.appcoins.sdk.billing.AppcoinsBillingClient.ProductType
-import com.appcoins.sdk.billing.BillingFlowParams
-import com.appcoins.sdk.billing.BillingResult
-import com.appcoins.sdk.billing.ConsumeParams
-import com.appcoins.sdk.billing.FeatureType
-import com.appcoins.sdk.billing.ProductDetails
-import com.appcoins.sdk.billing.Purchase
-import com.appcoins.sdk.billing.PurchasesUpdatedListener
-import com.appcoins.sdk.billing.QueryProductDetailsParams
-import com.appcoins.sdk.billing.QueryProductDetailsParams.Product
-import com.appcoins.sdk.billing.QueryPurchasesParams
-import com.appcoins.sdk.billing.listeners.AppCoinsBillingStateListener
-import com.appcoins.sdk.billing.listeners.ConsumeResponseListener
+import com.aptoide.sdk.billing.AptoideBillingClient
+import com.aptoide.sdk.billing.AptoideBillingClient.BillingResponseCode
+import com.aptoide.sdk.billing.AptoideBillingClient.ProductType
+import com.aptoide.sdk.billing.BillingFlowParams
+import com.aptoide.sdk.billing.BillingResult
+import com.aptoide.sdk.billing.ConsumeParams
+import com.aptoide.sdk.billing.FeatureType
+import com.aptoide.sdk.billing.ProductDetails
+import com.aptoide.sdk.billing.Purchase
+import com.aptoide.sdk.billing.PurchasesUpdatedListener
+import com.aptoide.sdk.billing.QueryProductDetailsParams
+import com.aptoide.sdk.billing.QueryProductDetailsParams.Product
+import com.aptoide.sdk.billing.QueryPurchasesParams
+import com.aptoide.sdk.billing.listeners.AptoideBillingClientStateListener
+import com.aptoide.sdk.billing.listeners.ConsumeResponseListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -50,7 +50,7 @@ interface SdkManager {
     /**
      * The AppCoins billing client instance.
      */
-    val billingClient: AppcoinsBillingClient
+    val billingClient: AptoideBillingClient
 
     val _connectionState: MutableStateFlow<Boolean>
 
@@ -93,9 +93,9 @@ interface SdkManager {
      *
      * @param billingResult The response code from the billing client
      */
-    val appCoinsBillingStateListener: AppCoinsBillingStateListener
+    val aptoideBillingClientStateListener: AptoideBillingClientStateListener
         get() =
-            object : AppCoinsBillingStateListener {
+            object : AptoideBillingClientStateListener {
                 override fun onBillingSetupFinished(billingResult: BillingResult) {
                     when (billingResult.responseCode) {
                         BillingResponseCode.OK -> {

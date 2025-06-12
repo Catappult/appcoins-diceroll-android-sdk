@@ -10,9 +10,9 @@ import com.appcoins.diceroll.sdk.payments.data.models.InternalPurchase
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails
 import com.appcoins.diceroll.sdk.payments.data.rtdn.RTDNMessageListenerImpl
 import com.appcoins.diceroll.sdk.payments.data.usecases.GetMessageFromRTDNResponseUseCase
-import com.appcoins.sdk.billing.AppcoinsBillingClient
-import com.appcoins.sdk.billing.ProductDetails
-import com.appcoins.sdk.billing.Purchase
+import com.aptoide.sdk.billing.AptoideBillingClient
+import com.aptoide.sdk.billing.ProductDetails
+import com.aptoide.sdk.billing.Purchase
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
@@ -39,7 +39,7 @@ class SdkManagerImpl @Inject constructor(
     private val paymentsResultManager: PaymentsResultManager,
 ) : SdkManager {
 
-    override lateinit var billingClient: AppcoinsBillingClient
+    override lateinit var billingClient: AptoideBillingClient
 
     override val _connectionState: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -69,11 +69,11 @@ class SdkManagerImpl @Inject constructor(
     )
 
     override fun setupSdkConnection(context: Context) {
-        billingClient = AppcoinsBillingClient.newBuilder(context)
+        billingClient = AptoideBillingClient.newBuilder(context)
             .setListener(purchasesUpdatedListener)
             .setPublicKey(BASE_64_ENCODED_PUBLIC_KEY)
             .build()
-        billingClient.startConnection(appCoinsBillingStateListener)
+        billingClient.startConnection(aptoideBillingClientStateListener)
     }
 
     override fun processSuccessfulPurchase(purchase: Purchase) {
