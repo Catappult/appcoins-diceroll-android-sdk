@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.appcoins.diceroll.sdk.core.ui.design.R
 import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
 import com.appcoins.diceroll.sdk.core.utils.extensions.toPercent
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription.GOLDEN_DICE
 import com.appcoins.diceroll.sdk.feature.stats.data.model.DiceRoll
 import com.appcoins.diceroll.sdk.feature.stats.ui.utils.chart_tone1
 import com.appcoins.diceroll.sdk.feature.stats.ui.utils.chart_tone2
@@ -207,7 +208,7 @@ private fun winPercentage(diceRollList: List<DiceRoll>): String {
 @Preview
 @Composable
 private fun PreviewStatsContent() {
-    DiceRollTheme(darkTheme = false) {
+    DiceRollTheme(darkTheme = false, GOLDEN_DICE) {
         StatsContent(
             diceRollList = listOf(
                 DiceRoll(1, true, 1, 1, 2),

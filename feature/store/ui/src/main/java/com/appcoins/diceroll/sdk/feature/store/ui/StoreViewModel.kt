@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceStatusUseCase
+import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetTrialDiceStatusUseCase
 import com.appcoins.diceroll.sdk.feature.settings.data.usecases.GetUserUseCase
 import com.appcoins.diceroll.sdk.payments.billing.SdkManager
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails
@@ -23,6 +24,7 @@ class StoreViewModel @Inject constructor(
     private val sdkManager: SdkManager,
     private val getUserUseCase: GetUserUseCase,
     private val getGoldenDiceStatusUseCase: GetGoldenDiceStatusUseCase,
+    private val getTrialDiceStatusUseCase: GetTrialDiceStatusUseCase,
 ) : ViewModel() {
 
     internal val purchasableItems: List<InternalSkuDetails> get() = sdkManager._purchasableItems
@@ -38,7 +40,16 @@ class StoreViewModel @Inject constructor(
 
     fun getSubscriptionStateForSKU(skuDetails: InternalSkuDetails): StateFlow<Boolean> {
         when (skuDetails.sku) {
-            GoldDice.sku, TrialDice.sku -> return getGoldenDiceStatusUseCase()
+            GoldDice.sku -> return getGoldenDiceStatusUseCase()
+                .map {
+                    it
+                }.stateIn(
+                    scope = viewModelScope,
+                    started = SharingStarted.WhileSubscribed(5_000),
+                    initialValue = false
+                )
+
+            TrialDice.sku -> return getTrialDiceStatusUseCase()
                 .map {
                     it
                 }.stateIn(
