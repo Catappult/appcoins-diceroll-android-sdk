@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -138,14 +139,14 @@ private fun SubscriptionSelectionPanel(
         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
     )
     Column(Modifier.selectableGroup()) {
-        SettingsChooserRow(
+        DiceChooserRow(
             text = "Default",
             color = darkAppColorScheme.tertiary,
             selected = subscriptionPrefs.selectedSubscription == DEFAULT,
             onClick = { onChangeSelectedSubscription(DEFAULT) },
         )
         if (subscriptionPrefs.availableSubscriptions.contains(GOLDEN_DICE)) {
-            SettingsChooserRow(
+            DiceChooserRow(
                 text = "Golden Dice",
                 color = darkGoldenDiceAppColorScheme.tertiary,
                 selected = subscriptionPrefs.selectedSubscription == GOLDEN_DICE,
@@ -154,7 +155,7 @@ private fun SubscriptionSelectionPanel(
         }
 
         if (subscriptionPrefs.availableSubscriptions.contains(TRIAL_DICE)) {
-            SettingsChooserRow(
+            DiceChooserRow(
                 text = "Trial Dice",
                 color = darkTrialDiceAppColorScheme.tertiary,
                 selected = subscriptionPrefs.selectedSubscription == TRIAL_DICE,
@@ -165,7 +166,7 @@ private fun SubscriptionSelectionPanel(
 }
 
 @Composable
-fun SettingsChooserRow(
+fun DiceChooserRow(
     text: String,
     color: Color,
     selected: Boolean,
@@ -191,6 +192,7 @@ fun SettingsChooserRow(
             modifier = Modifier
                 .clip(shape = RoundedCornerShape(100))
                 .width(20.dp)
+                .height(20.dp)
                 .background(color = color, RectangleShape),
         )
         Spacer(Modifier.width(8.dp))

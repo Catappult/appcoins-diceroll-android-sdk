@@ -17,5 +17,3 @@ internal val green_dark = Color(0xFF1b4a27)
 internal val grey_blue = Color(0xFF27233C)
 
 internal val blue_background = Color(0xFF100B28)
-
-internal val test = Color(0xFF041a0a)
