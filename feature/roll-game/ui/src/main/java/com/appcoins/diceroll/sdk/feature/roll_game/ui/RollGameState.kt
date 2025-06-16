@@ -1,5 +1,7 @@
 package com.appcoins.diceroll.sdk.feature.roll_game.ui
 
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.SubscriptionPrefs
+
 /**
  * A sealed hierarchy describing the roll game state for the initial screen.
  * This is used to control the visibility of the content in the roll game.
@@ -22,6 +24,6 @@ sealed interface RollGameState {
    */
   data class Success(
     val attemptsLeft: Int?,
-    val goldenDiceStatus: Boolean
+    val subscriptionPrefs: SubscriptionPrefs
   ) : RollGameState
 }

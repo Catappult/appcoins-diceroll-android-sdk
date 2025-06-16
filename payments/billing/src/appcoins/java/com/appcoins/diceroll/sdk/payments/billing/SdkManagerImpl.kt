@@ -11,6 +11,7 @@ import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails
 import com.appcoins.diceroll.sdk.payments.data.rtdn.RTDNMessageListenerImpl
 import com.appcoins.diceroll.sdk.payments.data.usecases.GetMessageFromRTDNResponseUseCase
 import com.appcoins.sdk.billing.AppcoinsBillingClient
+import com.appcoins.sdk.billing.ProductDetails
 import com.appcoins.sdk.billing.Purchase
 import com.appcoins.sdk.billing.helpers.CatapultBillingAppCoinsFactory
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -39,7 +40,7 @@ class SdkManagerImpl @Inject constructor(
     private val paymentsResultManager: PaymentsResultManager,
 ) : SdkManager {
 
-    override lateinit var cab: AppcoinsBillingClient
+    override lateinit var billingClient: AppcoinsBillingClient
 
     override val _connectionState: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -47,6 +48,8 @@ class SdkManagerImpl @Inject constructor(
 
     override val _purchasableItems: MutableList<InternalSkuDetails> =
         mutableStateListOf()
+
+    override val _myItems: MutableList<ProductDetails> = mutableStateListOf()
 
     override val _purchases: ArrayList<Purchase> = ArrayList()
 
@@ -67,13 +70,13 @@ class SdkManagerImpl @Inject constructor(
     )
 
     override fun setupSdkConnection(context: Context) {
-        cab =
+        billingClient =
             CatapultBillingAppCoinsFactory.BuildAppcoinsBilling(
                 context,
                 BASE_64_ENCODED_PUBLIC_KEY,
                 purchasesUpdatedListener
             )
-        cab.startConnection(appCoinsBillingStateListener)
+        billingClient.startConnection(appCoinsBillingStateListener)
     }
 
     override fun processSuccessfulPurchase(purchase: Purchase) {

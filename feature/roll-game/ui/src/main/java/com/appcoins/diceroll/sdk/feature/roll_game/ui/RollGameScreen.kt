@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -33,6 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -46,9 +49,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.appcoins.diceroll.sdk.core.ui.design.R
-import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
 import com.appcoins.diceroll.sdk.core.utils.tuples.Quadruple
 import com.appcoins.diceroll.sdk.feature.roll_game.data.DEFAULT_ATTEMPTS_NUMBER
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.SubscriptionPrefs
 import com.appcoins.diceroll.sdk.feature.stats.data.model.DiceRoll
 import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.diceroll.sdk.payments.data.models.Item.Attempts
@@ -65,6 +69,7 @@ internal fun RollGameRoute(
         uiState,
         viewModel::launchBillingSdkFlow,
         viewModel::saveDiceRoll,
+        viewModel::openDiceSelectionDialog
     )
 }
 
@@ -73,6 +78,7 @@ fun RollGameScreen(
     uiState: RollGameState,
     onBuyClick: (Activity, Item) -> Unit,
     onSaveDiceRoll: suspend (diceRoll: DiceRoll) -> Unit,
+    onShowDiceSelectionDialog: () -> Unit,
     viewModel: RollGameViewModel = hiltViewModel(),
 ) {
     when (uiState) {
@@ -84,9 +90,10 @@ fun RollGameScreen(
 
             RollGameContent(
                 attemptsLeft = uiState.attemptsLeft ?: DEFAULT_ATTEMPTS_NUMBER,
-                goldenDiceActive = uiState.goldenDiceStatus,
+                subscriptionPrefs = uiState.subscriptionPrefs,
                 onSaveDiceRoll = onSaveDiceRoll,
                 onBuyClick = onBuyClick,
+                onShowDiceSelectionDialog = onShowDiceSelectionDialog,
                 sdkSetupState,
                 attemptsPrice,
             )
@@ -97,9 +104,10 @@ fun RollGameScreen(
 @Composable
 fun RollGameContent(
     attemptsLeft: Int,
-    goldenDiceActive: Boolean,
+    subscriptionPrefs: SubscriptionPrefs,
     onSaveDiceRoll: suspend (diceRoll: DiceRoll) -> Unit,
     onBuyClick: (Activity, Item) -> Unit,
+    onShowDiceSelectionDialog: () -> Unit,
     sdkSetupState: Boolean,
     attemptsPrice: String?
 ) {
@@ -113,7 +121,7 @@ fun RollGameContent(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        GameDice(attemptsLeft, diceValue, resultValue, goldenDiceActive)
+        GameDice(onShowDiceSelectionDialog, attemptsLeft, diceValue, resultValue, subscriptionPrefs)
         Column(
             Modifier
                 .fillMaxWidth()
@@ -341,13 +349,14 @@ private fun DicesRow(betDice: Int, onDiceClicked: (Int) -> Unit) {
 
 @Composable
 private fun GameDice(
+    onShowDiceSelectionDialog: () -> Unit,
     attemptsLeft: Int,
     diceValue: Int,
     result: Int,
-    goldenDiceActive: Boolean
+    subscriptionPrefs: SubscriptionPrefs
 ) {
     val (baseDice, diceImages, radiantImage, titleImage) =
-        getGameResources(goldenDiceActive)
+        getGameResources(subscriptionPrefs)
 
     Box(modifier = Modifier.fillMaxWidth()) {
         Box(
@@ -379,16 +388,31 @@ private fun GameDice(
                     )
                     Box(
                         modifier = Modifier
+                            .padding(0.dp, 0.dp, 24.dp, 0.dp)
+                            .clip(shape = RoundedCornerShape(100))
+                            .align(Alignment.End)
+                            .width(40.dp)
+                            .background(color = Color.White, RectangleShape)
+                            .padding(4.dp)
+                            .clickable { onShowDiceSelectionDialog() },
+                    ) {
+                        Image(
+                            imageVector = ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_paint_brush),
+                            contentDescription = "Selected Subscription Type",
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary)
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
                             .clip(shape = RoundedCornerShape(0.dp, 0.dp, 16.dp, 16.dp))
                             .fillMaxWidth()
                             .align(Alignment.CenterHorizontally),
                     ) {
-
                         if (result == 0 || result == -1) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(0.dp, 40.dp, 0.dp, 0.dp),
+                                    .padding(0.dp, 0.dp, 0.dp, 0.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Crossfade(
@@ -545,23 +569,39 @@ fun BoxScope.GameWon() {
 }
 
 @Composable
-fun getGameResources(goldenDiceActive: Boolean) =
-    if (goldenDiceActive) {
-        Quadruple(
-            GameR.drawable.ic_base_golden_dice,
-            listOf(
-                GameR.drawable.ic_dice_1_golden,
-                GameR.drawable.ic_dice_2_golden,
-                GameR.drawable.ic_dice_3_golden,
-                GameR.drawable.ic_dice_4_golden,
-                GameR.drawable.ic_dice_5_golden,
-                GameR.drawable.ic_dice_6_golden,
-            ),
-            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_radiant_shadows),
-            ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_dice_sdk_title)
-        )
-    } else {
-        Quadruple(
+fun getGameResources(subscriptionPrefs: SubscriptionPrefs) =
+    when (subscriptionPrefs.selectedSubscription) {
+        Subscription.GOLDEN_DICE ->
+            Quadruple(
+                GameR.drawable.ic_base_golden_dice,
+                listOf(
+                    GameR.drawable.ic_dice_1_golden,
+                    GameR.drawable.ic_dice_2_golden,
+                    GameR.drawable.ic_dice_3_golden,
+                    GameR.drawable.ic_dice_4_golden,
+                    GameR.drawable.ic_dice_5_golden,
+                    GameR.drawable.ic_dice_6_golden,
+                ),
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_radiant_shadows),
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_dice_sdk_title)
+            )
+
+        Subscription.TRIAL_DICE ->
+            Quadruple(
+                GameR.drawable.ic_base_trial_dice,
+                listOf(
+                    GameR.drawable.ic_dice_1_trial,
+                    GameR.drawable.ic_dice_2_trial,
+                    GameR.drawable.ic_dice_3_trial,
+                    GameR.drawable.ic_dice_4_trial,
+                    GameR.drawable.ic_dice_5_trial,
+                    GameR.drawable.ic_dice_6_trial,
+                ),
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_trial_radiant_shadows),
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_dice_sdk_title)
+            )
+
+        else -> Quadruple(
             GameR.drawable.ic_base_dice,
             listOf(
                 GameR.drawable.ic_dice_1_blue,
@@ -592,14 +632,15 @@ fun DiceImage(@DrawableRes imageRes: Int) {
 )
 @Composable
 fun Preview() {
-    DiceRollTheme(darkTheme = true, goldenDiceTheme = true) {
+    GameDice({}, 3, 0, 0, SubscriptionPrefs())
+    /*DiceRollTheme(darkTheme = true, subscriptionTypeDiceTheme = DEFAULT) {
         RollGameContent(
             attemptsLeft = 3,
-            goldenDiceActive = true,
+            subscriptionPrefs = SubscriptionPrefs(),
             onSaveDiceRoll = {},
             onBuyClick = { context, item -> },
             sdkSetupState = true,
             attemptsPrice = "€ 1.0"
         )
-    }
+    }*/
 }

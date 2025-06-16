@@ -40,6 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.appcoins.diceroll.sdk.core.ui.design.DiceRollIcons
 import com.appcoins.diceroll.sdk.core.ui.design.R
 import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType.INAPP
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType.SUBS
 import com.appcoins.diceroll.sdk.payments.data.models.Item
@@ -305,7 +306,7 @@ fun ActiveSubscriptionItem(skuDetails: SkuDetails, context: Activity) {
 )
 @Composable
 fun Preview() {
-    DiceRollTheme(darkTheme = true, goldenDiceTheme = true) {
+    DiceRollTheme(darkTheme = true, subscriptionTypeDiceTheme = Subscription.GOLDEN_DICE) {
         val purchasableItemsList = getListOfItems()
         Column(
             modifier = Modifier

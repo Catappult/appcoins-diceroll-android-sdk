@@ -4,22 +4,29 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import com.appcoins.diceroll.sdk.payments.billing.data.respository.PurchaseValidatorRepository
+import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode
 import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode.ERROR
+import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode.ITEM_UNAVAILABLE
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType
 import com.appcoins.diceroll.sdk.payments.data.models.Item
-import com.appcoins.diceroll.sdk.payments.data.models.Item.TrialDice
 import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentError
 import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentLoading
 import com.appcoins.diceroll.sdk.payments.data.streams.PurchaseStateStream
 import com.appcoins.sdk.billing.AppcoinsBillingClient
 import com.appcoins.sdk.billing.BillingFlowParams
+import com.appcoins.sdk.billing.BillingResult
+import com.appcoins.sdk.billing.CatapultAppcoinsBilling.ProductType
+import com.appcoins.sdk.billing.ConsumeParams
+import com.appcoins.sdk.billing.FeatureType
+import com.appcoins.sdk.billing.ProductDetails
 import com.appcoins.sdk.billing.Purchase
 import com.appcoins.sdk.billing.PurchasesUpdatedListener
-import com.appcoins.sdk.billing.SkuDetailsParams
+import com.appcoins.sdk.billing.QueryProductDetailsParams
+import com.appcoins.sdk.billing.QueryProductDetailsParams.Product
+import com.appcoins.sdk.billing.QueryPurchasesParams
 import com.appcoins.sdk.billing.listeners.AppCoinsBillingStateListener
 import com.appcoins.sdk.billing.listeners.ConsumeResponseListener
-import com.appcoins.sdk.billing.listeners.SkuDetailsResponseListener
 import com.appcoins.sdk.billing.types.SkuType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +51,7 @@ interface SdkManager {
     /**
      * The AppCoins billing client instance.
      */
-    val cab: AppcoinsBillingClient
+    val billingClient: AppcoinsBillingClient
 
     val _connectionState: MutableStateFlow<Boolean>
 
@@ -55,6 +62,8 @@ interface SdkManager {
     val _purchases: ArrayList<Purchase>
 
     val _purchaseValidatorRepository: PurchaseValidatorRepository
+
+    val _myItems: MutableList<ProductDetails>
 
     /**
      * Method to start the Setup of the SDK.
@@ -140,26 +149,39 @@ interface SdkManager {
         get() = PurchasesUpdatedListener { responseCode: Int, purchases: List<Purchase> ->
             when (responseCode) {
                 ResponseCode.OK.value -> {
-                    for (purchase in purchases) {
-                        _purchases.add(purchase)
-                        Log.i(
-                            LOG_TAG, "PurchasesUpdatedListener: purchase data:" +
-                                "\nsku: ${purchase.sku}" +
-                                "\nitemType: ${purchase.itemType}" +
-                                "\npackageName: ${purchase.packageName}" +
-                                "\ndeveloperPayload: ${purchase.developerPayload}" +
-                                "\npurchaseState: ${purchase.purchaseState}" +
-                                "\npurchaseTime: ${purchase.purchaseTime}" +
-                                "\ntoken: ${purchase.token}" +
-                                "\norderId: ${purchase.orderId}" +
-                                "\nsignature: ${purchase.signature}" +
-                                "\noriginalJson: ${purchase.originalJson}" +
-                                "\nisAutoRenewing: ${purchase.isAutoRenewing}"
-                        )
-                        validateAndConsumePurchase(
-                            purchase,
-                            purchase.itemType == SkuType.subs.toString()
-                        )
+                    if (purchases.isNotEmpty()) {
+                        for (purchase in purchases) {
+                            _purchases.add(purchase)
+                            Log.i(
+                                LOG_TAG, "PurchasesUpdatedListener: purchase data:" +
+                                    "\nsku: ${purchase.sku}" +
+                                    "\nitemType: ${purchase.itemType}" +
+                                    "\npackageName: ${purchase.packageName}" +
+                                    "\ndeveloperPayload: ${purchase.developerPayload}" +
+                                    "\npurchaseState: ${purchase.purchaseState}" +
+                                    "\npurchaseTime: ${purchase.purchaseTime}" +
+                                    "\ntoken: ${purchase.token}" +
+                                    "\norderId: ${purchase.orderId}" +
+                                    "\nsignature: ${purchase.signature}" +
+                                    "\noriginalJson: ${purchase.originalJson}" +
+                                    "\nisAutoRenewing: ${purchase.isAutoRenewing}"
+                            )
+
+                            val product = purchase.sku
+                            if (isSubscriptionTypeProduct(product) || isNonConsumableProduct(product)) {
+                                validateAndAcknowledgePurchase(purchase)
+                            } else {
+                                validateAndConsumePurchase(purchase)
+                            }
+                        }
+                    } else {
+                        CoroutineScope(Job()).launch {
+                            PurchaseStateStream.publish(
+                                PaymentError(
+                                    null,
+                                    ResponseCode.entries.find { it.value == responseCode } ?: ERROR)
+                            )
+                        }
                     }
                 }
 
@@ -200,42 +222,6 @@ interface SdkManager {
             }
 
     /**
-     * Listener for SKU details responses.
-     *
-     * Called when the requested SKU details are retrieved from the
-     * AppCoins billing client.
-     *
-     * The SKU details list contains the details about each SKU.
-     * This can be used to show SKU information in the app UI.
-     *
-     * @param responseCode The response code from the billing client
-     * @param skuDetailsList List of SkuDetails objects
-     */
-    val skuDetailsResponseListener: SkuDetailsResponseListener
-        get() =
-            SkuDetailsResponseListener { responseCode, skuDetailsList ->
-                for (sku in skuDetailsList) {
-                    Log.d(
-                        LOG_TAG,
-                        "SkuDetailsResponseListener: item response ${responseCode.toResponseCode()}, sku $sku"
-                    )
-                    if (_purchasableItems.find { it.sku == sku.sku } == null) {
-                        _purchasableItems.add(
-                            InternalSkuDetails(
-                                sku.sku,
-                                InternalSkuType.entries.first { it.value.equals(sku.type, true) },
-                                sku.title,
-                                sku.price
-                            )
-                        )
-                    }
-                    if (sku.sku == "attempts") {
-                        _attemptsPrice.value = sku.price
-                    }
-                }
-            }
-
-    /**
      * Starts the payment flow for the given SKU.
      *
      * @param sku The SKU identifier for the in-app product.
@@ -249,43 +235,90 @@ interface SdkManager {
             PurchaseStateStream.eventFlow.emit(PaymentLoading)
         }
 
-        val billingFlowParams = BillingFlowParams(
-            sku,
-            skuType,
-            null,
-            developerPayload,
-            "BDS"
+        val productDetails = _myItems.firstOrNull { it.productId == sku }
+
+        if (productDetails == null) {
+            CoroutineScope(Job()).launch {
+                PurchaseStateStream.eventFlow.emit(PaymentError(null, ITEM_UNAVAILABLE))
+            }
+            return
+        }
+
+        val shouldStartFreeTrial = isFreeTrialSubscription(productDetails)
+
+        val productDetailsParamsList = listOf(
+            BillingFlowParams.ProductDetailsParams.newBuilder()
+                .setProductDetails(productDetails)
+                .build()
         )
 
+        val billingFlowParams =
+            BillingFlowParams.newBuilder()
+                .setProductDetailsParamsList(productDetailsParamsList)
+                .apply {
+                    developerPayload?.let {
+                        setDeveloperPayload(it)
+                        setObfuscatedAccountId(it)
+                    }
+                    setFreeTrial(shouldStartFreeTrial)
+                }.build()
+
         CoroutineScope(Job()).launch {
-            cab.launchBillingFlow(context as Activity, billingFlowParams)
+            billingClient.launchBillingFlow(context as Activity, billingFlowParams)
         }
     }
 
     fun launchAppUpdateDialog(context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
-            if (cab.isAppUpdateAvailable) {
-                cab.launchAppUpdateDialog(context)
+            if (billingClient.isAppUpdateAvailable) {
+                billingClient.launchAppUpdateDialog(context)
             }
         }
     }
 
     private fun validateAndConsumePurchase(purchase: Purchase, skipValidation: Boolean = false) {
         CoroutineScope(Job()).launch {
+            val product = purchase.sku
+            val purchaseToken = purchase.token ?: ""
             val isPurchaseValid =
-                skipValidation ||
-                    BuildConfig.DEBUG ||
-                    isPurchaseValid(purchase.sku, purchase.token ?: "")
+                skipValidation || BuildConfig.DEBUG || isPurchaseValid(product, purchaseToken)
 
             if (isPurchaseValid) {
                 Log.i(LOG_TAG, "Purchase verified successfully from Server side.")
-                cab.consumeAsync(purchase.token, consumeResponseListener)
+                billingClient.consumeAsync(
+                    ConsumeParams.newBuilder().setPurchaseToken(purchaseToken).build(),
+                    consumeResponseListener
+                )
                 processSuccessfulPurchase(purchase)
             } else {
                 CoroutineScope(Job()).launch {
-                    PurchaseStateStream.publish(
-                        PaymentError(Item.fromSku(purchase.sku), ERROR)
-                    )
+                    PurchaseStateStream.publish(PaymentError(Item.fromSku(product), ERROR))
+                }
+                Log.e(LOG_TAG, "There was an error verifying the Purchase on Server side.")
+            }
+        }
+    }
+
+    private fun validateAndAcknowledgePurchase(
+        purchase: Purchase,
+        skipValidation: Boolean = true
+    ) {
+        CoroutineScope(Job()).launch {
+            val product = purchase.sku
+            val purchaseToken = purchase.token ?: ""
+            val isPurchaseValid =
+                skipValidation || BuildConfig.DEBUG || isPurchaseValid(product, purchaseToken)
+
+            if (isPurchaseValid) {
+                Log.i(LOG_TAG, "Purchase verified successfully from Server side.")
+                billingClient.consumeAsync(
+                    ConsumeParams.newBuilder().setPurchaseToken(purchaseToken).build(),
+                    consumeResponseListener
+                )
+                processSuccessfulPurchase(purchase)
+            } else {
+                CoroutineScope(Job()).launch {
+                    PurchaseStateStream.publish(PaymentError(Item.fromSku(product), ERROR))
                 }
                 Log.e(LOG_TAG, "There was an error verifying the Purchase on Server side.")
             }
@@ -293,52 +326,161 @@ interface SdkManager {
     }
 
     private fun queryPurchases() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val purchasesResult = cab.queryPurchases(SkuType.inapp.toString())
-            val purchases = purchasesResult.purchases
-            for (purchase in purchases) {
-                _purchases.add(purchase)
-                validateAndConsumePurchase(purchase)
+        billingClient.queryPurchasesAsync(
+            QueryPurchasesParams.newBuilder().setProductType(ProductType.INAPP).build()
+        ) { billingResult, purchases ->
+            if (billingResult.responseCode == InternalResponseCode.OK.value) {
+                for (purchase in purchases) {
+                    _purchases.add(purchase)
+                    validateAndConsumePurchase(purchase)
+                }
             }
         }
     }
 
     private fun queryActiveSubscriptions() {
         CoroutineScope(Dispatchers.IO).launch {
-            val purchasesResult = cab.queryPurchases(SkuType.subs.toString())
+            val purchasesResult = billingClient.queryPurchasesAsync(
+                QueryPurchasesParams.newBuilder().setProductType(ProductType.SUBS).build()
+            )
             val purchases = purchasesResult.purchases
             for (purchase in purchases) {
                 _purchases.add(purchase)
-                validateAndConsumePurchase(purchase, true)
+                validateAndAcknowledgePurchase(purchase)
             }
             processExpiredPurchases(purchases)
         }
     }
 
     private fun queryInappsSkus(skuList: List<String>) {
-        cab.querySkuDetailsAsync(
-            SkuDetailsParams().apply {
-                itemType = SkuType.inapp.toString()
-                moreItemSkus = skuList
-            },
-            skuDetailsResponseListener
-        )
+        val queryProductDetailsParams =
+            QueryProductDetailsParams.newBuilder()
+                .setProductList(
+                    skuList.map {
+                        Product.newBuilder()
+                            .setProductId(it)
+                            .setProductType(ProductType.INAPP)
+                            .build()
+                    }
+                )
+                .build()
+
+        billingClient.queryProductDetailsAsync(queryProductDetailsParams) { billingResult, details ->
+            processSkuDetailsResult(
+                billingResult,
+                details,
+                ProductType.INAPP
+            )
+        }
     }
 
     private fun querySubsSkus(skuList: List<String>) {
-        cab.querySkuDetailsAsync(
-            SkuDetailsParams().apply {
-                itemType = SkuType.subs.toString()
-                moreItemSkus = skuList
-            },
-            skuDetailsResponseListener
+        val queryProductDetailsParams =
+            QueryProductDetailsParams.newBuilder()
+                .setProductList(
+                    skuList.map {
+                        Product.newBuilder()
+                            .setProductId(it)
+                            .setProductType(ProductType.SUBS)
+                            .build()
+                    }
+                )
+                .build()
+
+        billingClient.queryProductDetailsAsync(queryProductDetailsParams) { billingResult, details ->
+            processSkuDetailsResult(
+                billingResult,
+                details,
+                ProductType.SUBS
+            )
+        }
+    }
+
+    /**
+     * Listener for SKU details responses.
+     *
+     * Called when the requested SKU details are retrieved from the
+     * Google billing client.
+     *
+     * The SKU details list contains the details about each SKU.
+     * This can be used to show SKU information in the app UI.
+     *
+     * @param billingResult The [BillingResult] from the billing client
+     * @param productDetailsList List of ProductDetails objects
+     * @param skuType Type of Product
+     */
+    private fun processSkuDetailsResult(
+        billingResult: BillingResult,
+        productDetailsList: List<ProductDetails>,
+        skuType: String
+    ) {
+        Log.d(
+            LOG_TAG,
+            "processSkuDetailsResult: item response ${billingResult.responseCode}, response message: ${billingResult.debugMessage}"
         )
+        if (billingResult.responseCode == 0) {
+            for (productDetails in productDetailsList) {
+                if (_purchasableItems.find { it.sku == productDetails.productId } == null) {
+                    _purchasableItems.add(
+                        InternalSkuDetails(
+                            productDetails.productId,
+                            InternalSkuType.entries.first {
+                                skuType.equals(it.value, true)
+                            },
+                            productDetails.title,
+                            getPriceFromProduct(productDetails, skuType)
+                        )
+                    )
+                    _myItems.add(productDetails)
+                    if (productDetails.productId == "attempts") {
+                        _attemptsPrice.value =
+                            productDetails.oneTimePurchaseOfferDetails?.formattedPrice
+                    }
+                }
+            }
+        }
+    }
+
+    private fun getPriceFromProduct(productDetails: ProductDetails, skuType: String): String {
+        return if (skuType == ProductType.SUBS) {
+            productDetails.subscriptionOfferDetails?.firstOrNull()?.pricingPhases?.pricingPhaseList?.firstOrNull()?.formattedPrice
+                ?: ""
+        } else {
+            productDetails.oneTimePurchaseOfferDetails?.formattedPrice ?: ""
+        }
     }
 
     private suspend fun isPurchaseValid(sku: String, token: String): Boolean =
         _purchaseValidatorRepository
             .isPurchaseValid(sku, token)
             .getOrDefault(false)
+
+    private fun isSubscriptionTypeProduct(product: String?): Boolean {
+        return _myItems.firstOrNull { it.productId == product }?.productType == ProductType.SUBS
+    }
+
+    private fun isNonConsumableProduct(product: String?): Boolean {
+        val nonConsumableProducts = listOf("non_consumable_attempts")
+        return nonConsumableProducts.contains(product)
+    }
+
+    private fun isFreeTrialSubscription(productDetails: ProductDetails): Boolean {
+        // First verify if the Free Trial feature and Obfucasted Account Id parameter are available
+        if (billingClient.isFeatureSupported(FeatureType.FREE_TRIALS) != 0) {
+            return false
+        }
+
+        if (billingClient.isFeatureSupported(FeatureType.OBFUSCATED_ACCOUNT_ID) != 0) {
+            return false
+        }
+
+        // Verify if the Sku Type is a Subscription
+        if (productDetails.productType != SkuType.subs.toString()) {
+            return false
+        }
+
+        return productDetails.productId == "trial_dice"
+    }
 
     companion object {
         const val LOG_TAG = "SdkManager"

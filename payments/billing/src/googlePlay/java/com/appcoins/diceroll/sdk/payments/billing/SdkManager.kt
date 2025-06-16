@@ -64,7 +64,7 @@ interface SdkManager {
 
     val _purchaseValidatorRepository: PurchaseValidatorRepository
 
-    val myItems: MutableList<ProductDetails>
+    val _myItems: MutableList<ProductDetails>
 
     /**
      * Method to start the Setup of the SDK.
@@ -140,12 +140,15 @@ interface SdkManager {
      * It will be called with the response code and list of purchases.
      * Based on the response code, it can process the purchases or
      * handle errors.
+     *
+     * @param billingResult The [BillingResult] from the billing client
+     * @param purchases The list of Purchase objects with the purchase data
      */
     val purchasesUpdatedListener: PurchasesUpdatedListener
         get() = PurchasesUpdatedListener { billingResult: BillingResult, purchases: MutableList<Purchase>? ->
             when (billingResult.responseCode) {
                 BillingResponseCode.OK -> {
-                    if (purchases != null) {
+                    if (purchases != null && !purchases.isEmpty()) {
                         for (purchase in purchases) {
                             _purchases.add(purchase)
                             Log.i(
@@ -199,15 +202,6 @@ interface SdkManager {
             }
         }
 
-    private fun isSubscriptionTypeProduct(product: String?): Boolean {
-        return myItems.firstOrNull { it.productId == product }?.productType == ProductType.SUBS
-    }
-
-    private fun isNonConsumableProduct(product: String?): Boolean {
-        val nonConsumableProducts = listOf("non_consumable_attempts")
-        return nonConsumableProducts.contains(product)
-    }
-
     /**
      * Listener for handling consume purchase responses.
      *
@@ -249,51 +243,6 @@ interface SdkManager {
             }
 
     /**
-     * Listener for SKU details responses.
-     *
-     * Called when the requested SKU details are retrieved from the
-     * Google billing client.
-     *
-     * The SKU details list contains the details about each SKU.
-     * This can be used to show SKU information in the app UI.
-     *
-     * @param billingResult The [BillingResult] from the billing client
-     * @param productDetailsList List of ProductDetails objects
-     * @param skuType Type of Product
-     */
-    fun processSkuDetailsResult(
-        billingResult: BillingResult,
-        productDetailsList: List<ProductDetails>,
-        skuType: String
-    ) {
-        Log.d(
-            LOG_TAG,
-            "processSkuDetailsResult: item response ${billingResult.responseCode}, response message: ${billingResult.debugMessage}"
-        )
-        if (billingResult.responseCode == 0) {
-            for (productDetails in productDetailsList) {
-                if (_purchasableItems.find { it.sku == productDetails.productId } == null) {
-                    _purchasableItems.add(
-                        InternalSkuDetails(
-                            productDetails.productId,
-                            InternalSkuType.entries.first {
-                                skuType.equals(it.value, true)
-                            },
-                            productDetails.title,
-                            getPriceFromProduct(productDetails, skuType)
-                        )
-                    )
-                    myItems.add(productDetails)
-                    if (productDetails.productId == "attempts") {
-                        _attemptsPrice.value =
-                            productDetails.oneTimePurchaseOfferDetails?.formattedPrice
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Starts the payment flow for the given SKU.
      *
      * @param sku The SKU identifier for the in-app product.
@@ -312,7 +261,7 @@ interface SdkManager {
             PurchaseStateStream.eventFlow.emit(PaymentLoading)
         }
 
-        val productDetails = myItems.firstOrNull { it.productId == sku }
+        val productDetails = _myItems.firstOrNull { it.productId == sku }
         if (productDetails == null) {
             CoroutineScope(Job()).launch {
                 PurchaseStateStream.eventFlow.emit(PaymentError(null, ITEM_UNAVAILABLE))
@@ -348,28 +297,23 @@ interface SdkManager {
         //cab.launchAppUpdateDialog(context)
     }
 
-    private fun validateAndConsumePurchase(
-        purchase: Purchase,
-        skipValidation: Boolean = false
-    ) {
+    private fun validateAndConsumePurchase(purchase: Purchase, skipValidation: Boolean = false) {
         CoroutineScope(Job()).launch {
+            val product = purchase.products.first()
+            val purchaseToken = purchase.purchaseToken
             val isPurchaseValid =
-                skipValidation ||
-                    BuildConfig.DEBUG ||
-                    isPurchaseValid(purchase.products.first(), purchase.purchaseToken)
+                skipValidation || BuildConfig.DEBUG || isPurchaseValid(product, purchaseToken)
 
             if (isPurchaseValid) {
                 Log.i(LOG_TAG, "Purchase verified successfully from Server side.")
                 billingClient.consumeAsync(
-                    ConsumeParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build(),
+                    ConsumeParams.newBuilder().setPurchaseToken(purchaseToken).build(),
                     consumeResponseListener
                 )
                 processSuccessfulPurchase(purchase)
             } else {
                 CoroutineScope(Job()).launch {
-                    PurchaseStateStream.publish(
-                        PaymentError(Item.fromSku(purchase.products.first()), ERROR)
-                    )
+                    PurchaseStateStream.publish(PaymentError(Item.fromSku(product), ERROR))
                 }
                 Log.e(LOG_TAG, "There was an error verifying the Purchase on Server side.")
             }
@@ -381,25 +325,21 @@ interface SdkManager {
         skipValidation: Boolean = false
     ) {
         CoroutineScope(Job()).launch {
+            val product = purchase.products.first()
+            val purchaseToken = purchase.purchaseToken
             val isPurchaseValid =
-                skipValidation ||
-                    BuildConfig.DEBUG ||
-                    isPurchaseValid(purchase.products.first(), purchase.purchaseToken)
+                skipValidation || BuildConfig.DEBUG || isPurchaseValid(product, purchaseToken)
 
             if (isPurchaseValid) {
                 Log.i(LOG_TAG, "Purchase verified successfully from Server side.")
                 billingClient.acknowledgePurchase(
-                    AcknowledgePurchaseParams.newBuilder()
-                        .setPurchaseToken(purchase.purchaseToken)
-                        .build(),
+                    AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchaseToken).build(),
                     acknowledgePurchaseResponseListener
                 )
                 processSuccessfulPurchase(purchase)
             } else {
                 CoroutineScope(Job()).launch {
-                    PurchaseStateStream.publish(
-                        PaymentError(Item.fromSku(purchase.products.first()), ERROR)
-                    )
+                    PurchaseStateStream.publish(PaymentError(Item.fromSku(product), ERROR))
                 }
                 Log.e(LOG_TAG, "There was an error verifying the Purchase on Server side.")
             }
@@ -407,16 +347,10 @@ interface SdkManager {
     }
 
     private fun queryPurchases() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val purchasesResult = billingClient.queryPurchasesAsync(
-                QueryPurchasesParams.newBuilder().setProductType(ProductType.INAPP).build()
-            )
-            Log.i(
-                LOG_TAG,
-                "queryPurchases: responseCode: ${purchasesResult.billingResult.responseCode}"
-            )
-            if (purchasesResult.billingResult.responseCode == InternalResponseCode.OK.value) {
-                val purchases = purchasesResult.purchasesList
+        billingClient.queryPurchasesAsync(
+            QueryPurchasesParams.newBuilder().setProductType(ProductType.INAPP).build()
+        ) { billingResult, purchases ->
+            if (billingResult.responseCode == InternalResponseCode.OK.value) {
                 for (purchase in purchases) {
                     _purchases.add(purchase)
                     validateAndConsumePurchase(purchase)
@@ -430,27 +364,9 @@ interface SdkManager {
             val purchasesResult = billingClient.queryPurchasesAsync(
                 QueryPurchasesParams.newBuilder().setProductType(ProductType.SUBS).build()
             )
-            Log.i(
-                LOG_TAG,
-                "queryActiveSubscriptions: responseCode: ${purchasesResult.billingResult.responseCode}"
-            )
             if (purchasesResult.billingResult.responseCode == InternalResponseCode.OK.value) {
                 val purchases = purchasesResult.purchasesList
                 for (purchase in purchases) {
-                    Log.i(
-                        LOG_TAG, "queryActiveSubscriptions: purchase data:" +
-                            "\nsku: ${purchase.products.firstOrNull()}" +
-                            "\nitemType: ${purchase}" +
-                            "\npackageName: ${purchase.packageName}" +
-                            "\ndeveloperPayload: ${purchase.developerPayload}" +
-                            "\npurchaseState: ${purchase.purchaseState}" +
-                            "\npurchaseTime: ${purchase.purchaseTime}" +
-                            "\ntoken: ${purchase.purchaseToken}" +
-                            "\norderId: ${purchase.orderId}" +
-                            "\nsignature: ${purchase.signature}" +
-                            "\noriginalJson: ${purchase.originalJson}" +
-                            "\nisAutoRenewing: ${purchase.isAutoRenewing}"
-                    )
                     _purchases.add(purchase)
                     validateAndAcknowledgePurchase(purchase)
                 }
@@ -503,10 +419,50 @@ interface SdkManager {
         }
     }
 
-    private suspend fun isPurchaseValid(sku: String, token: String): Boolean =
-        _purchaseValidatorRepository
-            .isPurchaseValid(sku, token)
-            .getOrDefault(false)
+    /**
+     * Listener for SKU details responses.
+     *
+     * Called when the requested SKU details are retrieved from the
+     * Google billing client.
+     *
+     * The SKU details list contains the details about each SKU.
+     * This can be used to show SKU information in the app UI.
+     *
+     * @param billingResult The [BillingResult] from the billing client
+     * @param productDetailsList List of ProductDetails objects
+     * @param skuType Type of Product
+     */
+    private fun processSkuDetailsResult(
+        billingResult: BillingResult,
+        productDetailsList: List<ProductDetails>,
+        skuType: String
+    ) {
+        Log.d(
+            LOG_TAG,
+            "processSkuDetailsResult: item response ${billingResult.responseCode}, response message: ${billingResult.debugMessage}"
+        )
+        if (billingResult.responseCode == 0) {
+            for (productDetails in productDetailsList) {
+                if (_purchasableItems.find { it.sku == productDetails.productId } == null) {
+                    _purchasableItems.add(
+                        InternalSkuDetails(
+                            productDetails.productId,
+                            InternalSkuType.entries.first {
+                                skuType.equals(it.value, true)
+                            },
+                            productDetails.title,
+                            getPriceFromProduct(productDetails, skuType)
+                        )
+                    )
+                    _myItems.add(productDetails)
+                    if (productDetails.productId == "attempts") {
+                        _attemptsPrice.value =
+                            productDetails.oneTimePurchaseOfferDetails?.formattedPrice
+                    }
+                }
+            }
+        }
+    }
 
     private fun getPriceFromProduct(productDetails: ProductDetails, skuType: String): String {
         return if (skuType == ProductType.SUBS) {
@@ -515,6 +471,20 @@ interface SdkManager {
         } else {
             productDetails.oneTimePurchaseOfferDetails?.formattedPrice ?: ""
         }
+    }
+
+    private suspend fun isPurchaseValid(sku: String, token: String): Boolean =
+        _purchaseValidatorRepository
+            .isPurchaseValid(sku, token)
+            .getOrDefault(false)
+
+    private fun isSubscriptionTypeProduct(product: String?): Boolean {
+        return _myItems.firstOrNull { it.productId == product }?.productType == ProductType.SUBS
+    }
+
+    private fun isNonConsumableProduct(product: String?): Boolean {
+        val nonConsumableProducts = listOf("non_consumable_attempts")
+        return nonConsumableProducts.contains(product)
     }
 
     companion object {
