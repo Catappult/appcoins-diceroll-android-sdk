@@ -22,6 +22,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.appcoins.diceroll.sdk.MainActivityUiState.Loading
 import com.appcoins.diceroll.sdk.MainActivityUiState.Success
 import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.SubscriptionPrefs
 import com.appcoins.diceroll.sdk.feature.settings.data.model.ThemeConfig
 import com.appcoins.diceroll.sdk.ui.DiceRollApp
 import dagger.hilt.android.AndroidEntryPoint
@@ -61,6 +63,7 @@ class MainActivity : ComponentActivity() {
         }
 
         viewModel.observePaymentState()
+        viewModel.observeDiceSelectionDialogVisibilityState()
 
         splashScreen.setKeepOnScreenCondition {
             when (uiState) {
@@ -71,11 +74,23 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val darkTheme = shouldUseDarkTheme(uiState)
-            val goldenDiceTheme = shouldUseGoldenDiceTheme(uiState)
-            DiceRollTheme(darkTheme = darkTheme, goldenDiceTheme = goldenDiceTheme) {
+            val subscriptionTypeDiceTheme = subscriptionTypeDiceTheme(uiState)
+            val subscriptionPrefs = subscriptionPrefs(uiState)
+            DiceRollTheme(
+                darkTheme = darkTheme,
+                subscriptionTypeDiceTheme = subscriptionTypeDiceTheme
+            ) {
                 Box {
                     val paymentState by viewModel.paymentState.collectAsState()
-                    DiceRollApp(paymentState, viewModel::onPaymentDialogDismissed)
+                    val diceSelectionDialogVisibilityState by viewModel.diceSelectionDialogVisibilityState.collectAsState()
+                    DiceRollApp(
+                        paymentState,
+                        viewModel::onPaymentDialogDismissed,
+                        diceSelectionDialogVisibilityState,
+                        subscriptionPrefs,
+                        viewModel::onDiceSelectionDialogDismissed,
+                        viewModel::onDiceSelected
+                    )
                 }
             }
         }
@@ -95,9 +110,17 @@ private fun shouldUseDarkTheme(
 }
 
 @Composable
-private fun shouldUseGoldenDiceTheme(
+private fun subscriptionTypeDiceTheme(
     uiState: MainActivityUiState,
-): Boolean = when (uiState) {
-    Loading -> false
-    is Success -> uiState.goldenDiceStatus
+): Subscription = when (uiState) {
+    Loading -> Subscription.DEFAULT
+    is Success -> uiState.subscriptionPrefs.selectedSubscription
+}
+
+@Composable
+private fun subscriptionPrefs(
+    uiState: MainActivityUiState,
+): SubscriptionPrefs = when (uiState) {
+    Loading -> SubscriptionPrefs()
+    is Success -> uiState.subscriptionPrefs
 }

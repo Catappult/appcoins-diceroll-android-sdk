@@ -9,6 +9,7 @@ android {
 }
 
 dependencies {
+  projectImplementation(":feature:roll-game:data")
   projectImplementation(":feature:settings:data")
   projectImplementation(":feature:stats:data")
   projectImplementation(":core:ui:design")
