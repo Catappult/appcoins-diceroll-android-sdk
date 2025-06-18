@@ -15,7 +15,7 @@ android {
     buildConfigField(
       "String",
       "SDK_BILLING_LIBRARY_VERSION",
-      "\"${libs.catappult.android.appcoins.billing.get().version}\""
+      "\"${libs.android.aptoide.billing.get().version}\""
     )
   }
 }

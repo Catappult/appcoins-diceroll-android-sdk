@@ -57,7 +57,7 @@ class SdkManagerImpl @Inject constructor(
 
     private var isRTDNConnectionEstablished = false
 
-    private val BASE_64_ENCODED_PUBLIC_KEY = BuildConfig.CATAPPULT_PUBLIC_KEY
+    private val PUBLIC_KEY = BuildConfig.CATAPPULT_PUBLIC_KEY
 
     /**
      * Listener for RTDN.
@@ -71,7 +71,7 @@ class SdkManagerImpl @Inject constructor(
     override fun setupSdkConnection(context: Context) {
         billingClient = AptoideBillingClient.newBuilder(context)
             .setListener(purchasesUpdatedListener)
-            .setPublicKey(BASE_64_ENCODED_PUBLIC_KEY)
+            .setPublicKey(PUBLIC_KEY)
             .build()
         billingClient.startConnection(aptoideBillingClientStateListener)
     }

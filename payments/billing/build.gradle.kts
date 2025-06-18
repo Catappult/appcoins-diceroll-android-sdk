@@ -35,7 +35,7 @@ dependencies {
   projectImplementation(":feature:roll-game:data")
   projectImplementation(":feature:settings:data")
   projectImplementation(":payments:data")
-  implementation(libs.catappult.android.appcoins.billing)
+  implementation(libs.android.aptoide.billing)
   implementation(libs.google.billing)
   implementation(libs.bundles.network)
 }
