@@ -3,6 +3,8 @@ package com.appcoins.diceroll.sdk.core.ui.design.theme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription.DEFAULT
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 val lightAndroidBackgroundTheme = BackgroundTheme(color = blue_background)
@@ -15,21 +17,21 @@ val darkAndroidBackgroundTheme = BackgroundTheme(color = blue_background)
 @Composable
 fun DiceRollTheme(
     darkTheme: Boolean = true,
-    goldenDiceTheme: Boolean = false,
+    subscriptionTypeDiceTheme: Subscription = DEFAULT,
     content: @Composable () -> Unit,
 ) {
     UpdateSystemBarsTheme(darkTheme = darkTheme)
     val colorScheme = if (darkTheme) {
-        if (goldenDiceTheme) {
-            darkGoldenDiceAppColorScheme
-        } else {
-            darkAppColorScheme
+        when (subscriptionTypeDiceTheme) {
+            Subscription.TRIAL_DICE -> darkTrialDiceAppColorScheme
+            Subscription.GOLDEN_DICE -> darkGoldenDiceAppColorScheme
+            else -> darkAppColorScheme
         }
     } else {
-        if (goldenDiceTheme) {
-            darkGoldenDiceAppColorScheme
-        } else {
-            darkAppColorScheme
+        when (subscriptionTypeDiceTheme) {
+            Subscription.TRIAL_DICE -> darkTrialDiceAppColorScheme
+            Subscription.GOLDEN_DICE -> darkGoldenDiceAppColorScheme
+            else -> darkAppColorScheme
         }
     }
     val backgroundTheme = if (darkTheme) darkAndroidBackgroundTheme else lightAndroidBackgroundTheme
