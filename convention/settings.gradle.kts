@@ -5,8 +5,8 @@ dependencyResolutionManagement {
         mavenCentral()
         mavenLocal()
         maven {
-            name = "Sonatype-Snapshots"
-            url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
+            name = "MavenCentral-Snapshots"
+            url = uri("https://central.sonatype.com/repository/maven-snapshots")
         }
     }
     // Sharing the root project version catalog
