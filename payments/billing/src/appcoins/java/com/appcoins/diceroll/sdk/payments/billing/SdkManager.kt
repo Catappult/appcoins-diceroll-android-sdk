@@ -420,7 +420,6 @@ interface SdkManager {
         )
         if (billingResult.responseCode == 0) {
             for (productDetails in productDetailsResult.productDetailsList) {
-                Log.d(LOG_TAG, "processProductDetailsResult: product: ${productDetails.productId}")
                 if (_purchasableItems.find { it.sku == productDetails.productId } == null) {
                     _purchasableItems.add(
                         InternalSkuDetails(
@@ -440,10 +439,7 @@ interface SdkManager {
                 }
             }
             for (unfetchedProduct in productDetailsResult.unfetchedProductList) {
-                Log.d(
-                    LOG_TAG,
-                    "processProductDetailsResult: unfetched product: ${unfetchedProduct.productId}"
-                )
+                // Process here the Unfetched Products
             }
         }
     }

@@ -456,6 +456,9 @@ interface SdkManager {
                     }
                 }
             }
+            for (unfetchedProduct in productDetailsResult.unfetchedProductList) {
+                // Process here the Unfetched Products
+            }
         }
     }
 
