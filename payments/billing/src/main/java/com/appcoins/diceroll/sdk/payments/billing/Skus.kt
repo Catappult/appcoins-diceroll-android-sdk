@@ -4,7 +4,8 @@ object Skus {
     val INAPPS =
         listOf(
             "attempts",
-            "non_consumable_attempts"
+            "non_consumable_attempts",
+            "non_existent"
         )
     val SUBS =
         listOf(

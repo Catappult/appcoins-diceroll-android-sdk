@@ -3,6 +3,8 @@ package com.appcoins.diceroll.sdk.payments.billing
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import com.android.billingclient.api.AcknowledgePurchaseParams
+import com.android.billingclient.api.AcknowledgePurchaseResponseListener
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClient.BillingResponseCode
 import com.android.billingclient.api.BillingClient.ProductType
@@ -16,8 +18,8 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryProductDetailsParams.Product
+import com.android.billingclient.api.QueryProductDetailsResult
 import com.android.billingclient.api.QueryPurchasesParams
-import com.android.billingclient.api.queryPurchasesAsync
 import com.appcoins.diceroll.sdk.payments.billing.respository.PurchaseValidatorRepository
 import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode
 import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode.ERROR
@@ -29,7 +31,6 @@ import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentError
 import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentLoading
 import com.appcoins.diceroll.sdk.payments.data.streams.PurchaseStateStream
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -148,7 +149,7 @@ interface SdkManager {
         get() = PurchasesUpdatedListener { billingResult: BillingResult, purchases: MutableList<Purchase>? ->
             when (billingResult.responseCode) {
                 BillingResponseCode.OK -> {
-                    if (purchases != null && !purchases.isEmpty()) {
+                    if (!purchases.isNullOrEmpty()) {
                         for (purchase in purchases) {
                             _purchases.add(purchase)
                             Log.i(
@@ -205,7 +206,7 @@ interface SdkManager {
      * Listener for handling consume purchase responses.
      *
      * This listener receives the response code and purchase token
-     * after consuming a purchase with the Google billing client.
+     * after consuming a purchase with the billing client.
      *
      * It can be used to determine if the consumption was successful.
      *
@@ -225,7 +226,7 @@ interface SdkManager {
      * Listener for handling acknowledge purchase responses.
      *
      * This listener receives the response code and purchase token
-     * after consuming a purchase with the Google billing client.
+     * after consuming a purchase with the billing client.
      *
      * It can be used to determine if the consumption was successful.
      *
@@ -247,7 +248,7 @@ interface SdkManager {
      * @param sku The SKU identifier for the in-app product.
      * @param developerPayload A developer-defined string that will be returned with the purchase data.
      *
-     * This will launch the Google Play billing flow. The result will be delivered
+     * This will launch the billing flow. The result will be delivered
      * via the PurchasesUpdatedListener callback.
      */
     fun startPayment(activity: Activity, sku: String, skuType: String, developerPayload: String?) {
@@ -281,7 +282,9 @@ interface SdkManager {
             BillingFlowParams.newBuilder()
                 .setProductDetailsParamsList(productDetailsParamsList)
                 .apply {
-                    developerPayload?.let { setObfuscatedAccountId(it) }
+                    developerPayload?.let {
+                        setObfuscatedAccountId(it)
+                    }
                 }.build()
 
 
@@ -355,12 +358,10 @@ interface SdkManager {
     }
 
     private fun queryActiveSubscriptions() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val purchasesResult = billingClient.queryPurchasesAsync(
-                QueryPurchasesParams.newBuilder().setProductType(ProductType.SUBS).build()
-            )
-            if (purchasesResult.billingResult.responseCode == BillingResponseCode.OK) {
-                val purchases = purchasesResult.purchasesList
+        billingClient.queryPurchasesAsync(
+            QueryPurchasesParams.newBuilder().setProductType(ProductType.SUBS).build()
+        ) { billingResult, purchases ->
+            if (billingResult.responseCode == BillingResponseCode.OK) {
                 for (purchase in purchases) {
                     _purchases.add(purchase)
                     validateAndAcknowledgePurchase(purchase)
@@ -383,10 +384,10 @@ interface SdkManager {
                 )
                 .build()
 
-        billingClient.queryProductDetailsAsync(queryProductDetailsParams) { billingResult, details ->
+        billingClient.queryProductDetailsAsync(queryProductDetailsParams) { billingResult, productDetailsResult ->
             processProductDetailsResult(
                 billingResult,
-                details,
+                productDetailsResult,
                 ProductType.INAPP
             )
         }
@@ -417,19 +418,18 @@ interface SdkManager {
     /**
      * Listener for SKU details responses.
      *
-     * Called when the requested SKU details are retrieved from the
-     * Google billing client.
+     * Called when the requested SKU details are retrieved from the billing client.
      *
      * The SKU details list contains the details about each SKU.
      * This can be used to show SKU information in the app UI.
      *
      * @param billingResult The [BillingResult] from the billing client
-     * @param productDetailsList List of ProductDetails objects
+     * @param productDetailsResult QueryProductDetailsResult containing the products list and unfecthed products.
      * @param skuType Type of Product
      */
     private fun processProductDetailsResult(
         billingResult: BillingResult,
-        productDetailsList: List<ProductDetails>,
+        productDetailsResult: QueryProductDetailsResult,
         skuType: String
     ) {
         Log.d(
@@ -437,7 +437,7 @@ interface SdkManager {
             "processProductDetailsResult: item response ${billingResult.responseCode}, response message: ${billingResult.debugMessage}"
         )
         if (billingResult.responseCode == 0) {
-            for (productDetails in productDetailsList) {
+            for (productDetails in productDetailsResult.productDetailsList) {
                 if (_purchasableItems.find { it.sku == productDetails.productId } == null) {
                     _purchasableItems.add(
                         InternalSkuDetails(

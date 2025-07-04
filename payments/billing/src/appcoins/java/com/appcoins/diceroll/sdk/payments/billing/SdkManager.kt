@@ -15,16 +15,17 @@ import com.appcoins.diceroll.sdk.payments.data.models.PaymentState.PaymentLoadin
 import com.appcoins.diceroll.sdk.payments.data.streams.PurchaseStateStream
 import com.aptoide.sdk.billing.AptoideBillingClient
 import com.aptoide.sdk.billing.AptoideBillingClient.BillingResponseCode
+import com.aptoide.sdk.billing.AptoideBillingClient.FeatureType
 import com.aptoide.sdk.billing.AptoideBillingClient.ProductType
 import com.aptoide.sdk.billing.BillingFlowParams
 import com.aptoide.sdk.billing.BillingResult
 import com.aptoide.sdk.billing.ConsumeParams
-import com.aptoide.sdk.billing.FeatureType
 import com.aptoide.sdk.billing.ProductDetails
 import com.aptoide.sdk.billing.Purchase
 import com.aptoide.sdk.billing.PurchasesUpdatedListener
 import com.aptoide.sdk.billing.QueryProductDetailsParams
 import com.aptoide.sdk.billing.QueryProductDetailsParams.Product
+import com.aptoide.sdk.billing.QueryProductDetailsResult
 import com.aptoide.sdk.billing.QueryPurchasesParams
 import com.aptoide.sdk.billing.listeners.AptoideBillingClientStateListener
 import com.aptoide.sdk.billing.listeners.ConsumeResponseListener
@@ -35,20 +36,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * Manages the AppCoins SDK integration for in-app billing.
+ * Manages the Aptoide SDK integration for in-app billing.
  *
- * This class initializes the AppCoins billing client, sets up
+ * This class initializes the Aptoide billing client, sets up
  * listeners for billing events, and provides methods to interact
  * with the billing service.
  *
- * It serves as a wrapper around the AppCoins SDK to handle all the
+ * It serves as a wrapper around the Aptoide SDK to handle all the
  * necessary setup and provide callbacks to the app for billing events
  * in order to simplify the call for it.
  *
  */
 interface SdkManager {
     /**
-     * The AppCoins billing client instance.
+     * The Aptoide billing client instance.
      */
     val billingClient: AptoideBillingClient
 
@@ -75,20 +76,20 @@ interface SdkManager {
     fun setupRTDNListener()
 
     /**
-     * Process the result of a Purchase of type golden_dice
+     * Process the result of a Successful Purchase
      */
     fun processSuccessfulPurchase(purchase: Purchase)
 
     /**
-     * Process the result of a Purchase of type golden_dice
+     * Process the expired Subscriptions
      */
     fun processExpiredPurchases(purchases: List<Purchase>)
 
     /**
-     * Listener for AppCoins billing client state changes.
+     * Listener for Aptoide billing client state changes.
      *
      * This listener handles events related to the connection state
-     * of the AppCoins billing client and has two methods to act on connection and
+     * of the Aptoide billing client and has two methods to act on connection and
      * disconnection events.
      *
      * @param billingResult The response code from the billing client
@@ -101,7 +102,7 @@ interface SdkManager {
                         BillingResponseCode.OK -> {
                             Log.i(
                                 LOG_TAG,
-                                "AppCoinsBillingStateListener: AppCoins SDK Setup successful. Querying inventory."
+                                "AptoideBillingClientStateListener: Aptoide SDK Setup successful. Querying inventory."
                             )
                             _connectionState.value = true
                             setupRTDNListener()
@@ -114,7 +115,7 @@ interface SdkManager {
                         else -> {
                             Log.i(
                                 LOG_TAG,
-                                "AppCoinsBillingStateListener: Problem setting up AppCoins SDK: ${billingResult.responseCode.toResponseCode()}"
+                                "AptoideBillingClientStateListener: Problem setting up Aptoide SDK: ${billingResult.responseCode.toResponseCode()}"
                             )
                             _connectionState.value = false
                             _attemptsPrice.value = null
@@ -124,7 +125,7 @@ interface SdkManager {
                 }
 
                 override fun onBillingServiceDisconnected() {
-                    Log.i(LOG_TAG, "AppCoinsBillingStateListener: AppCoins SDK Disconnected")
+                    Log.i(LOG_TAG, "AptoideBillingClientStateListener: Aptoide SDK Disconnected")
                     _connectionState.value = false
                     _attemptsPrice.value = null
                     _purchasableItems.clear()
@@ -205,7 +206,7 @@ interface SdkManager {
      * Listener for handling consume purchase responses.
      *
      * This listener receives the response code and purchase token
-     * after consuming a purchase with the AppCoins billing client.
+     * after consuming a purchase with the billing client.
      *
      * It can be used to determine if the consumption was successful.
      *
@@ -227,7 +228,7 @@ interface SdkManager {
      * @param sku The SKU identifier for the in-app product.
      * @param developerPayload A developer-defined string that will be returned with the purchase data.
      *
-     * This will launch the Google Play billing flow. The result will be delivered
+     * This will launch the billing flow. The result will be delivered
      * via the PurchasesUpdatedListener callback.
      */
     fun startPayment(activity: Activity, sku: String, skuType: String, developerPayload: String?) {
@@ -339,12 +340,10 @@ interface SdkManager {
     }
 
     private fun queryActiveSubscriptions() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val purchasesResult = billingClient.queryPurchasesAsync(
-                QueryPurchasesParams.newBuilder().setProductType(ProductType.SUBS).build()
-            )
-            if (purchasesResult.billingResult.responseCode == BillingResponseCode.OK) {
-                val purchases = purchasesResult.purchasesList
+        billingClient.queryPurchasesAsync(
+            QueryPurchasesParams.newBuilder().setProductType(ProductType.SUBS).build()
+        ) { billingResult, purchases ->
+            if (billingResult.responseCode == BillingResponseCode.OK) {
                 for (purchase in purchases) {
                     _purchases.add(purchase)
                     validateAndAcknowledgePurchase(purchase)
@@ -367,10 +366,10 @@ interface SdkManager {
                 )
                 .build()
 
-        billingClient.queryProductDetailsAsync(queryProductDetailsParams) { billingResult, details ->
+        billingClient.queryProductDetailsAsync(queryProductDetailsParams) { billingResult, productDetailsResult ->
             processProductDetailsResult(
                 billingResult,
-                details,
+                productDetailsResult,
                 ProductType.INAPP
             )
         }
@@ -401,19 +400,18 @@ interface SdkManager {
     /**
      * Listener for SKU details responses.
      *
-     * Called when the requested SKU details are retrieved from the
-     * Google billing client.
+     * Called when the requested SKU details are retrieved from the billing client.
      *
      * The SKU details list contains the details about each SKU.
      * This can be used to show SKU information in the app UI.
      *
      * @param billingResult The [BillingResult] from the billing client
-     * @param productDetailsList List of ProductDetails objects
+     * @param productDetailsResult QueryProductDetailsResult containing the products list and unfecthed products.
      * @param skuType Type of Product
      */
     private fun processProductDetailsResult(
         billingResult: BillingResult,
-        productDetailsList: List<ProductDetails>,
+        productDetailsResult: QueryProductDetailsResult,
         skuType: String
     ) {
         Log.d(
@@ -421,7 +419,8 @@ interface SdkManager {
             "processProductDetailsResult: item response ${billingResult.responseCode}, response message: ${billingResult.debugMessage}"
         )
         if (billingResult.responseCode == 0) {
-            for (productDetails in productDetailsList) {
+            for (productDetails in productDetailsResult.productDetailsList) {
+                Log.d(LOG_TAG, "processProductDetailsResult: product: ${productDetails.productId}")
                 if (_purchasableItems.find { it.sku == productDetails.productId } == null) {
                     _purchasableItems.add(
                         InternalSkuDetails(
@@ -439,6 +438,12 @@ interface SdkManager {
                             productDetails.oneTimePurchaseOfferDetails?.formattedPrice
                     }
                 }
+            }
+            for (unfetchedProduct in productDetailsResult.unfetchedProductList) {
+                Log.d(
+                    LOG_TAG,
+                    "processProductDetailsResult: unfetched product: ${unfetchedProduct.productId}"
+                )
             }
         }
     }
