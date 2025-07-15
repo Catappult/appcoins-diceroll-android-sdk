@@ -18,7 +18,6 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryProductDetailsParams.Product
-import com.android.billingclient.api.QueryProductDetailsResult
 import com.android.billingclient.api.QueryPurchasesParams
 import com.appcoins.diceroll.sdk.payments.billing.respository.PurchaseValidatorRepository
 import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode
@@ -429,7 +428,7 @@ interface SdkManager {
      */
     private fun processProductDetailsResult(
         billingResult: BillingResult,
-        productDetailsResult: QueryProductDetailsResult,
+        products: List<ProductDetails>,
         skuType: String
     ) {
         Log.d(
@@ -437,7 +436,7 @@ interface SdkManager {
             "processProductDetailsResult: item response ${billingResult.responseCode}, response message: ${billingResult.debugMessage}"
         )
         if (billingResult.responseCode == 0) {
-            for (productDetails in productDetailsResult.productDetailsList) {
+            for (productDetails in products) {
                 if (_purchasableItems.find { it.sku == productDetails.productId } == null) {
                     _purchasableItems.add(
                         InternalSkuDetails(
@@ -455,9 +454,6 @@ interface SdkManager {
                             productDetails.oneTimePurchaseOfferDetails?.formattedPrice
                     }
                 }
-            }
-            for (unfetchedProduct in productDetailsResult.unfetchedProductList) {
-                // Process here the Unfetched Products
             }
         }
     }
