@@ -19,6 +19,7 @@ import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryProductDetailsParams.Product
 import com.android.billingclient.api.QueryPurchasesParams
+import com.appcoins.diceroll.sdk.feature.payments.data.Skus
 import com.appcoins.diceroll.sdk.payments.billing.respository.PurchaseValidatorRepository
 import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode
 import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode.ERROR
@@ -269,6 +270,7 @@ interface SdkManager {
                 .setProductDetails(productDetails)
                 .apply {
                     if (skuType == ProductType.SUBS) {
+                        val offerToken = getOfferTokenFromProduct(productDetails)
                         setOfferToken(
                             productDetails.subscriptionOfferDetails?.firstOrNull()?.offerToken ?: ""
                         )
@@ -449,7 +451,7 @@ interface SdkManager {
                         )
                     )
                     _myItems.add(productDetails)
-                    if (productDetails.productId == "attempts") {
+                    if (productDetails.productId == Skus.ATTEMPTS) {
                         _attemptsPrice.value =
                             productDetails.oneTimePurchaseOfferDetails?.formattedPrice
                     }
@@ -477,8 +479,18 @@ interface SdkManager {
     }
 
     private fun isNonConsumableProduct(product: String?): Boolean {
-        val nonConsumableProducts = listOf("non_consumable_attempts")
+        val nonConsumableProducts = listOf(Skus.NON_CONSUMABLE_ATTEMPTS)
         return nonConsumableProducts.contains(product)
+    }
+
+    private fun getOfferTokenFromProduct(productDetails: ProductDetails): String {
+        return when (productDetails.productId) {
+            Skus.TRIAL_DICE -> productDetails.subscriptionOfferDetails?.firstOrNull { it.offerId == "trial-offer" }?.offerToken
+            Skus.SINGLE_DISCOUNT_DICE -> productDetails.subscriptionOfferDetails?.firstOrNull { it.offerId == "single-discount-offer" }?.offerToken
+            Skus.RECURRING_DISCOUNT_DICE -> productDetails.subscriptionOfferDetails?.firstOrNull { it.offerId == "recurring-discount-offer" }?.offerToken
+            else -> null
+        } ?: productDetails.subscriptionOfferDetails?.firstOrNull()?.offerToken
+        ?: ""
     }
 
     companion object {

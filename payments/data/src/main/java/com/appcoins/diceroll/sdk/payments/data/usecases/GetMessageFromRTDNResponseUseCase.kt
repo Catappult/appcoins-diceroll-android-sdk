@@ -1,6 +1,7 @@
 package com.appcoins.diceroll.sdk.payments.data.usecases
 
 import android.util.Log
+import com.appcoins.diceroll.sdk.feature.payments.data.Skus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -12,11 +13,13 @@ class GetMessageFromRTDNResponseUseCase @Inject constructor() {
     operator fun invoke(message: String, onRemoveSubscription: (String) -> Unit): String? {
         try {
             val jsonObject = JSONObject(message)
-            return when (jsonObject.optString("sku")) {
-                "attempts" -> processAttemptsPurchaseUpdate(jsonObject)
-                "golden_dice" -> processGoldenDiceSubscriptionUpdate(
+            val sku = jsonObject.optString("sku")
+            return when (sku) {
+                Skus.ATTEMPTS -> processAttemptsPurchaseUpdate(jsonObject)
+                Skus.GOLDEN_DICE, Skus.TRIAL_DICE, Skus.PREPAID_DICE -> processSubscriptionUpdate(
                     jsonObject,
-                    onRemoveSubscription
+                    sku,
+                    onRemoveSubscription,
                 )
 
                 else -> null
@@ -42,28 +45,29 @@ class GetMessageFromRTDNResponseUseCase @Inject constructor() {
         }
     }
 
-    private fun processGoldenDiceSubscriptionUpdate(
+    private fun processSubscriptionUpdate(
         jsonObject: JSONObject,
+        sku: String,
         onRemoveSubscription: (String) -> Unit
     ): String? {
         val status = jsonObject.optString("status")
         return when {
             status.equals("expired", true) -> {
                 CoroutineScope(Dispatchers.IO).launch {
-                    onRemoveSubscription("golden_dice")
+                    onRemoveSubscription(sku)
                 }
-                "Your subscription to the Golden Dice has expired."
+                "Your subscription to the $sku has expired."
             }
 
             status.equals("refunded", true) -> {
                 CoroutineScope(Dispatchers.IO).launch {
-                    onRemoveSubscription("golden_dice")
+                    onRemoveSubscription(sku)
                 }
-                "Your subscription to the Golden Dice was refunded."
+                "Your subscription to the $sku was refunded."
             }
 
             else -> {
-                Log.i(LOG_TAG, "Status is not important for the Attempts purchase.")
+                Log.i(LOG_TAG, "Status is not important for the $sku purchase.")
                 null
             }
         }

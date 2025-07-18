@@ -51,11 +51,20 @@ class SubscriptionsDataSource @Inject constructor(
         return preferences.data.map {
             val mutableListAvailableSubscriptions = mutableListOf<Subscription>()
 
+            if (it[GOLDEN_DICE_ACTIVE] == true) {
+                mutableListAvailableSubscriptions.add(Subscription.GOLDEN_DICE)
+            }
             if (it[TRIAL_DICE_ACTIVE] == true) {
                 mutableListAvailableSubscriptions.add(Subscription.TRIAL_DICE)
             }
-            if (it[GOLDEN_DICE_ACTIVE] == true) {
-                mutableListAvailableSubscriptions.add(Subscription.GOLDEN_DICE)
+            if (it[PREPAID_DICE_ACTIVE] == true) {
+                mutableListAvailableSubscriptions.add(Subscription.PREPAID_DICE)
+            }
+            if (it[SINGLE_DISCOUNT_DICE_ACTIVE] == true) {
+                mutableListAvailableSubscriptions.add(Subscription.SINGLE_DISCOUNT_DICE)
+            }
+            if (it[RECURRING_DISCOUNT_DICE_ACTIVE] == true) {
+                mutableListAvailableSubscriptions.add(Subscription.RECURRING_DISCOUNT_DICE)
             }
 
             val selectedSubscription = Subscription.entries[it[SELECTED_SUBSCRIPTION] ?: 0]
@@ -67,6 +76,9 @@ class SubscriptionsDataSource @Inject constructor(
     companion object {
         val GOLDEN_DICE_ACTIVE = booleanPreferencesKey("golden_dice_active")
         val TRIAL_DICE_ACTIVE = booleanPreferencesKey("trial_dice_active")
+        val PREPAID_DICE_ACTIVE = booleanPreferencesKey("prepaid_dice_active")
+        val SINGLE_DISCOUNT_DICE_ACTIVE = booleanPreferencesKey("single_discount_dice_active")
+        val RECURRING_DISCOUNT_DICE_ACTIVE = booleanPreferencesKey("recurring_discount_dice_active")
         val SELECTED_SUBSCRIPTION = intPreferencesKey("selected_subscription")
     }
 }

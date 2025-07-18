@@ -40,6 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.appcoins.diceroll.sdk.core.ui.design.DiceRollIcons
 import com.appcoins.diceroll.sdk.core.ui.design.R
 import com.appcoins.diceroll.sdk.core.ui.design.theme.DiceRollTheme
+import com.appcoins.diceroll.sdk.feature.payments.data.Skus
 import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType.INAPP
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuType.SUBS
@@ -351,13 +352,13 @@ fun Preview() {
 fun getListOfItems(): ArrayList<SkuDetails> =
     arrayListOf(
         SkuDetails(
-            "golden_dice",
+            Skus.GOLDEN_DICE,
             SUBS,
             "Golden Dice (AppCoins Diceroll SDK)",
             "€ 1.0",
         ),
         SkuDetails(
-            "attempts",
+            Skus.ATTEMPTS,
             INAPP,
             "Attempts",
             "€ 1.0",

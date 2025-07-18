@@ -32,6 +32,7 @@ dependencies {
   projectImplementation(":core:network")
   projectImplementation(":core:ui:notifications")
   projectImplementation(":core:utils")
+  projectImplementation(":feature:payments:data")
   projectImplementation(":feature:roll-game:data")
   projectImplementation(":feature:settings:data")
   projectImplementation(":payments:data")

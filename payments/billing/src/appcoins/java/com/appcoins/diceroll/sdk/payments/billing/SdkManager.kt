@@ -3,6 +3,7 @@ package com.appcoins.diceroll.sdk.payments.billing
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import com.appcoins.diceroll.sdk.feature.payments.data.Skus
 import com.appcoins.diceroll.sdk.payments.billing.data.respository.PurchaseValidatorRepository
 import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode
 import com.appcoins.diceroll.sdk.payments.data.models.InternalResponseCode.ERROR
@@ -432,7 +433,7 @@ interface SdkManager {
                         )
                     )
                     _myItems.add(productDetails)
-                    if (productDetails.productId == "attempts") {
+                    if (productDetails.productId == Skus.ATTEMPTS) {
                         _attemptsPrice.value =
                             productDetails.oneTimePurchaseOfferDetails?.formattedPrice
                     }
@@ -463,7 +464,7 @@ interface SdkManager {
     }
 
     private fun isNonConsumableProduct(product: String?): Boolean {
-        val nonConsumableProducts = listOf("non_consumable_attempts")
+        val nonConsumableProducts = listOf(Skus.NON_CONSUMABLE_ATTEMPTS)
         return nonConsumableProducts.contains(product)
     }
 
@@ -482,7 +483,7 @@ interface SdkManager {
             return false
         }
 
-        return productDetails.productId == "trial_dice"
+        return productDetails.productId == Skus.TRIAL_DICE
     }
 
     companion object {

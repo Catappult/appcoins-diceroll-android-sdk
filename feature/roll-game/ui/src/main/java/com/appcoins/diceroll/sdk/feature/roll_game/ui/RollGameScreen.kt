@@ -601,6 +601,51 @@ fun getGameResources(subscriptionPrefs: SubscriptionPrefs) =
                 ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_dice_sdk_title)
             )
 
+        Subscription.PREPAID_DICE ->
+            Quadruple(
+                GameR.drawable.ic_base_prepaid_dice,
+                listOf(
+                    GameR.drawable.ic_dice_1_prepaid,
+                    GameR.drawable.ic_dice_2_prepaid,
+                    GameR.drawable.ic_dice_3_prepaid,
+                    GameR.drawable.ic_dice_4_prepaid,
+                    GameR.drawable.ic_dice_5_prepaid,
+                    GameR.drawable.ic_dice_6_prepaid,
+                ),
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_prepaid_radiant_shadows),
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_dice_sdk_title)
+            )
+
+        Subscription.SINGLE_DISCOUNT_DICE ->
+            Quadruple(
+                GameR.drawable.ic_base_single_discount_dice,
+                listOf(
+                    GameR.drawable.ic_dice_1_single_discount,
+                    GameR.drawable.ic_dice_2_single_discount,
+                    GameR.drawable.ic_dice_3_single_discount,
+                    GameR.drawable.ic_dice_4_single_discount,
+                    GameR.drawable.ic_dice_5_single_discount,
+                    GameR.drawable.ic_dice_6_single_discount,
+                ),
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_single_discount_radiant_shadows),
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_dice_sdk_title)
+            )
+
+        Subscription.RECURRING_DISCOUNT_DICE ->
+            Quadruple(
+                GameR.drawable.ic_base_recurring_discount_dice,
+                listOf(
+                    GameR.drawable.ic_dice_1_recurring_discount,
+                    GameR.drawable.ic_dice_2_recurring_discount,
+                    GameR.drawable.ic_dice_3_recurring_discount,
+                    GameR.drawable.ic_dice_4_recurring_discount,
+                    GameR.drawable.ic_dice_5_recurring_discount,
+                    GameR.drawable.ic_dice_6_recurring_discount,
+                ),
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_recurring_discount_radiant_shadows),
+                ImageVector.vectorResource(id = com.appcoins.diceroll.sdk.feature.roll_game.ui.R.drawable.ic_golden_dice_sdk_title)
+            )
+
         else -> Quadruple(
             GameR.drawable.ic_base_dice,
             listOf(

@@ -4,12 +4,18 @@ import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceStatusUseCase
+import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetPrepaidDiceStatusUseCase
+import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetRecurringDiscountDiceStatusUseCase
+import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetSingleDiscountDiceStatusUseCase
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetTrialDiceStatusUseCase
 import com.appcoins.diceroll.sdk.feature.settings.data.usecases.GetUserUseCase
 import com.appcoins.diceroll.sdk.payments.billing.SdkManager
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails
 import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
+import com.appcoins.diceroll.sdk.payments.data.models.Item.PrepaidDice
+import com.appcoins.diceroll.sdk.payments.data.models.Item.RecurringDiscountDice
+import com.appcoins.diceroll.sdk.payments.data.models.Item.SingleDiscountDice
 import com.appcoins.diceroll.sdk.payments.data.models.Item.TrialDice
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +31,9 @@ class StoreViewModel @Inject constructor(
     private val getUserUseCase: GetUserUseCase,
     private val getGoldenDiceStatusUseCase: GetGoldenDiceStatusUseCase,
     private val getTrialDiceStatusUseCase: GetTrialDiceStatusUseCase,
+    private val getPrepaidDiceStatusUseCase: GetPrepaidDiceStatusUseCase,
+    private val getSingleDiscountDiceStatusUseCase: GetSingleDiscountDiceStatusUseCase,
+    private val getRecurringDiscountDiceStatusUseCase: GetRecurringDiscountDiceStatusUseCase,
 ) : ViewModel() {
 
     internal val purchasableItems: List<InternalSkuDetails> get() = sdkManager._purchasableItems
@@ -39,25 +48,21 @@ class StoreViewModel @Inject constructor(
     }
 
     fun getSubscriptionStateForSKU(skuDetails: InternalSkuDetails): StateFlow<Boolean> {
-        when (skuDetails.sku) {
-            GoldDice.sku -> return getGoldenDiceStatusUseCase()
-                .map {
-                    it
-                }.stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(5_000),
-                    initialValue = false
-                )
-
-            TrialDice.sku -> return getTrialDiceStatusUseCase()
-                .map {
-                    it
-                }.stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(5_000),
-                    initialValue = false
-                )
+        val state = when (skuDetails.sku) {
+            GoldDice.sku -> getGoldenDiceStatusUseCase()
+            TrialDice.sku -> getTrialDiceStatusUseCase()
+            PrepaidDice.sku -> getPrepaidDiceStatusUseCase()
+            SingleDiscountDice.sku -> getSingleDiscountDiceStatusUseCase()
+            RecurringDiscountDice.sku -> getRecurringDiscountDiceStatusUseCase()
+            else -> null
         }
-        return MutableStateFlow(false)
+
+        return state
+            ?.map { it }
+            ?.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = false
+            ) ?: MutableStateFlow(false)
     }
 }

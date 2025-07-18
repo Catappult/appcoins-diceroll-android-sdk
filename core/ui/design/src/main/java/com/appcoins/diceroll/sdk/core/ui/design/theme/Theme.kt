@@ -23,14 +23,20 @@ fun DiceRollTheme(
     UpdateSystemBarsTheme(darkTheme = darkTheme)
     val colorScheme = if (darkTheme) {
         when (subscriptionTypeDiceTheme) {
-            Subscription.TRIAL_DICE -> darkTrialDiceAppColorScheme
             Subscription.GOLDEN_DICE -> darkGoldenDiceAppColorScheme
+            Subscription.TRIAL_DICE -> darkTrialDiceAppColorScheme
+            Subscription.PREPAID_DICE -> darkPrepaidDiceAppColorScheme
+            Subscription.SINGLE_DISCOUNT_DICE -> darkSingleDiscountDiceAppColorScheme
+            Subscription.RECURRING_DISCOUNT_DICE -> darkRecurringDiscountDiceAppColorScheme
             else -> darkAppColorScheme
         }
     } else {
         when (subscriptionTypeDiceTheme) {
-            Subscription.TRIAL_DICE -> darkTrialDiceAppColorScheme
             Subscription.GOLDEN_DICE -> darkGoldenDiceAppColorScheme
+            Subscription.TRIAL_DICE -> darkTrialDiceAppColorScheme
+            Subscription.PREPAID_DICE -> darkPrepaidDiceAppColorScheme
+            Subscription.SINGLE_DISCOUNT_DICE -> darkSingleDiscountDiceAppColorScheme
+            Subscription.RECURRING_DISCOUNT_DICE -> darkRecurringDiscountDiceAppColorScheme
             else -> darkAppColorScheme
         }
     }

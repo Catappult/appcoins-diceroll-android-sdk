@@ -48,6 +48,22 @@
     <string name="payment_item_golden_dice_refund_message">Your Subscription for the Golden Dice was Refunded.</string>
     <string name="payment_item_golden_dice_success_message">You are now subscribed to the Golden Dice.</string>
     <string name="payment_item_golden_dice_expiration_message">Your subscription for the Golden Dice was expired.\nPurchase again to get it!</string>
+    <string name="payment_item_trial_dice_error_message_user_cancelled">Purchase for Trial Dice was cancelled.</string>
+    <string name="payment_item_trial_dice_refund_message">Your Subscription for the Trial Dice was Refunded.</string>
+    <string name="payment_item_trial_dice_success_message">You are now subscribed to the Trial Dice.</string>
+    <string name="payment_item_trial_dice_expiration_message">Your subscription for the Trial Dice was expired.\nPurchase again to get it!</string>
+    <string name="payment_item_prepaid_dice_error_message_user_cancelled">Purchase for Prepaid Dice was cancelled.</string>
+    <string name="payment_item_prepaid_dice_refund_message">Your Subscription for the Prepaid Dice was Refunded.</string>
+    <string name="payment_item_prepaid_dice_success_message">You are now subscribed to the Prepaid Dice.</string>
+    <string name="payment_item_prepaid_dice_expiration_message">Your subscription for the Prepaid Dice was expired.\nPurchase again to get it!</string>
+    <string name="payment_item_single_discount_dice_error_message_user_cancelled">Purchase for Single Discount Dice was cancelled.</string>
+    <string name="payment_item_single_discount_dice_refund_message">Your Subscription for the Single Discount Dice was Refunded.</string>
+    <string name="payment_item_single_discount_dice_success_message">You are now subscribed to the Single Discount Dice.</string>
+    <string name="payment_item_single_discount_dice_expiration_message">Your subscription for the Single Discount Dice was expired.\nPurchase again to get it!</string>
+    <string name="payment_item_recurring_discount_dice_error_message_user_cancelled">Purchase for Recurring Discount Dice was cancelled.</string>
+    <string name="payment_item_recurring_discount_dice_refund_message">Your Subscription for the Recurring Discount Dice was Refunded.</string>
+    <string name="payment_item_recurring_discount_dice_success_message">You are now subscribed to the Recurring Discount Dice.</string>
+    <string name="payment_item_recurring_discount_dice_expiration_message">Your subscription for the Recurring Discount Dice was expired.\nPurchase again to get it!</string>
 
     <string name="payment_item_general_error_title_user_cancelled">Purchase cancelled</string>
     <string name="payment_item_general_error_title_unknown">Purchase Failed</string>

@@ -9,6 +9,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":feature:payments:data"))
     projectImplementation(":feature:settings:data")
     projectImplementation(":feature:stats:data")
     projectImplementation(":feature:roll-game:data")
