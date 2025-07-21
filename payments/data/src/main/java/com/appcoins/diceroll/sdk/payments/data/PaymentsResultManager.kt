@@ -1,5 +1,6 @@
 package com.appcoins.diceroll.sdk.payments.data
 
+import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDicePremiumStatusUseCase
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceStatusUseCase
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetPrepaidDiceStatusUseCase
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetRecurringDiscountDiceStatusUseCase
@@ -8,17 +9,20 @@ import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetTrialDiceSta
 import com.appcoins.diceroll.sdk.payments.data.models.InternalPurchase
 import com.appcoins.diceroll.sdk.payments.data.models.Item.Attempts
 import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
+import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDicePremium
 import com.appcoins.diceroll.sdk.payments.data.models.Item.NonConsumableAttempts
 import com.appcoins.diceroll.sdk.payments.data.models.Item.PrepaidDice
 import com.appcoins.diceroll.sdk.payments.data.models.Item.RecurringDiscountDice
 import com.appcoins.diceroll.sdk.payments.data.models.Item.SingleDiscountDice
 import com.appcoins.diceroll.sdk.payments.data.models.Item.TrialDice
+import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessExpiredGoldenDicePremiumPurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessExpiredGoldenDicePurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessExpiredPrepaidDicePurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessExpiredRecurringDiscountDicePurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessExpiredSingleDiscountDicePurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessExpiredTrialDicePurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessSuccessfulAttemptsPurchaseUseCase
+import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessSuccessfulGoldenDicePremiumPurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessSuccessfulGoldenDicePurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessSuccessfulPrepaidDicePurchaseUseCase
 import com.appcoins.diceroll.sdk.payments.data.usecases.ProcessSuccessfulRecurringDiscountDicePurchaseUseCase
@@ -34,6 +38,8 @@ class PaymentsResultManager @Inject constructor(
     private val processSuccessfulAttemptsPurchaseUseCase: ProcessSuccessfulAttemptsPurchaseUseCase,
     private val processSuccessfulGoldenDicePurchaseUseCase: ProcessSuccessfulGoldenDicePurchaseUseCase,
     private val processExpiredGoldenDicePurchaseUseCase: ProcessExpiredGoldenDicePurchaseUseCase,
+    private val processSuccessfulGoldenDicePremiumPurchaseUseCase: ProcessSuccessfulGoldenDicePremiumPurchaseUseCase,
+    private val processExpiredGoldenDicePremiumPurchaseUseCase: ProcessExpiredGoldenDicePremiumPurchaseUseCase,
     private val processSuccessfulTrialDicePurchaseUseCase: ProcessSuccessfulTrialDicePurchaseUseCase,
     private val processExpiredTrialDicePurchaseUseCase: ProcessExpiredTrialDicePurchaseUseCase,
     private val processSuccessfulPrepaidDicePurchaseUseCase: ProcessSuccessfulPrepaidDicePurchaseUseCase,
@@ -43,6 +49,7 @@ class PaymentsResultManager @Inject constructor(
     private val processSuccessfulRecurringDiscountDicePurchaseUseCase: ProcessSuccessfulRecurringDiscountDicePurchaseUseCase,
     private val processExpiredRecurringDiscountDicePurchaseUseCase: ProcessExpiredRecurringDiscountDicePurchaseUseCase,
     private val getGoldenDiceStatusUseCase: GetGoldenDiceStatusUseCase,
+    private val getGoldenDicePremiumStatusUseCase: GetGoldenDicePremiumStatusUseCase,
     private val getTrialDiceStatusUseCase: GetTrialDiceStatusUseCase,
     private val getPrepaidDiceStatusUseCase: GetPrepaidDiceStatusUseCase,
     private val getSingleDiscountDiceStatusUseCase: GetSingleDiscountDiceStatusUseCase,
@@ -56,6 +63,7 @@ class PaymentsResultManager @Inject constructor(
                     processSuccessfulAttemptsPurchaseUseCase(NonConsumableAttempts)
 
                 GoldDice.sku -> processSuccessfulGoldenDicePurchaseUseCase()
+                GoldDicePremium.sku -> processSuccessfulGoldenDicePremiumPurchaseUseCase()
                 TrialDice.sku -> processSuccessfulTrialDicePurchaseUseCase()
                 PrepaidDice.sku -> processSuccessfulPrepaidDicePurchaseUseCase()
                 SingleDiscountDice.sku -> processSuccessfulSingleDiscountDicePurchaseUseCase()
@@ -69,6 +77,11 @@ class PaymentsResultManager @Inject constructor(
             if (getGoldenDiceStatusUseCase.invoke().firstOrNull() == true) {
                 if (listSkus.firstOrNull { it == GoldDice.sku } == null) {
                     processExpiredGoldenDicePurchaseUseCase()
+                }
+            }
+            if (getGoldenDicePremiumStatusUseCase.invoke().firstOrNull() == true) {
+                if (listSkus.firstOrNull { it == GoldDicePremium.sku } == null) {
+                    processExpiredGoldenDicePremiumPurchaseUseCase()
                 }
             }
             if (getTrialDiceStatusUseCase.invoke().firstOrNull() == true) {

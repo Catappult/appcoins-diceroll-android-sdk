@@ -40,10 +40,17 @@ import androidx.compose.ui.unit.sp
 import com.appcoins.diceroll.sdk.core.ui.design.R
 import com.appcoins.diceroll.sdk.core.ui.design.theme.darkAppColorScheme
 import com.appcoins.diceroll.sdk.core.ui.design.theme.darkGoldenDiceAppColorScheme
+import com.appcoins.diceroll.sdk.core.ui.design.theme.darkPrepaidDiceAppColorScheme
+import com.appcoins.diceroll.sdk.core.ui.design.theme.darkRecurringDiscountDiceAppColorScheme
+import com.appcoins.diceroll.sdk.core.ui.design.theme.darkSingleDiscountDiceAppColorScheme
 import com.appcoins.diceroll.sdk.core.ui.design.theme.darkTrialDiceAppColorScheme
 import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription
 import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription.DEFAULT
 import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription.GOLDEN_DICE
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription.GOLDEN_DICE_PREMIUM
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription.PREPAID_DICE
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription.RECURRING_DISCOUNT_DICE
+import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription.SINGLE_DISCOUNT_DICE
 import com.appcoins.diceroll.sdk.feature.roll_game.data.model.Subscription.TRIAL_DICE
 import com.appcoins.diceroll.sdk.feature.roll_game.data.model.SubscriptionPrefs
 import com.appcoins.diceroll.sdk.payments.data.models.Item
@@ -154,12 +161,48 @@ private fun SubscriptionSelectionPanel(
             )
         }
 
+        if (subscriptionPrefs.availableSubscriptions.contains(GOLDEN_DICE_PREMIUM)) {
+            DiceChooserRow(
+                text = "Golden Dice Premium",
+                color = darkGoldenDiceAppColorScheme.tertiary,
+                selected = subscriptionPrefs.selectedSubscription == GOLDEN_DICE_PREMIUM,
+                onClick = { onChangeSelectedSubscription(GOLDEN_DICE_PREMIUM) },
+            )
+        }
+
         if (subscriptionPrefs.availableSubscriptions.contains(TRIAL_DICE)) {
             DiceChooserRow(
                 text = "Trial Dice",
                 color = darkTrialDiceAppColorScheme.tertiary,
                 selected = subscriptionPrefs.selectedSubscription == TRIAL_DICE,
                 onClick = { onChangeSelectedSubscription(TRIAL_DICE) },
+            )
+        }
+
+        if (subscriptionPrefs.availableSubscriptions.contains(PREPAID_DICE)) {
+            DiceChooserRow(
+                text = "Prepaid Dice",
+                color = darkPrepaidDiceAppColorScheme.tertiary,
+                selected = subscriptionPrefs.selectedSubscription == PREPAID_DICE,
+                onClick = { onChangeSelectedSubscription(PREPAID_DICE) },
+            )
+        }
+
+        if (subscriptionPrefs.availableSubscriptions.contains(SINGLE_DISCOUNT_DICE)) {
+            DiceChooserRow(
+                text = "Single Discount Dice",
+                color = darkSingleDiscountDiceAppColorScheme.tertiary,
+                selected = subscriptionPrefs.selectedSubscription == SINGLE_DISCOUNT_DICE,
+                onClick = { onChangeSelectedSubscription(SINGLE_DISCOUNT_DICE) },
+            )
+        }
+
+        if (subscriptionPrefs.availableSubscriptions.contains(RECURRING_DISCOUNT_DICE)) {
+            DiceChooserRow(
+                text = "Recurring Discount Dice",
+                color = darkRecurringDiscountDiceAppColorScheme.tertiary,
+                selected = subscriptionPrefs.selectedSubscription == RECURRING_DISCOUNT_DICE,
+                onClick = { onChangeSelectedSubscription(RECURRING_DISCOUNT_DICE) },
             )
         }
     }

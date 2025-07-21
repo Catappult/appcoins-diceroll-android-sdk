@@ -10,6 +10,7 @@ import com.android.billingclient.api.BillingClient.BillingResponseCode
 import com.android.billingclient.api.BillingClient.ProductType
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
+import com.android.billingclient.api.BillingFlowParams.SubscriptionUpdateParams.ReplacementMode
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ConsumeParams
 import com.android.billingclient.api.ConsumeResponseListener
@@ -64,6 +65,8 @@ interface SdkManager {
     val _purchaseValidatorRepository: PurchaseValidatorRepository
 
     val _myItems: MutableList<ProductDetails>
+
+    var goldenDiceActivePurchaseToken: String?
 
     /**
      * Method to start the Setup of the SDK.
@@ -169,6 +172,9 @@ interface SdkManager {
                             val product = purchase.products.first()
                             if (isSubscriptionTypeProduct(product) || isNonConsumableProduct(product)) {
                                 validateAndAcknowledgePurchase(purchase)
+                                if (product == Skus.GOLDEN_DICE || product == Skus.GOLDEN_DICE_PREMIUM) {
+                                    goldenDiceActivePurchaseToken = purchase.purchaseToken
+                                }
                             } else {
                                 validateAndConsumePurchase(purchase)
                             }
@@ -271,9 +277,7 @@ interface SdkManager {
                 .apply {
                     if (skuType == ProductType.SUBS) {
                         val offerToken = getOfferTokenFromProduct(productDetails)
-                        setOfferToken(
-                            productDetails.subscriptionOfferDetails?.firstOrNull()?.offerToken ?: ""
-                        )
+                        setOfferToken(offerToken)
                     }
                 }
                 .build()
@@ -285,6 +289,16 @@ interface SdkManager {
                 .apply {
                     developerPayload?.let {
                         setObfuscatedAccountId(it)
+                    }
+                    if (goldenDiceActivePurchaseToken != null &&
+                        (productDetails.productId == Skus.GOLDEN_DICE || productDetails.productId == Skus.GOLDEN_DICE_PREMIUM)
+                    ) {
+                        setSubscriptionUpdateParams(
+                            BillingFlowParams.SubscriptionUpdateParams.newBuilder()
+                                .setOldPurchaseToken(goldenDiceActivePurchaseToken!!)
+                                .setSubscriptionReplacementMode(ReplacementMode.WITH_TIME_PRORATION)
+                                .build()
+                        )
                     }
                 }.build()
 
@@ -366,6 +380,10 @@ interface SdkManager {
                 for (purchase in purchases) {
                     _purchases.add(purchase)
                     validateAndAcknowledgePurchase(purchase)
+                    val product = purchase.products.first()
+                    if (product == Skus.GOLDEN_DICE || product == Skus.GOLDEN_DICE_PREMIUM) {
+                        goldenDiceActivePurchaseToken = purchase.purchaseToken
+                    }
                 }
                 processExpiredPurchases(purchases)
             }
@@ -485,9 +503,28 @@ interface SdkManager {
 
     private fun getOfferTokenFromProduct(productDetails: ProductDetails): String {
         return when (productDetails.productId) {
-            Skus.TRIAL_DICE -> productDetails.subscriptionOfferDetails?.firstOrNull { it.offerId == "trial-offer" }?.offerToken
-            Skus.SINGLE_DISCOUNT_DICE -> productDetails.subscriptionOfferDetails?.firstOrNull { it.offerId == "single-discount-offer" }?.offerToken
-            Skus.RECURRING_DISCOUNT_DICE -> productDetails.subscriptionOfferDetails?.firstOrNull { it.offerId == "recurring-discount-offer" }?.offerToken
+            Skus.TRIAL_DICE -> productDetails.subscriptionOfferDetails
+                ?.firstOrNull { it.offerId == "trial-offer" }
+                ?.offerToken
+
+            Skus.SINGLE_DISCOUNT_DICE -> productDetails.subscriptionOfferDetails
+                ?.firstOrNull { it.offerId == "single-discount-offer" }
+                ?.offerToken
+
+            Skus.RECURRING_DISCOUNT_DICE -> productDetails.subscriptionOfferDetails
+                ?.firstOrNull { it.offerId == "recurring-discount-offer" }
+                ?.offerToken
+
+            Skus.GOLDEN_DICE ->
+                productDetails.subscriptionOfferDetails
+                    ?.firstOrNull { it.basePlanId == "default-plan" }
+                    ?.offerToken
+
+            Skus.GOLDEN_DICE_PREMIUM ->
+                productDetails.subscriptionOfferDetails
+                    ?.firstOrNull { it.basePlanId == "default-plan" }
+                    ?.offerToken
+
             else -> null
         } ?: productDetails.subscriptionOfferDetails?.firstOrNull()?.offerToken
         ?: ""

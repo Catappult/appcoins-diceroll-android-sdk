@@ -54,6 +54,9 @@ class SubscriptionsDataSource @Inject constructor(
             if (it[GOLDEN_DICE_ACTIVE] == true) {
                 mutableListAvailableSubscriptions.add(Subscription.GOLDEN_DICE)
             }
+            if (it[GOLDEN_DICE_PREMIUM_ACTIVE] == true) {
+                mutableListAvailableSubscriptions.add(Subscription.GOLDEN_DICE_PREMIUM)
+            }
             if (it[TRIAL_DICE_ACTIVE] == true) {
                 mutableListAvailableSubscriptions.add(Subscription.TRIAL_DICE)
             }
@@ -75,6 +78,7 @@ class SubscriptionsDataSource @Inject constructor(
 
     companion object {
         val GOLDEN_DICE_ACTIVE = booleanPreferencesKey("golden_dice_active")
+        val GOLDEN_DICE_PREMIUM_ACTIVE = booleanPreferencesKey("golden_dice_premium_active")
         val TRIAL_DICE_ACTIVE = booleanPreferencesKey("trial_dice_active")
         val PREPAID_DICE_ACTIVE = booleanPreferencesKey("prepaid_dice_active")
         val SINGLE_DISCOUNT_DICE_ACTIVE = booleanPreferencesKey("single_discount_dice_active")

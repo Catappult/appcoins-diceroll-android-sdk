@@ -3,6 +3,7 @@ package com.appcoins.diceroll.sdk.feature.store.ui
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDicePremiumStatusUseCase
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetGoldenDiceStatusUseCase
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetPrepaidDiceStatusUseCase
 import com.appcoins.diceroll.sdk.feature.roll_game.data.usecases.GetRecurringDiscountDiceStatusUseCase
@@ -13,6 +14,7 @@ import com.appcoins.diceroll.sdk.payments.billing.SdkManager
 import com.appcoins.diceroll.sdk.payments.data.models.InternalSkuDetails
 import com.appcoins.diceroll.sdk.payments.data.models.Item
 import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDice
+import com.appcoins.diceroll.sdk.payments.data.models.Item.GoldDicePremium
 import com.appcoins.diceroll.sdk.payments.data.models.Item.PrepaidDice
 import com.appcoins.diceroll.sdk.payments.data.models.Item.RecurringDiscountDice
 import com.appcoins.diceroll.sdk.payments.data.models.Item.SingleDiscountDice
@@ -30,6 +32,7 @@ class StoreViewModel @Inject constructor(
     private val sdkManager: SdkManager,
     private val getUserUseCase: GetUserUseCase,
     private val getGoldenDiceStatusUseCase: GetGoldenDiceStatusUseCase,
+    private val getGoldenDicePremiumStatusUseCase: GetGoldenDicePremiumStatusUseCase,
     private val getTrialDiceStatusUseCase: GetTrialDiceStatusUseCase,
     private val getPrepaidDiceStatusUseCase: GetPrepaidDiceStatusUseCase,
     private val getSingleDiscountDiceStatusUseCase: GetSingleDiscountDiceStatusUseCase,
@@ -50,6 +53,7 @@ class StoreViewModel @Inject constructor(
     fun getSubscriptionStateForSKU(skuDetails: InternalSkuDetails): StateFlow<Boolean> {
         val state = when (skuDetails.sku) {
             GoldDice.sku -> getGoldenDiceStatusUseCase()
+            GoldDicePremium.sku -> getGoldenDicePremiumStatusUseCase()
             TrialDice.sku -> getTrialDiceStatusUseCase()
             PrepaidDice.sku -> getPrepaidDiceStatusUseCase()
             SingleDiscountDice.sku -> getSingleDiscountDiceStatusUseCase()

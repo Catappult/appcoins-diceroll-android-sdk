@@ -55,6 +55,8 @@ class SdkManagerImpl @Inject constructor(
     override val _purchaseValidatorRepository: PurchaseValidatorRepository =
         purchaseValidatorRepository
 
+    override var goldenDiceActivePurchaseToken: String? = null
+
     private var isRTDNConnectionEstablished = false
 
     /**

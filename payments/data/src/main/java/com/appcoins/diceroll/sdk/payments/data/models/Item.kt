@@ -73,6 +73,25 @@ sealed class Item(
             context.resources.getString(R.string.payment_item_golden_dice_success_message)
     }
 
+    data object GoldDicePremium : SubscriptionItem(Skus.GOLDEN_DICE_PREMIUM) {
+        override fun getErrorMessage(context: Context, responseCode: ResponseCode): String =
+            when (responseCode) {
+                USER_CANCELED -> context.resources.getString(R.string.payment_item_golden_dice_premium_error_message_user_cancelled)
+                SERVICE_UNAVAILABLE -> context.resources.getString(R.string.payment_item_general_error_message_service_unavailable)
+                DEVELOPER_ERROR -> context.resources.getString(R.string.payment_item_general_error_message_developer_error)
+                else -> context.resources.getString(R.string.payment_item_general_error_message_unknown)
+            }
+
+        override fun getExpirationMessage(context: Context): String =
+            context.resources.getString(R.string.payment_item_golden_dice_premium_expiration_message)
+
+        override fun getRefundMessage(context: Context): String =
+            context.resources.getString(R.string.payment_item_golden_dice_premium_refund_message)
+
+        override fun getSuccessMessage(context: Context): String =
+            context.resources.getString(R.string.payment_item_golden_dice_premium_success_message)
+    }
+
     data object TrialDice : SubscriptionItem(Skus.TRIAL_DICE) {
         override fun getErrorMessage(context: Context, responseCode: ResponseCode): String =
             when (responseCode) {
@@ -168,6 +187,7 @@ sealed class Item(
                 Skus.ATTEMPTS -> Attempts
                 Skus.NON_CONSUMABLE_ATTEMPTS -> NonConsumableAttempts
                 Skus.GOLDEN_DICE -> GoldDice
+                Skus.GOLDEN_DICE_PREMIUM -> GoldDicePremium
                 Skus.TRIAL_DICE -> TrialDice
                 Skus.PREPAID_DICE -> PrepaidDice
                 Skus.SINGLE_DISCOUNT_DICE -> SingleDiscountDice

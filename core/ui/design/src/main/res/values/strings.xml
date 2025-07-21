@@ -48,6 +48,10 @@
     <string name="payment_item_golden_dice_refund_message">Your Subscription for the Golden Dice was Refunded.</string>
     <string name="payment_item_golden_dice_success_message">You are now subscribed to the Golden Dice.</string>
     <string name="payment_item_golden_dice_expiration_message">Your subscription for the Golden Dice was expired.\nPurchase again to get it!</string>
+    <string name="payment_item_golden_dice_premium_error_message_user_cancelled">Purchase for Golden Dice Premium was cancelled.</string>
+    <string name="payment_item_golden_dice_premium_refund_message">Your Subscription for the Golden Dice Premium was Refunded.</string>
+    <string name="payment_item_golden_dice_premium_success_message">You are now subscribed to the Golden Dice Premium.</string>
+    <string name="payment_item_golden_dice_premium_expiration_message">Your subscription for the Golden Dice Premium was expired.\nPurchase again to get it!</string>
     <string name="payment_item_trial_dice_error_message_user_cancelled">Purchase for Trial Dice was cancelled.</string>
     <string name="payment_item_trial_dice_refund_message">Your Subscription for the Trial Dice was Refunded.</string>
     <string name="payment_item_trial_dice_success_message">You are now subscribed to the Trial Dice.</string>

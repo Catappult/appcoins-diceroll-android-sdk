@@ -7,6 +7,8 @@ object Skus {
 
     // Normal Subscription
     const val GOLDEN_DICE = "golden_dice"
+    // Upgrade Premium Subscription
+    const val GOLDEN_DICE_PREMIUM = "golden_dice_premium"
     // Free Trial Subscription
     const val TRIAL_DICE = "trial_dice"
     // Prepaid Subscription
@@ -25,6 +27,7 @@ object Skus {
     val SUBS =
         listOf(
             GOLDEN_DICE,
+            GOLDEN_DICE_PREMIUM,
             TRIAL_DICE,
             PREPAID_DICE,
             SINGLE_DISCOUNT_DICE,
